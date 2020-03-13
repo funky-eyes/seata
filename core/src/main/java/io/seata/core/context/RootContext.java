@@ -45,6 +45,8 @@ public class RootContext {
 
     public static final String KEY_GLOBAL_LOCK_FLAG = "TX_LOCK";
 
+    public static final String KEY_GLOBAL_BEGIN_REQUEST_FLAG = "KEY_GLOBAL_BEGIN_REQUEST_FLAG";
+
     private static ContextCore CONTEXT_HOLDER = ContextCoreLoader.load();
 
     /**
@@ -80,6 +82,7 @@ public class RootContext {
         }
         CONTEXT_HOLDER.put(KEY_XID, xid);
     }
+
 
     /**
      * Bind the current branchType

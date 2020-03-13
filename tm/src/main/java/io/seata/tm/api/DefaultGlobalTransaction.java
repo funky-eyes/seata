@@ -15,6 +15,8 @@
  */
 package io.seata.tm.api;
 
+import com.alibaba.fastjson.JSONObject;
+import io.seata.common.thread.NamedThreadFactory;
 import io.seata.config.ConfigurationFactory;
 import io.seata.core.constants.ConfigurationKeys;
 import io.seata.core.context.RootContext;
@@ -22,9 +24,16 @@ import io.seata.core.exception.TransactionException;
 import io.seata.core.model.BranchType;
 import io.seata.core.model.GlobalStatus;
 import io.seata.core.model.TransactionManager;
+import io.seata.core.protocol.transaction.GlobalBeginRequest;
 import io.seata.tm.TransactionManagerHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import static io.seata.core.constants.DefaultValues.DEFAULT_TM_COMMIT_RETRY_COUNT;
 import static io.seata.core.constants.DefaultValues.DEFAULT_TM_ROLLBACK_RETRY_COUNT;
@@ -57,7 +66,8 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
 
     private static final int ROLLBACK_RETRY_COUNT = ConfigurationFactory.getInstance().getInt(
         ConfigurationKeys.CLIENT_TM_ROLLBACK_RETRY_COUNT, DEFAULT_TM_ROLLBACK_RETRY_COUNT);
-
+    private static ExecutorService executorService = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS,
+        new SynchronousQueue<Runnable>(), new NamedThreadFactory("asyn_begin", 10));
     /**
      * Instantiates a new Default global transaction.
      */
@@ -102,8 +112,20 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
         if (RootContext.getXID() != null) {
             throw new IllegalStateException();
         }
-        xid = transactionManager.begin(null, null, name, timeout);
+        xid = UUID.randomUUID().toString();
+        GlobalBeginRequest request = new GlobalBeginRequest();
+        request.setTransactionName(name);
+        request.setTimeout(timeout);
+        request.setXid(xid);
+        executorService.submit(() -> {
+            try {
+                transactionManager.begin(null, null, request);
+            } catch (TransactionException e) {
+                LOGGER.error("Begin new global transaction fail [{}]", xid);
+            }
+        });
         status = GlobalStatus.Begin;
+        RootContext.entries().put(RootContext.KEY_GLOBAL_BEGIN_REQUEST_FLAG, JSONObject.toJSONString(request));
         RootContext.bind(xid);
         RootContext.bindBranchType(branchType);
         if (LOGGER.isInfoEnabled()) {

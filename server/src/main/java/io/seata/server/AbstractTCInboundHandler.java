@@ -164,6 +164,32 @@ public abstract class AbstractTCInboundHandler extends AbstractExceptionHandler 
     @Override
     public BranchRegisterResponse handle(BranchRegisterRequest request, final RpcContext rpcContext) {
         BranchRegisterResponse response = new BranchRegisterResponse();
+        if (null != request.getGlobalBeginRequest()) {
+            GlobalSession session = SessionHolder.findGlobalSession(request.getXid(), true);
+            if (null == session) {
+                GlobalBeginResponse globalBeginResponse = new GlobalBeginResponse();
+                GlobalBeginRequest globalBeginRequest = request.getGlobalBeginRequest();
+                exceptionHandleTemplate(new AbstractCallback<GlobalBeginRequest, GlobalBeginResponse>() {
+                    @Override
+                    public void execute(GlobalBeginRequest globalBeginRequest, GlobalBeginResponse globalBeginResponse)
+                        throws TransactionException {
+                        try {
+                            doGlobalBegin(globalBeginRequest, globalBeginResponse, rpcContext);
+                        } catch (StoreException e) {
+                            throw new TransactionException(TransactionExceptionCode.FailedStore,
+                                String.format("begin global request failed. xid=%s, msg=%s",
+                                    globalBeginResponse.getXid(), e.getMessage()),
+                                e);
+                        }
+                    }
+                }, globalBeginRequest, globalBeginResponse);
+                session = SessionHolder.findGlobalSession(request.getXid(), true);
+                if (!GlobalStatus.Begin.equals(session.getStatus())) {
+                    response.setBranchId(0);
+                    return response;
+                }
+            }
+        }
         exceptionHandleTemplate(new AbstractCallback<BranchRegisterRequest, BranchRegisterResponse>() {
             @Override
             public void execute(BranchRegisterRequest request, BranchRegisterResponse response)

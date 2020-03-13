@@ -36,6 +36,26 @@ public class BranchRegisterRequest extends AbstractTransactionRequestToTC  {
 
     private String applicationData;
 
+    private GlobalBeginRequest globalBeginRequest;
+
+    /**
+     * Gets globalBeginRequest.
+     *
+     * @return the globalBeginRequest
+     */
+    public GlobalBeginRequest getGlobalBeginRequest() {
+        return globalBeginRequest;
+    }
+
+    /**
+     * Sets globalBeginRequest.
+     *
+     * @param globalBeginRequest
+     */
+    public void setGlobalBeginRequest(GlobalBeginRequest globalBeginRequest) {
+        this.globalBeginRequest = globalBeginRequest;
+    }
+
     /**
      * Gets xid.
      *
@@ -150,6 +170,9 @@ public class BranchRegisterRequest extends AbstractTransactionRequestToTC  {
         result.append(",");
         result.append("lockKey=");
         result.append(lockKey);
+        result.append(",");
+        result.append("globalBeginRequest=");
+        result.append(globalBeginRequest.toString());
 
         return result.toString();
     }

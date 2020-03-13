@@ -30,6 +30,7 @@ import io.seata.core.protocol.transaction.BranchCommitRequest;
 import io.seata.core.protocol.transaction.BranchCommitResponse;
 import io.seata.core.protocol.transaction.BranchRollbackRequest;
 import io.seata.core.protocol.transaction.BranchRollbackResponse;
+import io.seata.core.protocol.transaction.GlobalBeginRequest;
 import io.seata.core.rpc.ChannelManager;
 import io.seata.core.rpc.ServerMessageSender;
 import io.seata.server.coordinator.AbstractCore;
@@ -240,5 +241,11 @@ public class SagaCore extends AbstractCore {
      */
     private String getSagaResourceId(GlobalSession globalSession) {
         return globalSession.getApplicationId() + "#" + globalSession.getTransactionServiceGroup();
+    }
+
+    @Override
+    public String begin(String applicationId, String transactionServiceGroup, GlobalBeginRequest request)
+        throws TransactionException {
+        return null;
     }
 }

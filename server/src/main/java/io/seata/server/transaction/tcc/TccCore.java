@@ -15,7 +15,9 @@
  */
 package io.seata.server.transaction.tcc;
 
+import io.seata.core.exception.TransactionException;
 import io.seata.core.model.BranchType;
+import io.seata.core.protocol.transaction.GlobalBeginRequest;
 import io.seata.core.rpc.ServerMessageSender;
 import io.seata.server.coordinator.AbstractCore;
 
@@ -33,5 +35,11 @@ public class TccCore extends AbstractCore {
     @Override
     public BranchType getHandleBranchType() {
         return BranchType.TCC;
+    }
+
+    @Override
+    public String begin(String applicationId, String transactionServiceGroup, GlobalBeginRequest request)
+        throws TransactionException {
+        return null;
     }
 }

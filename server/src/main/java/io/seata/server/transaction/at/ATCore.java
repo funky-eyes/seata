@@ -18,6 +18,7 @@ package io.seata.server.transaction.at;
 import io.seata.core.exception.BranchTransactionException;
 import io.seata.core.exception.TransactionException;
 import io.seata.core.model.BranchType;
+import io.seata.core.protocol.transaction.GlobalBeginRequest;
 import io.seata.core.rpc.ServerMessageSender;
 import io.seata.server.coordinator.AbstractCore;
 import io.seata.server.session.BranchSession;
@@ -59,5 +60,11 @@ public class ATCore extends AbstractCore {
     public boolean lockQuery(BranchType branchType, String resourceId, String xid, String lockKeys)
             throws TransactionException {
         return lockManager.isLockable(xid, resourceId, lockKeys);
+    }
+
+    @Override
+    public String begin(String applicationId, String transactionServiceGroup, GlobalBeginRequest request)
+        throws TransactionException {
+        return null;
     }
 }

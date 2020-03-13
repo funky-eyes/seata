@@ -27,7 +27,9 @@
     <artifactId>seata-tm</artifactId>
     <packaging>jar</packaging>
     <name>seata-tm ${project.version}</name>
-
+    <properties>
+        <fastjson.version>1.2.60</fastjson.version>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -38,9 +40,8 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <scope>test</scope>
+            <version>${fastjson.version}</version>
         </dependency>
     </dependencies>
-
 
 </project>

@@ -22,6 +22,7 @@ import io.seata.core.exception.TransactionException;
 import io.seata.core.model.BranchStatus;
 import io.seata.core.model.BranchType;
 import io.seata.core.model.GlobalStatus;
+import io.seata.core.protocol.transaction.GlobalBeginRequest;
 import io.seata.core.rpc.ServerMessageSender;
 import io.seata.server.session.BranchSession;
 import io.seata.server.session.GlobalSession;
@@ -366,6 +367,11 @@ public class DefaultCoreTest {
         @Override
         public BranchType getHandleBranchType() {
             return BranchType.AT;
+        }
+
+        @Override public String begin(String applicationId, String transactionServiceGroup, GlobalBeginRequest request)
+            throws TransactionException {
+            return null;
         }
     }
 

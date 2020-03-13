@@ -40,15 +40,24 @@ public class ApacheDubboTransactionPropagationFilter implements Filter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         String xid = RootContext.getXID();
-
         String rpcXid = getRpcXid();
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("xid in RootContext[{}] xid in RpcContext[{}]", xid, rpcXid);
         }
+        String beginRequestJson = RootContext.entries().get(RootContext.KEY_GLOBAL_BEGIN_REQUEST_FLAG);
         boolean bind = false;
         if (xid != null) {
+            if (null != beginRequestJson
+                && null == RpcContext.getContext().getAttachment(RootContext.KEY_GLOBAL_BEGIN_REQUEST_FLAG)) {
+                RpcContext.getContext().setAttachment(RootContext.KEY_GLOBAL_BEGIN_REQUEST_FLAG, beginRequestJson);
+            }
             RpcContext.getContext().setAttachment(RootContext.KEY_XID, xid);
         } else {
+            if (null == beginRequestJson
+                && null != RpcContext.getContext().getAttachment(RootContext.KEY_GLOBAL_BEGIN_REQUEST_FLAG)) {
+                RootContext.entries().put(RootContext.KEY_GLOBAL_BEGIN_REQUEST_FLAG,
+                    RpcContext.getContext().getAttachment(RootContext.KEY_GLOBAL_BEGIN_REQUEST_FLAG));
+            }
             if (rpcXid != null) {
                 RootContext.bind(rpcXid);
                 bind = true;
@@ -61,6 +70,7 @@ public class ApacheDubboTransactionPropagationFilter implements Filter {
             return invoker.invoke(invocation);
         } finally {
             if (bind) {
+                RootContext.entries().remove(RootContext.KEY_GLOBAL_BEGIN_REQUEST_FLAG);
                 String unbindXid = RootContext.unbind();
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("unbind[{}] from RootContext", unbindXid);

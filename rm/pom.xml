@@ -26,12 +26,19 @@
     <artifactId>seata-rm</artifactId>
     <packaging>jar</packaging>
     <name>seata-rm ${project.version}</name>
-
+    <properties>
+        <fastjson.version>1.2.60</fastjson.version>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>seata-core</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>${fastjson.version}</version>
         </dependency>
     </dependencies>
 

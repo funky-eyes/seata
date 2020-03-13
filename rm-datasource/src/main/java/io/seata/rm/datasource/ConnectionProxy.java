@@ -214,7 +214,9 @@ public class ConnectionProxy extends AbstractConnectionProxy {
         } catch (TransactionException e) {
             recognizeLockKeyConflictException(e, context.buildLockKeys());
         }
-
+        if (context.getBranchId() == 0) {
+            throw new RuntimeException("transaction creation failed");
+        }
         try {
             if (context.hasUndoLog()) {
                 UndoLogManagerFactory.getUndoLogManager(this.getDbType()).flushUndoLogs(this);

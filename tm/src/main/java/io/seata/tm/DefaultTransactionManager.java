@@ -58,6 +58,15 @@ public class DefaultTransactionManager implements TransactionManager {
     }
 
     @Override
+    public String begin(String applicationId, String transactionServiceGroup, GlobalBeginRequest request) throws TransactionException {
+        GlobalBeginResponse response = (GlobalBeginResponse)syncCall(request);
+        if (response.getResultCode() == ResultCode.Failed) {
+            throw new TmTransactionException(TransactionExceptionCode.BeginFailed, response.getMsg());
+        }
+        return response.getXid();
+    }
+
+    @Override
     public GlobalStatus commit(String xid) throws TransactionException {
         GlobalCommitRequest globalCommit = new GlobalCommitRequest();
         globalCommit.setXid(xid);

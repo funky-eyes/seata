@@ -16,6 +16,7 @@
 package io.seata.core.model;
 
 import io.seata.core.exception.TransactionException;
+import io.seata.core.protocol.transaction.GlobalBeginRequest;
 
 /**
  * Transaction Manager.
@@ -40,6 +41,7 @@ public interface TransactionManager {
     String begin(String applicationId, String transactionServiceGroup, String name, int timeout)
         throws TransactionException;
 
+    public String begin(String applicationId, String transactionServiceGroup, GlobalBeginRequest request) throws TransactionException;
     /**
      * Global commit.
      *

@@ -28,6 +28,7 @@ import io.seata.core.exception.TransactionException;
 import io.seata.core.model.BranchStatus;
 import io.seata.core.model.BranchType;
 import io.seata.core.model.GlobalStatus;
+import io.seata.core.protocol.transaction.GlobalBeginRequest;
 import io.seata.core.rpc.ServerMessageSender;
 import io.seata.server.event.EventBusManager;
 import io.seata.server.session.BranchSession;
@@ -116,6 +117,20 @@ public class DefaultCore implements Core {
     @Override
     public BranchStatus branchRollback(GlobalSession globalSession, BranchSession branchSession) throws TransactionException {
         return getCore(branchSession.getBranchType()).branchRollback(globalSession, branchSession);
+    }
+
+    public String begin(String applicationId, String transactionServiceGroup, GlobalBeginRequest request) throws TransactionException {
+        GlobalSession session = GlobalSession.createGlobalSession(applicationId, transactionServiceGroup,request);
+        session.addSessionLifecycleListener(SessionHolder.getRootSessionManager());
+
+        session.begin();
+
+        // transaction start event
+        eventBus.post(new GlobalTransactionEvent(session.getTransactionId(), GlobalTransactionEvent.ROLE_TC,
+            session.getTransactionName(), session.getBeginTime(), null, session.getStatus()));
+
+        LOGGER.info("Successfully begin global transaction xid = {}", session.getXid());
+        return session.getXid();
     }
 
     @Override
@@ -363,4 +378,5 @@ public class DefaultCore implements Core {
             getCore(BranchType.SAGA).doGlobalReport(globalSession, xid, globalStatus);
         }
     }
+
 }

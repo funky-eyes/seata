@@ -29,6 +29,26 @@ public class GlobalBeginRequest extends AbstractTransactionRequestToTC {
 
     private String transactionName;
 
+    private String  xid;
+
+    /**
+     * Gets xid
+     *
+     * @return the xid
+     */
+    public String getXid() {
+        return xid;
+    }
+
+    /**
+     * Sets xid
+     *
+     * @param xid
+     */
+    public void setXid(String xid) {
+        this.xid = xid;
+    }
+
     /**
      * Gets timeout.
      *
@@ -84,6 +104,9 @@ public class GlobalBeginRequest extends AbstractTransactionRequestToTC {
         result.append(",");
         result.append("transactionName=");
         result.append(transactionName);
+        result.append(",");
+        result.append("xid=");
+        result.append(xid);
 
         return result.toString();
     }

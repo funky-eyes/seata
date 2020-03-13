@@ -31,6 +31,7 @@ import io.seata.core.exception.TransactionExceptionCode;
 import io.seata.core.model.BranchStatus;
 import io.seata.core.model.BranchType;
 import io.seata.core.model.GlobalStatus;
+import io.seata.core.protocol.transaction.GlobalBeginRequest;
 import io.seata.server.UUIDGenerator;
 import io.seata.server.lock.LockerFactory;
 import io.seata.server.store.SessionStorable;
@@ -75,7 +76,6 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
     private final ArrayList<BranchSession> branchSessions = new ArrayList<>();
 
     private GlobalSessionLock globalSessionLock = new GlobalSessionLock();
-
 
     /**
      * Add boolean.
@@ -310,6 +310,16 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
         this.xid = XID.generateXID(transactionId);
     }
 
+    public GlobalSession(String applicationId, String transactionServiceGroup, GlobalBeginRequest request) {
+        this.transactionId = UUIDGenerator.generateUUID();
+        this.status = GlobalStatus.Begin;
+
+        this.applicationId = applicationId;
+        this.transactionServiceGroup = transactionServiceGroup;
+        this.transactionName = request.getTransactionName();
+        this.timeout = request.getTimeout();
+        this.xid = request.getXid();
+    }
     /**
      * Gets transaction id.
      *
@@ -448,6 +458,11 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
     public static GlobalSession createGlobalSession(String applicationId, String txServiceGroup, String txName,
                                                     int timeout) {
         GlobalSession session = new GlobalSession(applicationId, txServiceGroup, txName, timeout);
+        return session;
+    }
+
+    public static GlobalSession createGlobalSession(String applicationId, String transactionServiceGroup, GlobalBeginRequest request) {
+        GlobalSession session = new GlobalSession(applicationId,transactionServiceGroup,request);
         return session;
     }
 

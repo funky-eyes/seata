@@ -20,6 +20,7 @@ import io.seata.core.exception.TransactionException;
 import io.seata.core.model.BranchType;
 import io.seata.core.model.GlobalStatus;
 import io.seata.core.model.TransactionManager;
+import io.seata.core.protocol.transaction.GlobalBeginRequest;
 import io.seata.tm.TransactionManagerHolder;
 import io.seata.tm.api.transaction.TransactionInfo;
 import org.junit.jupiter.api.AfterEach;
@@ -45,6 +46,12 @@ public class APITest {
             @Override
             public String begin(String applicationId, String transactionServiceGroup, String name, int timeout)
                     throws TransactionException {
+                return DEFAULT_XID;
+            }
+
+            @Override
+            public String begin(String applicationId, String transactionServiceGroup, GlobalBeginRequest request)
+                throws TransactionException {
                 return DEFAULT_XID;
             }
 

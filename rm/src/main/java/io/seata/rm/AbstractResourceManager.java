@@ -17,7 +17,10 @@ package io.seata.rm;
 
 import java.util.concurrent.TimeoutException;
 
+import com.alibaba.fastjson.JSONObject;
 import io.seata.common.exception.NotSupportYetException;
+import io.seata.common.util.StringUtils;
+import io.seata.core.context.RootContext;
 import io.seata.core.exception.RmTransactionException;
 import io.seata.core.exception.TransactionException;
 import io.seata.core.exception.TransactionExceptionCode;
@@ -30,6 +33,7 @@ import io.seata.core.protocol.transaction.BranchRegisterRequest;
 import io.seata.core.protocol.transaction.BranchRegisterResponse;
 import io.seata.core.protocol.transaction.BranchReportRequest;
 import io.seata.core.protocol.transaction.BranchReportResponse;
+import io.seata.core.protocol.transaction.GlobalBeginRequest;
 import io.seata.core.rpc.netty.RmRpcClient;
 
 import org.slf4j.Logger;
@@ -63,10 +67,15 @@ public abstract class AbstractResourceManager implements ResourceManager {
             request.setResourceId(resourceId);
             request.setBranchType(branchType);
             request.setApplicationData(applicationData);
-
-            BranchRegisterResponse response = (BranchRegisterResponse) RmRpcClient.getInstance().sendMsgWithResponse(request);
+            String globalBeginRequest = RootContext.entries().get(RootContext.KEY_GLOBAL_BEGIN_REQUEST_FLAG);
+            if (StringUtils.isNotBlank(globalBeginRequest)) {
+                request.setGlobalBeginRequest(JSONObject.parseObject(globalBeginRequest, GlobalBeginRequest.class));
+            }
+            BranchRegisterResponse response =
+                (BranchRegisterResponse)RmRpcClient.getInstance().sendMsgWithResponse(request);
             if (response.getResultCode() == ResultCode.Failed) {
-                throw new RmTransactionException(response.getTransactionExceptionCode(), String.format("Response[ %s ]", response.getMsg()));
+                throw new RmTransactionException(response.getTransactionExceptionCode(),
+                    String.format("Response[ %s ]", response.getMsg()));
             }
             return response.getBranchId();
         } catch (TimeoutException toe) {
