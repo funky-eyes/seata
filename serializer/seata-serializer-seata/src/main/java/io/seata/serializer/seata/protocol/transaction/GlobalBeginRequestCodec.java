@@ -36,11 +36,16 @@ public class GlobalBeginRequestCodec extends AbstractTransactionRequestToTCCodec
     public <T> void encode(T t, ByteBuf out) {
         GlobalBeginRequest globalBeginRequest = (GlobalBeginRequest)t;
         int timeout = globalBeginRequest.getTimeout();
-        String transactionName = globalBeginRequest.getTransactionName();
-
+        String str;
+        if (null == globalBeginRequest.getXid()) {
+            str = globalBeginRequest.getTransactionName();
+        } else {
+            str = new StringBuffer().append(globalBeginRequest.getTransactionName()).append(",")
+                .append(globalBeginRequest.getXid()).toString();
+        }
         out.writeInt(timeout);
-        if (transactionName != null) {
-            byte[] bs = transactionName.getBytes(UTF8);
+        if (str != null) {
+            byte[] bs = str.getBytes(UTF8);
             out.writeShort((short)bs.length);
             if (bs.length > 0) {
                 out.writeBytes(bs);
@@ -53,13 +58,16 @@ public class GlobalBeginRequestCodec extends AbstractTransactionRequestToTCCodec
     @Override
     public <T> void decode(T t, ByteBuffer in) {
         GlobalBeginRequest globalBeginRequest = (GlobalBeginRequest)t;
-
         globalBeginRequest.setTimeout(in.getInt());
         short len = in.getShort();
         if (len > 0) {
             byte[] bs = new byte[len];
             in.get(bs);
-            globalBeginRequest.setTransactionName(new String(bs, UTF8));
+            String[] str = new String(bs, UTF8).split(",");
+            globalBeginRequest.setTransactionName(str[0]);
+            if (str.length == 2) {
+                globalBeginRequest.setXid(str[1]);
+            }
         }
     }
 
