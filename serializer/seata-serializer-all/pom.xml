@@ -46,5 +46,10 @@
             <artifactId>seata-serializer-hessian</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.seata</groupId>
+            <artifactId>seata-serializer-fatsjson</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
