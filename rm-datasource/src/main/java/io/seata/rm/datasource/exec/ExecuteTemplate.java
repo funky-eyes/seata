@@ -77,8 +77,7 @@ public class ExecuteTemplate {
         if (sqlRecognizer == null) {
             executor = new PlainExecutor<>(statementProxy, statementCallback);
         } else {
-            ExecutorStrategy strategy=new ExecutorStrategy(sqlRecognizer,statementProxy, statementCallback);
-            executor=strategy.executorInterface();
+            executor=ExecutorStrategy.executorInterface(sqlRecognizer,statementProxy, statementCallback);
         }
         T rs;
         try {
