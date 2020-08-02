@@ -56,7 +56,7 @@ public class Server {
      * @throws IOException the io exception
      */
     public static void main(String[] args) throws IOException {
-        // get port first, use to logback.xml
+        // xxxx
         int port = PortHelper.getPort(args);
         System.setProperty(ConfigurationKeys.SERVER_PORT, Integer.toString(port));
 
