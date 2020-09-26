@@ -109,6 +109,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.alipay.sofa</groupId>
+            <artifactId>jraft-core</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.github.fppt</groupId>
             <artifactId>jedis-mock</artifactId>
             <scope>test</scope>

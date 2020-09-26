@@ -29,6 +29,7 @@ import io.seata.server.coordinator.DefaultCoordinator;
 import io.seata.server.env.ContainerHelper;
 import io.seata.server.env.PortHelper;
 import io.seata.server.metrics.MetricsManager;
+import io.seata.server.raft.RaftServerFactory;
 import io.seata.server.session.SessionHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,6 +100,7 @@ public class Server {
         XID.setPort(nettyRemotingServer.getListenPort());
 
         try {
+            RaftServerFactory.getInstance().init(XID.getIpAddress(), XID.getPort());
             nettyRemotingServer.init();
         } catch (Throwable e) {
             logger.error("nettyServer init error:{}", e.getMessage(), e);
