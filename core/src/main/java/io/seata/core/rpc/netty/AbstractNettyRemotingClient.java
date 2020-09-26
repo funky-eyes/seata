@@ -137,7 +137,7 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
         String initConfStr = ConfigurationFactory.getInstance().getConfig(ConfigurationKeys.SERVER_RAFT_CLUSTER);
         if (StringUtils.isNotBlank(initConfStr)) {
             String storeMode = ConfigurationFactory.getInstance().getConfig(ConfigurationKeys.STORE_MODE);
-            if (Objects.equals(storeMode, StoreMode.FILE.getName())) {
+            if (Objects.equals(storeMode, StoreMode.RAFT.getName())) {
                 cliClientService = new CliClientServiceImpl();
                 cliClientService.init(new CliOptions());
                 findLeader();
