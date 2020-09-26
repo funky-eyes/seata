@@ -18,10 +18,6 @@ package io.seata.server.raft;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alipay.remoting.serialization.SerializerManager;
 import com.alipay.sofa.jraft.Closure;
 import com.alipay.sofa.jraft.Iterator;
@@ -32,9 +28,22 @@ import com.alipay.sofa.jraft.error.RaftException;
 import com.alipay.sofa.jraft.storage.snapshot.SnapshotReader;
 import com.alipay.sofa.jraft.storage.snapshot.SnapshotWriter;
 import com.alipay.sofa.jraft.util.Utils;
-
+import io.seata.server.session.BranchSession;
+import io.seata.server.session.GlobalSession;
+import io.seata.server.session.SessionHolder;
+import io.seata.server.session.SessionManager;
+import io.seata.server.storage.SessionConverter;
 import io.seata.server.storage.raft.RaftSyncMsg;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+
+import static com.alipay.remoting.serialization.SerializerManager.Hessian2;
+import static io.seata.server.storage.raft.RaftSyncMsg.MsgType.ADD_BRANCH_SESSION;
+import static io.seata.server.storage.raft.RaftSyncMsg.MsgType.ADD_GLOBAL_SESSION;
+import static io.seata.server.storage.raft.RaftSyncMsg.MsgType.REMOVE_BRANCH_SESSION;
+import static io.seata.server.storage.raft.RaftSyncMsg.MsgType.REMOVE_GLOBAL_SESSION;
+import static io.seata.server.storage.raft.RaftSyncMsg.MsgType.UPDATE_GLOBAL_SESSION_STATUS;
 
 /**
  * @author funkye
@@ -42,6 +51,9 @@ import io.seata.server.storage.raft.RaftSyncMsg;
 public class RaftStateMachine extends StateMachineAdapter {
 
     private static final Logger LOG = LoggerFactory.getLogger(RaftStateMachine.class);
+
+    SessionManager sessionManager = SessionHolder.getRootSessionManager();
+
     /**
      * Leader term
      */
@@ -63,8 +75,30 @@ public class RaftStateMachine extends StateMachineAdapter {
                 processor = iterator.done();
             } else {
                 try {
-                    RaftSyncMsg msg = SerializerManager.getSerializer(SerializerManager.Hessian2)
-                        .deserialize(iterator.getData().array(), RaftSyncMsg.class.getName());
+                    RaftSyncMsg msg = SerializerManager.getSerializer(Hessian2).deserialize(iterator.getData().array(),
+                        RaftSyncMsg.class.getName());
+                    RaftSyncMsg.MsgType msgType = msg.getMsgType();
+                    LOG.info("state machine synchronization,task:{}", msgType);
+                    if (msgType.equals(ADD_GLOBAL_SESSION)) {
+                        GlobalSession globalSession = SessionConverter.convertGlobalSession(msg.getGlobalSession());
+                        SessionHolder.getRootSessionManager().addGlobalSession(globalSession);
+                    } else if (msgType.equals(ADD_BRANCH_SESSION)) {
+                        GlobalSession globalSession = sessionManager.findGlobalSession(msg.getGlobalSession().getXid());
+                        BranchSession branchSession = SessionConverter.convertBranchSession(msg.getBranchSession());
+                        globalSession.addBranch(branchSession);
+                        SessionHolder.getRootSessionManager().addBranchSession(globalSession, branchSession);
+                    } else if (msgType.equals(UPDATE_GLOBAL_SESSION_STATUS)) {
+                        GlobalSession globalSession = sessionManager.findGlobalSession(msg.getGlobalSession().getXid());
+                        SessionHolder.getRootSessionManager().updateGlobalSessionStatus(globalSession, msg.getGlobalStatus());
+                    } else if (msgType.equals(REMOVE_BRANCH_SESSION)) {
+                        GlobalSession globalSession = sessionManager.findGlobalSession(msg.getGlobalSession().getXid());
+                        BranchSession branchSession = globalSession.getBranch(msg.getBranchSession().getBranchId());
+                        globalSession.removeBranch(branchSession);
+                        SessionHolder.getRootSessionManager().removeBranchSession(globalSession, branchSession);
+                    } else if (msgType.equals(REMOVE_GLOBAL_SESSION)) {
+                        GlobalSession globalSession = sessionManager.findGlobalSession(msg.getGlobalSession().getXid());
+                        sessionManager.removeGlobalSession(globalSession);
+                    }
                 } catch (Exception e) {
                     LOG.error("Message synchronization failure", e);
                 }

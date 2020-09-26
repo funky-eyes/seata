@@ -27,6 +27,8 @@ import io.seata.common.loader.Scope;
 import io.seata.core.exception.TransactionException;
 import io.seata.core.model.BranchStatus;
 import io.seata.core.model.GlobalStatus;
+import io.seata.core.store.BranchTransactionDO;
+import io.seata.core.store.GlobalTransactionDO;
 import io.seata.server.raft.RaftServerFactory;
 import io.seata.server.session.AbstractSessionManager;
 import io.seata.server.session.BranchSession;
@@ -34,20 +36,24 @@ import io.seata.server.session.GlobalSession;
 import io.seata.server.session.Reloadable;
 import io.seata.server.session.SessionCondition;
 import io.seata.server.session.SessionHolder;
+import io.seata.server.storage.SessionConverter;
 import io.seata.server.storage.file.session.FileSessionManager;
 import io.seata.server.storage.raft.RaftSyncMsg;
 
 
+import static com.alipay.remoting.serialization.SerializerManager.Hessian2;
 import static io.seata.server.storage.raft.RaftSyncMsg.MsgType.ADD_BRANCH_SESSION;
 import static io.seata.server.storage.raft.RaftSyncMsg.MsgType.ADD_GLOBAL_SESSION;
 import static io.seata.server.storage.raft.RaftSyncMsg.MsgType.REMOVE_BRANCH_SESSION;
 import static io.seata.server.storage.raft.RaftSyncMsg.MsgType.REMOVE_GLOBAL_SESSION;
+import static io.seata.server.storage.raft.RaftSyncMsg.MsgType.UPDATE_BRANCH_SESSION_STATUS;
+import static io.seata.server.storage.raft.RaftSyncMsg.MsgType.UPDATE_GLOBAL_SESSION_STATUS;
 
 /**
  * @author funkye
  */
 @LoadLevel(name = "raft", scope = Scope.PROTOTYPE)
-public class RaftSessionManager extends AbstractSessionManager implements Reloadable, Closure {
+public class RaftSessionManager extends AbstractSessionManager implements Reloadable, Closure, java.io.Serializable {
 
     private FileSessionManager fileSessionManager;
 
@@ -80,6 +86,10 @@ public class RaftSessionManager extends AbstractSessionManager implements Reload
     @Override
     public void reload() {
         fileSessionManager.reload();
+    }
+
+    public void addGlobalSession(GlobalSession session) throws TransactionException {
+        fileSessionManager.addGlobalSession(session);
     }
 
     @Override
@@ -137,19 +147,42 @@ public class RaftSessionManager extends AbstractSessionManager implements Reload
                 }
             }
         });
-        RaftSyncMsg raftSyncMsg = new RaftSyncMsg(ADD_GLOBAL_SESSION, globalSession);
-        createTask(raftSessionManager,raftSyncMsg);
+        GlobalTransactionDO globalTransactionDO = SessionConverter.convertGlobalTransactionDO(globalSession);
+        RaftSyncMsg raftSyncMsg = new RaftSyncMsg(ADD_GLOBAL_SESSION, globalTransactionDO);
+        createTask(raftSessionManager, raftSyncMsg);
     }
 
     @Override
-    public void onStatusChange(GlobalSession globalSession, GlobalStatus status) throws TransactionException {
-        fileSessionManager.updateGlobalSessionStatus(globalSession, status);
+    public void onStatusChange(GlobalSession globalSession, GlobalStatus globalStatus) throws TransactionException {
+        RaftSessionManager raftSessionManager = new RaftSessionManager(globalSession, status -> {
+            if (status.isOk()) {
+                try {
+                    SessionHolder.getRootSessionManager().updateGlobalSessionStatus(globalSession, globalStatus);
+                } catch (TransactionException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        GlobalTransactionDO globalTransactionDO = SessionConverter.convertGlobalTransactionDO(globalSession);
+        RaftSyncMsg raftSyncMsg = new RaftSyncMsg(UPDATE_GLOBAL_SESSION_STATUS, globalTransactionDO);
+        createTask(raftSessionManager, raftSyncMsg);
     }
 
     @Override
-    public void onBranchStatusChange(GlobalSession globalSession, BranchSession branchSession, BranchStatus status)
+    public void onBranchStatusChange(GlobalSession globalSession, BranchSession branchSession, BranchStatus branchStatus)
         throws TransactionException {
-        fileSessionManager.updateBranchSessionStatus(branchSession, status);
+        RaftSessionManager raftSessionManager = new RaftSessionManager(globalSession, status -> {
+            if (status.isOk()) {
+                try {
+                    SessionHolder.getRootSessionManager().updateBranchSessionStatus(branchSession, branchStatus);
+                } catch (TransactionException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        BranchTransactionDO branchTransactionDO = SessionConverter.convertBranchTransactionDO(branchSession);
+        RaftSyncMsg raftSyncMsg = new RaftSyncMsg(UPDATE_BRANCH_SESSION_STATUS, branchTransactionDO,branchStatus);
+        createTask(raftSessionManager, raftSyncMsg);
     }
 
     @Override
@@ -163,8 +196,16 @@ public class RaftSessionManager extends AbstractSessionManager implements Reload
                 }
             }
         });
-        RaftSyncMsg raftSyncMsg = new RaftSyncMsg(ADD_BRANCH_SESSION, globalSession, branchSession);
+        GlobalTransactionDO globalTransactionDO = SessionConverter.convertGlobalTransactionDO(globalSession);
+        BranchTransactionDO branchTransactionDO = SessionConverter.convertBranchTransactionDO(branchSession);
+        RaftSyncMsg raftSyncMsg = new RaftSyncMsg(ADD_BRANCH_SESSION, globalTransactionDO, branchTransactionDO);
         createTask(raftSessionManager, raftSyncMsg);
+    }
+
+    @Override
+    public void removeBranchSession(GlobalSession globalSession, BranchSession branchSession)
+        throws TransactionException {
+        fileSessionManager.removeBranchSession(globalSession, branchSession);
     }
 
     @Override
@@ -178,7 +219,9 @@ public class RaftSessionManager extends AbstractSessionManager implements Reload
                 }
             }
         });
-        RaftSyncMsg raftSyncMsg = new RaftSyncMsg(REMOVE_BRANCH_SESSION, globalSession, branchSession);
+        GlobalTransactionDO globalTransactionDO = SessionConverter.convertGlobalTransactionDO(globalSession);
+        BranchTransactionDO branchTransactionDO = SessionConverter.convertBranchTransactionDO(branchSession);
+        RaftSyncMsg raftSyncMsg = new RaftSyncMsg(REMOVE_BRANCH_SESSION, globalTransactionDO, branchTransactionDO);
         createTask(raftSessionManager, raftSyncMsg);
     }
 
@@ -198,7 +241,8 @@ public class RaftSessionManager extends AbstractSessionManager implements Reload
                 }
             }
         });
-        RaftSyncMsg raftSyncMsg = new RaftSyncMsg(REMOVE_GLOBAL_SESSION, globalSession);
+        GlobalTransactionDO globalTransactionDO = SessionConverter.convertGlobalTransactionDO(globalSession);
+        RaftSyncMsg raftSyncMsg = new RaftSyncMsg(REMOVE_GLOBAL_SESSION, globalTransactionDO);
         createTask(raftSessionManager, raftSyncMsg);
     }
 
@@ -212,7 +256,7 @@ public class RaftSessionManager extends AbstractSessionManager implements Reload
     private void createTask(Closure done, Object data) {
         final Task task = new Task();
         try {
-            task.setData(ByteBuffer.wrap(SerializerManager.getSerializer(SerializerManager.Hessian2).serialize(data)));
+            task.setData(ByteBuffer.wrap(SerializerManager.getSerializer(Hessian2).serialize(data)));
         } catch (CodecException e) {
             e.printStackTrace();
         }

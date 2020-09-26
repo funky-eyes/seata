@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import io.seata.server.raft.RaftServerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -140,6 +141,9 @@ public class SessionHolder {
             ((Reloadable)ROOT_SESSION_MANAGER).reload();
 
             Collection<GlobalSession> reloadedSessions = ROOT_SESSION_MANAGER.allSessions();
+            if (!RaftServerFactory.getInstance().isLeader()) {
+                return;
+            }
             if (reloadedSessions != null && !reloadedSessions.isEmpty()) {
                 reloadedSessions.forEach(globalSession -> {
                     GlobalStatus globalStatus = globalSession.getStatus();

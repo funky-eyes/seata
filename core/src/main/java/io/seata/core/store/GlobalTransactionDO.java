@@ -15,16 +15,15 @@
  */
 package io.seata.core.store;
 
-import io.seata.common.util.StringUtils;
-
 import java.util.Date;
+import io.seata.common.util.StringUtils;
 
 /**
  * Global Transaction data object
  *
  * @author zhangsen
  */
-public class GlobalTransactionDO {
+public class GlobalTransactionDO implements java.io.Serializable{
 
     private String xid;
 
