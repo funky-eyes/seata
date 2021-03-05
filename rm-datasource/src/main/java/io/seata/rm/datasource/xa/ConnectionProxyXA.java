@@ -73,9 +73,9 @@ public class ConnectionProxyXA extends AbstractConnectionProxyXA implements Hold
     }
 
     private void keepIfNecessary() throws XAException, SQLException {
-        // XA Prepare
-        xaResource.prepare(xaBranchXid);
         if (shouldBeHeld()) {
+            // XA Prepare
+            xaResource.prepare(xaBranchXid);
             resource.hold(xaBranchXid.toString(), this);
         } else if (JdbcUtils.ORACLE.equals(resource.getDbType())) {
             DataSourceProxyXA dataSourceProxyXA = (DataSourceProxyXA)resource;
