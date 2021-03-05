@@ -72,9 +72,18 @@ public class ConnectionProxyXA extends AbstractConnectionProxyXA implements Hold
 
     }
 
-    private void keepIfNecessary() {
+    private void keepIfNecessary() throws XAException, SQLException {
+        // XA Prepare
+        xaResource.prepare(xaBranchXid);
         if (shouldBeHeld()) {
             resource.hold(xaBranchXid.toString(), this);
+        } else if (JdbcUtils.ORACLE.equals(resource.getDbType())) {
+            DataSourceProxyXA dataSourceProxyXA = (DataSourceProxyXA)resource;
+            try (ConnectionProxyXA connectionProxyXA = (ConnectionProxyXA)dataSourceProxyXA.getConnectionProxyXA()) {
+                connectionProxyXA.xaResource.prepare(xaBranchXid);
+            } catch (SQLException e) {
+                throw e;
+            }
         }
     }
 
@@ -178,8 +187,6 @@ public class ConnectionProxyXA extends AbstractConnectionProxyXA implements Hold
         try {
             // XA End: Success
             xaResource.end(xaBranchXid, XAResource.TMSUCCESS);
-            // XA Prepare
-            xaResource.prepare(xaBranchXid);
             // Keep the Connection if necessary
             keepIfNecessary();
         } catch (XAException xe) {
