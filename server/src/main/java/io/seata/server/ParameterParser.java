@@ -146,7 +146,7 @@ public class ParameterParser {
      * @return the store mode
      */
     public String getLockStoreMode() {
-        return lockStoreMode;
+        return StringUtils.isNotEmpty(lockStoreMode) ? lockStoreMode : storeMode;
     }
 
     /**
@@ -155,7 +155,7 @@ public class ParameterParser {
      * @return the store mode
      */
     public String getSessionStoreMode() {
-        return sessionStoreMode;
+        return StringUtils.isNotEmpty(sessionStoreMode) ? sessionStoreMode : storeMode;
     }
 
     /**
