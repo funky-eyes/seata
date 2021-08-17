@@ -19,6 +19,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import io.seata.namesrv.NamesrvStartup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.seata.common.XID;
 import io.seata.common.thread.NamedThreadFactory;
 import io.seata.common.util.NetUtil;
@@ -31,8 +35,6 @@ import io.seata.server.env.ContainerHelper;
 import io.seata.server.lock.LockerManagerFactory;
 import io.seata.server.metrics.MetricsManager;
 import io.seata.server.session.SessionHolder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The type Server.
@@ -91,5 +93,6 @@ public class Server {
         ShutdownHook.getInstance().addDisposable(nettyRemotingServer);
 
         nettyRemotingServer.init();
+        NamesrvStartup.start(args);
     }
 }

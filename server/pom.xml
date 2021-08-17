@@ -167,6 +167,11 @@
             <artifactId>logback-kafka-appender</artifactId>
             <version>${kafka-appender.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.seata</groupId>
+            <artifactId>seata-namesrv</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

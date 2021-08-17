@@ -692,4 +692,20 @@ public interface ConfigurationKeys {
      * The constant DATA_SOURCE_PROXY_MODE.
      */
     String DATA_SOURCE_PROXY_MODE = "dataSourceProxyMode";
+
+    /**
+     * The constant SERVER_RAFT.
+     */
+    String SERVER_RAFT = SERVER_PREFIX + "raft.";
+
+    /**
+     * The constant SERVER_RAFT_CLUSTER.
+     */
+    String SERVER_RAFT_CLUSTER = SERVER_RAFT + "cluster";
+
+    /**
+     * The constant SERVER_RAFT_AUTO_JOIN.
+     */
+    String SERVER_RAFT_AUTO_JOIN = SERVER_RAFT + "autoJoin";
+
 }

@@ -79,7 +79,10 @@ public interface DefaultValues {
      * the constant DEFAULT_DISTRIBUTED_LOCK_DB_TABLE
      */
     String DEFAULT_DISTRIBUTED_LOCK_DB_TABLE = "distributed_lock";
-
+    /**
+     * The default session store dir
+     */
+    String DEFAULT_SESSION_STORE_FILE_DIR = "sessionStore";
     int DEFAULT_TM_COMMIT_RETRY_COUNT = 5;
     int DEFAULT_TM_ROLLBACK_RETRY_COUNT = 5;
     int DEFAULT_GLOBAL_TRANSACTION_TIMEOUT = 60000;
@@ -136,4 +139,10 @@ public interface DefaultValues {
      * the constant DEFAULT_DISTRIBUTED_LOCK_EXPIRE
      */
     int DEFAULT_DISTRIBUTED_LOCK_EXPIRE = 10000;
+
+    /**
+     * the constant SEATA_RAFT_GROUP
+     */
+    String SEATA_RAFT_GROUP = "SEATA";
+
 }

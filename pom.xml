@@ -53,6 +53,7 @@
         <module>sqlparser</module>
         <module>server</module>
         <module>ext/apm-seata-skywalking-plugin</module>
+        <module>namesrv</module>
     </modules>
     <packaging>pom</packaging>
 
