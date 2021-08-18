@@ -22,17 +22,26 @@ import io.seata.namesrv.raft.RaftNamesrvController;
  */
 public class NamesrvStartup {
 
+   private static volatile NamesrvController NAMESRV_CONTROLLER;
+
     public static void start(String[] args){
         try {
-            NamesrvController controller = createNamesrvController(args);
-            controller.start();
+            NAMESRV_CONTROLLER = createNamesrvController(args);
+            NAMESRV_CONTROLLER.start();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public static NamesrvController createNamesrvController(String[] args) throws Exception {
-        return new RaftNamesrvController();
+        if (NAMESRV_CONTROLLER == null) {
+            synchronized (NamesrvStartup.NAMESRV_CONTROLLER) {
+                if (NAMESRV_CONTROLLER == null) {
+                    NAMESRV_CONTROLLER = new RaftNamesrvController();
+                }
+            }
+        }
+        return NAMESRV_CONTROLLER;
     }
 
 }

@@ -16,14 +16,15 @@
 package io.seata.namesrv;
 
 import java.io.Closeable;
+import java.util.List;
 
 /**
  * @author funkye
  */
-public interface NamesrvController extends Closeable {
+public interface NamesrvController<T> extends Closeable {
 
     NamesrvController start() throws Exception;
 
-
+    List<T> nodes();
 
 }

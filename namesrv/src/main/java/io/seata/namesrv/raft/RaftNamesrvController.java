@@ -52,7 +52,7 @@ import static java.io.File.separator;
 /**
  * @author funkye
  */
-public class RaftNamesrvController implements NamesrvController, ConfigurationChangeListener {
+public class RaftNamesrvController implements NamesrvController<PeerId>, ConfigurationChangeListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RaftNamesrvController.class);
 
@@ -68,6 +68,9 @@ public class RaftNamesrvController implements NamesrvController, ConfigurationCh
 
     @Override
     public NamesrvController start() throws Exception {
+        if (node != null) {
+            return this;
+        }
         // analytic parameter
         final PeerId serverId = new PeerId();
         String colon = ":";
@@ -96,9 +99,9 @@ public class RaftNamesrvController implements NamesrvController, ConfigurationCh
         nodeOptions.setSnapshotUri(dataPath + File.separator + "snapshot");
         // Initialize the raft Group service framework
         this.raftGroupService = new RaftGroupService(SEATA_RAFT_GROUP, serverId, nodeOptions, rpcServer);
-        this.cliService = SingletonHandler.CLI_SERVICE;
         ConfigurationCache.addConfigListener(SERVER_RAFT_CLUSTER, this);
         this.node = this.raftGroupService.start();
+        this.cliService = SingletonHandler.CLI_SERVICE;
         String initConfStr = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_CLUSTER);
         if (StringUtils.isBlank(initConfStr)) {
             if (LOGGER.isWarnEnabled()) {
@@ -129,6 +132,17 @@ public class RaftNamesrvController implements NamesrvController, ConfigurationCh
             }
         }
         return this;
+    }
+
+    @Override
+    public List<PeerId> nodes() {
+        if (cliService != null) {
+            String initConfStr = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_CLUSTER);
+            final com.alipay.sofa.jraft.conf.Configuration initConf = new com.alipay.sofa.jraft.conf.Configuration();
+            initConf.parse(initConfStr);
+            return cliService.getPeers(SEATA_RAFT_GROUP, initConf);
+        }
+        return null;
     }
 
     @Override
