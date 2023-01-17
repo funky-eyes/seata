@@ -223,20 +223,54 @@ public class SeataRegistryServiceImpl implements RegistryService<ConfigChangeLis
         }
         CURRENT_TRANSACTION_SERVICE_GROUP = key;
         if (!METADATA.containsGroup(clusterName)) {
-            List<InetSocketAddress> list = FILE_REGISTRY_SERVICE.lookup(key);
-            if (CollectionUtils.isEmpty(list)) {
-                return null;
+            synchronized (METADATA) {
+                if (!METADATA.containsGroup(clusterName)) {
+                    List<InetSocketAddress> list = FILE_REGISTRY_SERVICE.lookup(key);
+                    if (CollectionUtils.isEmpty(list)) {
+                        return null;
+                    }
+                    INIT_ADDRESSES.put(clusterName, list);
+                    // Refresh the metadata by initializing the address
+                    acquireClusterMetaData(clusterName);
+                    startQueryMetadata();
+                }
             }
-            INIT_ADDRESSES.put(clusterName, list);
-            // Refresh the metadata by initializing the address
-            acquireClusterMetaData(clusterName);
-            startQueryMetadata();
         }
-        List<Node> nodes = METADATA.getNodes(clusterName);
+        return getMetadataByGroup(clusterName);
+    }
+
+    @Override
+    public List<InetSocketAddress> lookupByGroup(String group) throws Exception {
+        if (!METADATA.containsGroup(group)) {
+            synchronized (METADATA) {
+                if (!METADATA.containsGroup(group)) {
+                    // Refresh the metadata by initializing the address
+                    acquireClusterMetaData(group);
+                    startQueryMetadata();
+                }
+            }
+        }
+        return getMetadataByGroup(group);
+    }
+
+    public List<InetSocketAddress> getMetadataByGroup(String group) {
+        List<Node> nodes = METADATA.getNodes(group);
         if (CollectionUtils.isNotEmpty(nodes)) {
             return nodes.parallelStream().map(this::convertInetSocketAddress).collect(Collectors.toList());
         }
         return Collections.emptyList();
+    }
+    
+    @Override
+    public Map<String, List<InetSocketAddress>> lookup() throws Exception {
+        Map<String, List<InetSocketAddress>> groupInetSocketAddresses = new HashMap<>(4);
+        Map<String, Node> leaders = METADATA.getLeaders();
+        leaders.forEach((group, node) -> {
+            List<InetSocketAddress> inetSocketAddresses = new ArrayList<>();
+            inetSocketAddresses.add(convertInetSocketAddress(node));
+            groupInetSocketAddresses.put(group, inetSocketAddresses);
+        });
+        return groupInetSocketAddresses;
     }
 
     @Override

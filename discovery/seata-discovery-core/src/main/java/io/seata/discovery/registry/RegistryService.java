@@ -17,6 +17,7 @@ package io.seata.discovery.registry;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -89,11 +90,31 @@ public interface RegistryService<T> {
     /**
      * Lookup list.
      *
-     * @param key the key
+     * @param key the txServiceGroup
      * @return the list
      * @throws Exception the exception
      */
     List<InetSocketAddress> lookup(String key) throws Exception;
+
+    /**
+     * Lookup group list.
+     *
+     * @return the list
+     * @throws Exception the exception
+     */
+    default Map<String, List<InetSocketAddress>> lookup() throws Exception {
+        return Collections.emptyMap();
+    }
+
+    /**
+     * Lookup group list.
+     *
+     * @return the list
+     * @throws Exception the exception
+     */
+    default List<InetSocketAddress> lookupByGroup(String group) throws Exception {
+        return Collections.emptyList();
+    }
 
     /**
      * Close.

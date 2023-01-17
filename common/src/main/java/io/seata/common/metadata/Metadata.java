@@ -15,6 +15,7 @@
  */
 package io.seata.common.metadata;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -39,6 +40,10 @@ public class Metadata {
 
     public Node getLeader(String group) {
         return leaders.get(group);
+    }
+
+    public Map<String,Node> getLeaders() {
+        return Collections.unmodifiableMap(leaders);
     }
 
     public void setLeaderNode(Node node) {

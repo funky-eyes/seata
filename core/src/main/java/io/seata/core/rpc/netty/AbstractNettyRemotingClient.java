@@ -17,6 +17,7 @@ package io.seata.core.rpc.netty;
 
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -43,6 +44,7 @@ import io.seata.common.thread.NamedThreadFactory;
 import io.seata.common.util.CollectionUtils;
 import io.seata.common.util.NetUtil;
 import io.seata.common.util.StringUtils;
+import io.seata.core.context.RootContext;
 import io.seata.core.protocol.AbstractMessage;
 import io.seata.core.protocol.HeartbeatMessage;
 import io.seata.core.protocol.MergeMessage;
@@ -58,6 +60,8 @@ import io.seata.core.rpc.RemotingClient;
 import io.seata.core.rpc.TransactionMessageHandler;
 import io.seata.core.rpc.processor.Pair;
 import io.seata.core.rpc.processor.RemotingProcessor;
+import io.seata.discovery.loadbalance.GroupLoadBalance;
+import io.seata.discovery.loadbalance.LoadBalance;
 import io.seata.discovery.loadbalance.LoadBalanceFactory;
 import io.seata.discovery.registry.RegistryFactory;
 import org.slf4j.Logger;
@@ -80,8 +84,8 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
     private static final String SINGLE_LOG_POSTFIX = ";";
     private static final int MAX_MERGE_SEND_MILLS = 1;
     private static final String THREAD_PREFIX_SPLIT_CHAR = "_";
-    private static final String ADDRESS_SPLIT_CHAR = ",";
-    private static final String ADDRESS_LINK_CHAR = ":";
+
+    private static final LoadBalance LOAD_BALANCE = LoadBalanceFactory.getInstance();
 
     private static final int MAX_MERGE_SEND_THREAD = 1;
     private static final long KEEP_ALIVE_TIME = Integer.MAX_VALUE;
@@ -257,10 +261,14 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
     protected String loadBalance(String transactionServiceGroup, Object msg) {
         InetSocketAddress address = null;
         try {
-            @SuppressWarnings("unchecked")
-            List<InetSocketAddress> inetSocketAddressList =
-                RegistryFactory.getInstance().aliveLookup(transactionServiceGroup);
-            address = this.doSelect(inetSocketAddressList, msg);
+            if (LOAD_BALANCE instanceof GroupLoadBalance) {
+                address = ((GroupLoadBalance)LOAD_BALANCE).select(Collections.emptyList(), RootContext.getGroup());
+            } else {
+                @SuppressWarnings("unchecked")
+                List<InetSocketAddress> inetSocketAddressList =
+                    RegistryFactory.getInstance().aliveLookup(transactionServiceGroup);
+                address = this.doSelect(inetSocketAddressList, msg);
+            }
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage());
         }

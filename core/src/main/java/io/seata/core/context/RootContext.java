@@ -48,6 +48,11 @@ public class RootContext {
     public static final String KEY_XID = "TX_XID";
 
     /**
+     * The constant KEY_GROUP.
+     */
+    public static final String KEY_GROUP = "TX_GROUP";
+
+    /**
      * The constant KEY_TIMEOUT.
      */
     public static final String KEY_TIMEOUT = "TX_TIMEOUT";
@@ -121,6 +126,19 @@ public class RootContext {
         }
     }
 
+    /**
+     * Bind group.
+     *
+     * @param group the group
+     */
+    public static void bindGroup(@Nonnull String group) {
+        CONTEXT_HOLDER.put(KEY_GROUP, group);
+    }
+
+    public static String getGroup() {
+        return (String)CONTEXT_HOLDER.get(KEY_GROUP);
+    }
+
     public static Integer getTimeout() {
         return (Integer) CONTEXT_HOLDER.get(KEY_TIMEOUT);
     }
@@ -150,6 +168,7 @@ public class RootContext {
     public static String unbind() {
         String xid = (String) CONTEXT_HOLDER.remove(KEY_XID);
         if (xid != null) {
+            CONTEXT_HOLDER.remove(KEY_GROUP);
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("unbind {} ", xid);
             }

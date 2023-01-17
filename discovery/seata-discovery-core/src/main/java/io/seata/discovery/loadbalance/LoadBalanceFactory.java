@@ -39,6 +39,8 @@ public class LoadBalanceFactory {
 
     public static final String XID_LOAD_BALANCE = "XID";
 
+    public static final String GROUP_LOAD_BALANCE = "GROUP";
+
     public static final String ROUND_ROBIN_LOAD_BALANCE = "RoundRobinLoadBalance";
 
     public static final String CONSISTENT_HASH_LOAD_BALANCE = "ConsistentHashLoadBalance";
