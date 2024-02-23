@@ -295,7 +295,7 @@ public abstract class AbstractUndoExecutor {
         List<String> pkNameList = tableMeta.getPrimaryKeyOnlyName();
 
         // pares pk values
-        Map<String, List<Field>> pkRowValues = parsePkValues(getUndoRows());
+        Map<String, List<Field>> pkRowValues = parsePkValues(undoRecords);
         if (pkRowValues.size() == 0) {
             return TableRecords.empty(tableMeta);
         }
@@ -313,13 +313,13 @@ public abstract class AbstractUndoExecutor {
             int paramIndex = 1;
             int rowSize = pkRowValues.get(pkNameList.get(0)).size();
             for (int r = 0; r < rowSize; r++) {
-                for (int c = 0; c < pkNameList.size(); c++) {
-                    List<Field> pkColumnValueList = pkRowValues.get(pkNameList.get(c));
-                    Field field = pkColumnValueList.get(r);
-                    int dataType = tableMeta.getColumnMeta(field.getName()).getDataType();
-                    statement.setObject(paramIndex, field.getValue(), dataType);
-                    paramIndex++;
-                }
+	            for (String currentMetaPk : pkNameList) {
+		            List<Field> pkColumnValueList = pkRowValues.get(currentMetaPk);
+		            Field field = pkColumnValueList.get(r);
+		            int dataType = tableMeta.getColumnMeta(field.getName()).getDataType();
+		            statement.setObject(paramIndex, field.getValue(), dataType);
+		            paramIndex++;
+	            }
             }
 
             checkSet = statement.executeQuery();
@@ -379,18 +379,22 @@ public abstract class AbstractUndoExecutor {
      */
     protected Map<String, List<Field>> parsePkValues(List<Row> rows, List<String> pkNameList) {
         List<Field> pkFieldList = new ArrayList<>();
-        for (int i = 0; i < rows.size(); i++) {
-            List<Field> fields = rows.get(i).getFields();
+        for (Row row : rows) {
+            List<Field> fields = row.getFields();
             if (fields != null) {
                 for (Field field : fields) {
                     if (pkNameList.stream().anyMatch(e -> field.getName().equalsIgnoreCase(e))) {
-                        pkFieldList.add(field);
+                        // The issue that the array is out of bounds when querying the current data content is fixed due
+                        // to the field name being duplicated in the previous image
+                        if (pkFieldList.stream().noneMatch(
+                            e -> field.getName().equalsIgnoreCase(e.getName()) && field.getValue() == e.getValue())) {
+                            pkFieldList.add(field);
+                        }
                     }
                 }
             }
         }
-        Map<String, List<Field>> pkValueMap = pkFieldList.stream().collect(Collectors.groupingBy(Field::getName));
-        return pkValueMap;
+        return pkFieldList.stream().collect(Collectors.groupingBy(Field::getName));
     }
 
 }
