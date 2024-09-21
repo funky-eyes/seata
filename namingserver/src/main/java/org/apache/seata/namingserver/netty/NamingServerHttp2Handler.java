@@ -3,6 +3,7 @@ package org.apache.seata.namingserver.netty;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.Http2Headers;
@@ -12,6 +13,8 @@ import org.apache.seata.namingserver.listener.Watcher;
 import org.apache.seata.namingserver.manager.ClusterWatcherManager;
 
 import java.net.InetSocketAddress;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class NamingServerHttp2Handler extends ChannelDuplexHandler {
@@ -34,12 +37,15 @@ public class NamingServerHttp2Handler extends ChannelDuplexHandler {
             }
 
             Http2HeadersFrame http2HeadersFrame = (Http2HeadersFrame) msg;
-            CharSequence groupChar = http2HeadersFrame.headers().get("seata-group");
-            CharSequence termChar = http2HeadersFrame.headers().get("seata-term");
-            String group = groupChar.toString();
-            long term = Long.parseLong(termChar.toString());
+            CharSequence path = http2HeadersFrame.headers().path();
+            QueryStringDecoder queryStringDecoder = new QueryStringDecoder(path.toString());
+            Map<String, List<String>> parameters = queryStringDecoder.parameters();
+            String vGroup = parameters.get("vGroup").get(0);
+            String clientTerm = parameters.get("clientTerm").get(0);
             InetSocketAddress inetSocketAddress = (InetSocketAddress) ctx.channel().remoteAddress();
-            Watcher<Channel> watcher = new Watcher<>(group, ctx.channel(), -1, term, inetSocketAddress.getAddress().getHostAddress());
+            Watcher<Channel> watcher = new Watcher<>(vGroup, ctx.channel(), 0, Long.parseLong(clientTerm), inetSocketAddress.getAddress().getHostAddress());
+            // never time out
+            watcher.setTimeout(-1);
             clusterWatcherManager.registryWatcher(watcher);
         }
     }

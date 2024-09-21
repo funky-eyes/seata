@@ -65,7 +65,11 @@ public class ClusterWatcherManager implements ClusterChangeListener {
             for (String group : WATCHERS.keySet()) {
                 Optional.ofNullable(WATCHERS.remove(group))
                         .ifPresent(watchers -> watchers.parallelStream().forEach(watcher -> {
-                            if (watcher.getTimeout() != -1L && System.currentTimeMillis() >= watcher.getTimeout()) {
+                            if (watcher.getTimeout() == -1L) {
+                                WATCHERS.computeIfAbsent(group, value -> new ConcurrentLinkedQueue<>()).add(watcher);
+                                return;
+                            }
+                            if (System.currentTimeMillis() >= watcher.getTimeout()) {
                                 notify(watcher, HttpStatus.NOT_MODIFIED.value());
                             }
                             if (!watcher.isDone()) {
