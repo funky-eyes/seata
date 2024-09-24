@@ -34,6 +34,8 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
+import io.netty.handler.codec.http2.DefaultHttp2PingFrame;
+import io.netty.handler.codec.http2.Http2PingFrame;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.concurrent.EventExecutorGroup;
@@ -48,6 +50,7 @@ import org.apache.seata.core.protocol.HeartbeatMessage;
 import org.apache.seata.core.protocol.MergeMessage;
 import org.apache.seata.core.protocol.MergedWarpMessage;
 import org.apache.seata.core.protocol.MessageFuture;
+import org.apache.seata.core.protocol.Protocol;
 import org.apache.seata.core.protocol.ProtocolConstants;
 import org.apache.seata.core.protocol.RpcMessage;
 import org.apache.seata.core.protocol.transaction.AbstractGlobalEndRequest;
@@ -128,7 +131,11 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
         super(messageExecutor);
         this.transactionRole = transactionRole;
         clientBootstrap = new NettyClientBootstrap(nettyClientConfig, eventExecutorGroup, transactionRole);
-        clientBootstrap.setChannelHandlers(new ClientHandler());
+        if (StringUtils.equalsIgnoreCase(nettyClientConfig.getProtocol(), Protocol.GPRC.value)) {
+            clientBootstrap.setChannelHandlers(new GrpcClientHandler());
+        } else {
+            clientBootstrap.setChannelHandlers(new ClientHandler());
+        }
         clientChannelManager = new NettyClientChannelManager(
             new NettyPoolableFactory(this, clientBootstrap), getPoolKeyFunction(), nettyClientConfig);
     }
@@ -487,5 +494,31 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
             super.close(ctx, future);
         }
     }
+    
+    @Sharable
+    class GrpcClientHandler extends ClientHandler {
+
+        @Override
+        public void channelRead(final ChannelHandlerContext ctx, Object msg) throws Exception {
+            if (msg instanceof RpcMessage) {
+                super.channelRead(ctx, msg);
+            } else if (!(msg instanceof Http2PingFrame)) {
+                ctx.fireChannelRead(msg);
+            }
+        }
+
+        @Override
+        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
+            if(! (evt instanceof IdleStateEvent)){
+                super.userEventTriggered(ctx, evt);
+            }
+            ctx.writeAndFlush(new DefaultHttp2PingFrame(0)).addListener(future -> {
+                if (!future.isSuccess()) {
+                    destroyChannel(ctx.channel());
+                }
+            });
+        }
+    }
+
 
 }

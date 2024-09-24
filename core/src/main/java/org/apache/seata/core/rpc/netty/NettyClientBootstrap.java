@@ -144,9 +144,7 @@ public class NettyClientBootstrap implements RemotingBootstrap {
                             nettyClientConfig.getChannelMaxAllIdleSeconds()));
                     if (nettyClientConfig.getProtocol().equals(Protocol.GPRC.value)) {
                         pipeline.addLast(Http2FrameCodecBuilder.forClient().build())
-                                .addLast(new Http2MultiplexHandler(new ChannelDuplexHandler()))
-                                .addLast(new GrpcDecoder())
-                                .addLast(new GrpcEncoder());
+                                .addLast(new Http2MultiplexHandler(new ChannelDuplexHandler()));
                     } else {
                         pipeline.addLast(new ProtocolDecoderV1())
                                 .addLast(new ProtocolEncoderV1());
