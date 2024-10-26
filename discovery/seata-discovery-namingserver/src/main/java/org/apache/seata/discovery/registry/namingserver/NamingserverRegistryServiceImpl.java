@@ -41,9 +41,6 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.istack.internal.NotNull;
-import okhttp3.*;
-import okio.BufferedSource;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -234,12 +231,6 @@ public class NamingserverRegistryServiceImpl implements RegistryService<NamingLi
 
     }
 
-    public void subscribeWithHttp2(NamingListener listener, String vGroup) throws Exception {
-        LISTENER_SERVICE_MAP.computeIfAbsent(vGroup, key -> new ArrayList<>()).add(listener);
-        isSubscribed = true;
-        watch(vGroup, LISTENER_SERVICE_MAP.get(vGroup));
-    }
-
     public void subscribe(NamingListener listener, String vGroup) throws Exception {
         LISTENER_SERVICE_MAP.computeIfAbsent(vGroup, key -> new ArrayList<>()).add(listener);
         isSubscribed = true;
@@ -305,46 +296,6 @@ public class NamingserverRegistryServiceImpl implements RegistryService<NamingLi
             }
         }
         return false;
-    }
-
-    public void watch(String vGroup, List<NamingListener> namingListeners) {
-        String namingAddr = getNamingAddr();
-        String clientAddr = NetUtil.getLocalHost();
-        StringBuilder watchAddrBuilder = new StringBuilder(HTTP_PREFIX)
-                .append(namingAddr)
-                .append("/naming/v1/watch?")
-                .append(VGROUP_KEY).append("=").append(vGroup)
-                .append("&").append(CLIENT_TERM_KEY).append("=").append(term)
-                .append("&").append(TIME_OUT_KEY).append("=").append(LONG_POLL_TIME_OUT_PERIOD)
-                .append("&clientAddr=").append(clientAddr);
-        String watchAddr = watchAddrBuilder.toString();
-
-        OkHttpClient client = new OkHttpClient()
-                .newBuilder()
-                .protocols(Collections.singletonList(Protocol.H2_PRIOR_KNOWLEDGE))
-                .build();
-
-        Request request = new Request.Builder()
-                .url(watchAddr)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                e.printStackTrace();
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                BufferedSource source = response.body().source();
-                while (!source.exhausted()) {
-                    source.readUtf8Line();
-                    for (NamingListener listener : namingListeners) {
-                        listener.onEvent(vGroup);
-                    }
-                }
-            }
-        });
     }
 
     @Override
