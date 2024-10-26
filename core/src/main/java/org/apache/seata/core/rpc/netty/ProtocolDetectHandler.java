@@ -21,7 +21,6 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import org.apache.seata.core.protocol.detector.Http2Detector;
-import org.apache.seata.core.protocol.detector.HttpDetector;
 import org.apache.seata.core.protocol.detector.ProtocolDetector;
 import org.apache.seata.core.protocol.detector.SeataDetector;
 import org.slf4j.Logger;
@@ -31,15 +30,16 @@ import java.util.List;
 
 public class ProtocolDetectHandler extends ByteToMessageDecoder {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProtocolDetectHandler.class);
-
+    private NettyServerBootstrap nettyServerBootstrap;
     private ProtocolDetector[] supportedProtocolDetectors;
 
-    public ProtocolDetectHandler(ProtocolDetector[] supportedProtocolDetectors) {
-        this.supportedProtocolDetectors = supportedProtocolDetectors;
+    public ProtocolDetectHandler(NettyServerBootstrap nettyServerBootstrap) {
+        this.nettyServerBootstrap = nettyServerBootstrap;
+        this.supportedProtocolDetectors = new ProtocolDetector[]{new Http2Detector(nettyServerBootstrap.getChannelHandlers()), new SeataDetector(nettyServerBootstrap.getChannelHandlers())};
     }
 
     @Override
-    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
+    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
         for (ProtocolDetector protocolDetector : supportedProtocolDetectors) {
             if (protocolDetector.detect(in)) {
                 ChannelHandler[] protocolHandlers = protocolDetector.getHandlers();
