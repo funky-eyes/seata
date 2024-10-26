@@ -155,6 +155,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.seata</groupId>
+            <artifactId>seata-spring-autoconfigure-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
         </dependency>

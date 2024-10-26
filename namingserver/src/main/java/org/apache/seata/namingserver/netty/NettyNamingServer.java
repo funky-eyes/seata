@@ -10,9 +10,11 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.NettyRuntime;
 import org.apache.seata.common.thread.NamedThreadFactory;
+import org.apache.seata.core.protocol.detector.Http2Detector;
 import org.apache.seata.core.protocol.detector.HttpDetector;
 import org.apache.seata.core.protocol.detector.ProtocolDetector;
 import org.apache.seata.core.rpc.netty.ProtocolDetectHandler;
+import org.apache.seata.core.rpc.netty.http2.Http2DispatchHandler;
 import org.apache.seata.namingserver.manager.ClusterWatcherManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,7 +74,7 @@ public class NettyNamingServer {
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     public void initChannel(SocketChannel ch) {
-                        ch.pipeline().addLast(new ProtocolDetectHandler(new ProtocolDetector[]{new HttpDetector(), new NamingServerHttp2Detector(clusterWatcherManager)}));
+                        ch.pipeline().addLast(new ProtocolDetectHandler(new ProtocolDetector[]{new HttpDetector(), new NamingServerHttp2Detector()}));
                     }
                 });
 

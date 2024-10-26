@@ -31,12 +31,11 @@ import java.util.List;
 
 public class ProtocolDetectHandler extends ByteToMessageDecoder {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProtocolDetectHandler.class);
-    private NettyServerBootstrap nettyServerBootstrap;
+
     private ProtocolDetector[] supportedProtocolDetectors;
 
-    public ProtocolDetectHandler(NettyServerBootstrap nettyServerBootstrap) {
-        this.nettyServerBootstrap = nettyServerBootstrap;
-        this.supportedProtocolDetectors = new ProtocolDetector[]{new Http2Detector(nettyServerBootstrap.getChannelHandlers()), new SeataDetector(nettyServerBootstrap.getChannelHandlers()), new HttpDetector()};
+    public ProtocolDetectHandler(ProtocolDetector[] supportedProtocolDetectors) {
+        this.supportedProtocolDetectors = supportedProtocolDetectors;
     }
 
     @Override

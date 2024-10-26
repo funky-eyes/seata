@@ -16,9 +16,6 @@
  */
 package org.apache.seata.namingserver.manager;
 
-import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
-import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import org.apache.seata.namingserver.listener.ClusterChangeEvent;
 import org.apache.seata.namingserver.listener.ClusterChangeListener;
 import org.apache.seata.namingserver.listener.Watcher;
@@ -65,10 +62,6 @@ public class ClusterWatcherManager implements ClusterChangeListener {
             for (String group : WATCHERS.keySet()) {
                 Optional.ofNullable(WATCHERS.remove(group))
                         .ifPresent(watchers -> watchers.parallelStream().forEach(watcher -> {
-                            if (watcher.getTimeout() == -1L) {
-                                WATCHERS.computeIfAbsent(group, value -> new ConcurrentLinkedQueue<>()).add(watcher);
-                                return;
-                            }
                             if (System.currentTimeMillis() >= watcher.getTimeout()) {
                                 notify(watcher, HttpStatus.NOT_MODIFIED.value());
                             }
@@ -99,18 +92,6 @@ public class ClusterWatcherManager implements ClusterChangeListener {
     }
 
     private void notify(Watcher<?> watcher, int statusCode) {
-        if (watcher.getAsyncContext() instanceof Channel) {
-            // http2
-            Channel channel = (Channel) watcher.getAsyncContext();
-            String group = watcher.getGroup();
-
-            // No need to remove it, just put it back.
-            WATCHERS.computeIfAbsent(group, value -> new ConcurrentLinkedQueue<>()).add(watcher);
-
-            channel.writeAndFlush(new DefaultHttp2DataFrame(Unpooled.wrappedBuffer("changed\n".getBytes())));
-            return;
-        }
-
         AsyncContext asyncContext = (AsyncContext) watcher.getAsyncContext();
         HttpServletResponse httpServletResponse = (HttpServletResponse) asyncContext.getResponse();
         watcher.setDone(true);

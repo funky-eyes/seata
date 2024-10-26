@@ -20,7 +20,6 @@ package org.apache.seata.namingserver.controller;
 import org.apache.seata.common.metadata.namingserver.MetaResponse;
 import org.apache.seata.common.metadata.namingserver.NamingServerNode;
 import org.apache.seata.common.result.Result;
-import org.apache.seata.core.rpc.netty.http.HttpController;
 import org.apache.seata.namingserver.listener.Watcher;
 import org.apache.seata.namingserver.manager.ClusterWatcherManager;
 import org.apache.seata.namingserver.manager.NamingManager;
@@ -45,7 +44,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/naming/v1")
-public class NamingController implements HttpController {
+public class NamingController {
     private static final Logger LOGGER = LoggerFactory.getLogger(NamingController.class);
 
 

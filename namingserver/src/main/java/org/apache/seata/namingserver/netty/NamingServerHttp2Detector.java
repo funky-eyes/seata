@@ -7,13 +7,12 @@ import io.netty.handler.codec.http2.Http2FrameCodecBuilder;
 import io.netty.handler.codec.http2.Http2MultiplexHandler;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import org.apache.seata.core.protocol.detector.Http2Detector;
+import org.apache.seata.core.rpc.netty.http2.Http2DispatchHandler;
 import org.apache.seata.namingserver.manager.ClusterWatcherManager;
 
 public class NamingServerHttp2Detector extends Http2Detector {
-    ClusterWatcherManager clusterWatcherManager;
-    public NamingServerHttp2Detector(ClusterWatcherManager clusterWatcherManager) {
+    public NamingServerHttp2Detector() {
         super(null);
-        this.clusterWatcherManager = clusterWatcherManager;
     }
 
     @Override
@@ -24,7 +23,7 @@ public class NamingServerHttp2Detector extends Http2Detector {
                     @Override
                     protected void initChannel(Http2StreamChannel ch) {
                         final ChannelPipeline p = ch.pipeline();
-                        p.addLast(new NamingServerHttp2Handler(clusterWatcherManager));
+                        p.addLast(new Http2DispatchHandler());
                     }
                 })
         };
