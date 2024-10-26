@@ -39,7 +39,7 @@ console:
     password: seata
 seata:
   config:
-    # support: nacos, consu l, apollo, zk, etcd3
+    # support: nacos, consul, apollo, zk, etcd3
     type: file
   registry:
     # support: nacos, eureka, redis, zk, consul, etcd3, sofa
