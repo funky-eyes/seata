@@ -124,7 +124,6 @@ public class NamingController {
      * @param clientTerm The timestamp of the subscription saved on the client side
      * @param vGroup     The name of the transaction group
      * @param timeout    The timeout duration
-     * @param request    The client's HTTP request
      */
 
     @PostMapping("/watch")
