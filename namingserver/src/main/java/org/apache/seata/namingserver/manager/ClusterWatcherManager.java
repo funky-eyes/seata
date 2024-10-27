@@ -36,6 +36,7 @@ import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
@@ -99,18 +100,32 @@ public class ClusterWatcherManager implements ClusterChangeListener {
     }
 
     private void notify(Watcher<?> watcher, int statusCode) {
-        Channel channel  = (Channel) watcher.getAsyncContext();
-        if (channel instanceof Http2StreamChannel) {
-            ByteBuf buf = Unpooled.buffer(4);
-            buf.writeInt(statusCode);
-            channel.writeAndFlush(new DefaultHttp2DataFrame(buf));
+        Object ctx = watcher.getAsyncContext();
+        if (ctx instanceof Channel) {
+            Channel channel = (Channel) ctx;
+            if (channel instanceof Http2StreamChannel) {
+                ByteBuf buf = Unpooled.buffer(4);
+                buf.writeInt(statusCode);
+                channel.writeAndFlush(new DefaultHttp2DataFrame(buf));
+                return;
+            } else {
+                // http
+                channel.writeAndFlush(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(statusCode)));
+            }
+            if (logger.isDebugEnabled()) {
+                logger.debug("notify cluster change event to: {}", watcher.getClientEndpoint());
+            }
+
             return;
-        } else {
-            // http
-            channel.writeAndFlush(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(statusCode)));
-        }
-        if (logger.isDebugEnabled()) {
-            logger.debug("notify cluster change event to: {}", watcher.getClientEndpoint());
+        } else if (ctx instanceof AsyncContext) {
+            AsyncContext asyncContext = (AsyncContext) ctx;
+            HttpServletResponse httpServletResponse = (HttpServletResponse) asyncContext.getResponse();
+            watcher.setDone(true);
+            if (logger.isDebugEnabled()) {
+                logger.debug("notify cluster change event to: {}", asyncContext.getRequest().getRemoteAddr());
+            }
+            httpServletResponse.setStatus(statusCode);
+            asyncContext.complete();
         }
     }
 

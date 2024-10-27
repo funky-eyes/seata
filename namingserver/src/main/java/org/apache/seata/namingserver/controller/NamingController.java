@@ -17,7 +17,6 @@
 package org.apache.seata.namingserver.controller;
 
 
-import io.netty.channel.Channel;
 import org.apache.seata.common.metadata.namingserver.MetaResponse;
 import org.apache.seata.common.metadata.namingserver.NamingServerNode;
 import org.apache.seata.common.result.Result;
@@ -37,6 +36,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 
 import javax.annotation.Resource;
+import javax.servlet.AsyncContext;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -124,14 +125,17 @@ public class NamingController {
      * @param clientTerm The timestamp of the subscription saved on the client side
      * @param vGroup     The name of the transaction group
      * @param timeout    The timeout duration
+     * @param request    The client's HTTP request
      */
 
     @PostMapping("/watch")
     public void watch(@RequestParam String clientTerm,
                       @RequestParam String vGroup,
                       @RequestParam String timeout,
-                      Channel channel) {
-        Watcher<Channel> watcher = new Watcher<>(vGroup, channel, Integer.parseInt(timeout), Long.parseLong(clientTerm), channel.remoteAddress().toString());
+                      HttpServletRequest request) {
+        AsyncContext context = request.startAsync();
+        context.setTimeout(0L);
+        Watcher<AsyncContext> watcher = new Watcher<>(vGroup, context, Integer.parseInt(timeout), Long.parseLong(clientTerm), request.getRemoteAddr());
         clusterWatcherManager.registryWatcher(watcher);
     }
 
