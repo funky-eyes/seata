@@ -64,6 +64,7 @@ public interface DefaultValues {
     String DEFAULT_NIO_WORKER_THREAD_PREFIX = "NettyServerNIOWorker";
     String DEFAULT_EXECUTOR_THREAD_PREFIX = "NettyServerBizHandler";
     String DEFAULT_PROTOCOL = "seata";
+    String DEFAULT_HTTP_VERSION = "http";
 
     boolean DEFAULT_TRANSPORT_HEARTBEAT = true;
     boolean DEFAULT_TRANSACTION_UNDO_DATA_VALIDATION = true;
@@ -315,4 +316,8 @@ public interface DefaultValues {
     String DRUID_LOCATION = "lib/sqlparser/druid.jar";
 
     int DEFAULT_ROCKET_MQ_MSG_TIMEOUT = 60 * 1000;
+
+    String DEFAULT_DB_STORE_FILE_DIR = "configStore";
+
+    String DEFAULT_DB_TYPE = "rocksdb";
 }
