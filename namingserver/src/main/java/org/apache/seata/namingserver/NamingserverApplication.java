@@ -21,15 +21,12 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Import;
 
-import java.util.concurrent.CountDownLatch;
-
 @SpringBootApplication
 @Import(RestControllerBeanPostProcessor.class)
 public class NamingserverApplication {
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
         SpringApplication.run(NamingserverApplication.class, args);
-        new CountDownLatch(1).await();
     }
 
 }

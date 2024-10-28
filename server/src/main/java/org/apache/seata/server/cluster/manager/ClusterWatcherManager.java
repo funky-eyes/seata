@@ -27,6 +27,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletResponse;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.DefaultHttpResponse;
@@ -94,17 +95,30 @@ public class ClusterWatcherManager implements ClusterChangeListener {
     }
 
     private void notify(Watcher<?> watcher) {
-        Channel channel  = (Channel) watcher.getAsyncContext();
-        if (channel instanceof Http2StreamChannel) {
-            // http2
-            channel.writeAndFlush(new DefaultHttp2DataFrame(Unpooled.wrappedBuffer(Unpooled.EMPTY_BUFFER)));
+        Object ctx = watcher.getAsyncContext();
+        if (ctx instanceof Channel) {
+            Channel channel = (Channel) ctx;
+            if (channel instanceof Http2StreamChannel) {
+                channel.writeAndFlush(new DefaultHttp2DataFrame(Unpooled.EMPTY_BUFFER));
+                return;
+            } else {
+                // http
+                channel.writeAndFlush(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
+            }
+            if (logger.isDebugEnabled()) {
+                logger.debug("notify cluster change event to: {}", channel.remoteAddress());
+            }
+
             return;
-        } else {
-            // http
-            channel.writeAndFlush(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
-        }
-        if (logger.isDebugEnabled()) {
-            logger.debug("notify cluster change event to: {}", channel.remoteAddress());
+        } else if (ctx instanceof AsyncContext) {
+            AsyncContext asyncContext = (AsyncContext) ctx;
+            HttpServletResponse httpServletResponse = (HttpServletResponse) asyncContext.getResponse();
+            watcher.setDone(true);
+            if (logger.isDebugEnabled()) {
+                logger.debug("notify cluster change event to: {}", asyncContext.getRequest().getRemoteAddr());
+            }
+            httpServletResponse.setStatus(HttpServletResponse.SC_OK);
+            asyncContext.complete();
         }
     }
 

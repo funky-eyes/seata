@@ -17,6 +17,7 @@
 package org.apache.seata.namingserver.controller;
 
 
+import io.netty.channel.Channel;
 import org.apache.seata.common.metadata.namingserver.MetaResponse;
 import org.apache.seata.common.metadata.namingserver.NamingServerNode;
 import org.apache.seata.common.result.Result;
@@ -36,8 +37,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 
 import javax.annotation.Resource;
-import javax.servlet.AsyncContext;
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -72,7 +71,7 @@ public class NamingController {
 
     @PostMapping("/unregister")
     public Result<String> unregisterInstance(@RequestParam String namespace, @RequestParam String clusterName,
-            @RequestParam String unit, @RequestBody NamingServerNode registerBody) {
+        @RequestParam String unit, @RequestBody NamingServerNode registerBody) {
         Result<String> result = new Result<>();
         boolean isSuccess = namingManager.unregisterInstance(namespace, clusterName, unit, registerBody);
         if (isSuccess) {
@@ -125,17 +124,14 @@ public class NamingController {
      * @param clientTerm The timestamp of the subscription saved on the client side
      * @param vGroup     The name of the transaction group
      * @param timeout    The timeout duration
-     * @param request    The client's HTTP request
      */
 
     @PostMapping("/watch")
     public void watch(@RequestParam String clientTerm,
                       @RequestParam String vGroup,
                       @RequestParam String timeout,
-                      HttpServletRequest request) {
-        AsyncContext context = request.startAsync();
-        context.setTimeout(0L);
-        Watcher<AsyncContext> watcher = new Watcher<>(vGroup, context, Integer.parseInt(timeout), Long.parseLong(clientTerm), request.getRemoteAddr());
+                      Channel channel) {
+        Watcher<Channel> watcher = new Watcher<>(vGroup, channel, Integer.parseInt(timeout), Long.parseLong(clientTerm), channel.remoteAddress().toString());
         clusterWatcherManager.registryWatcher(watcher);
     }
 
