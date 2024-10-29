@@ -42,6 +42,7 @@ import org.apache.seata.server.cluster.watch.Watcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -67,11 +68,7 @@ public class ClusterWatcherManager implements ClusterChangeListener {
                 Optional.ofNullable(WATCHERS.remove(group))
                     .ifPresent(watchers -> watchers.parallelStream().forEach(watcher -> {
                         if (System.currentTimeMillis() >= watcher.getTimeout()) {
-                            HttpServletResponse httpServletResponse =
-                                (HttpServletResponse)((AsyncContext)watcher.getAsyncContext()).getResponse();
-                            watcher.setDone(true);
-                            httpServletResponse.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-                            ((AsyncContext)watcher.getAsyncContext()).complete();
+                            notify(watcher, HttpStatus.NOT_MODIFIED.value());
                         }
                         if (!watcher.isDone()) {
                             // Re-register
@@ -95,15 +92,20 @@ public class ClusterWatcherManager implements ClusterChangeListener {
     }
 
     private void notify(Watcher<?> watcher) {
+        notify(watcher, HttpResponseStatus.OK.code());
+    }
+    private void notify(Watcher<?> watcher, int statusCode) {
         Object ctx = watcher.getAsyncContext();
         if (ctx instanceof Channel) {
             Channel channel = (Channel) ctx;
             if (channel instanceof Http2StreamChannel) {
-                channel.writeAndFlush(new DefaultHttp2DataFrame(Unpooled.EMPTY_BUFFER));
+                ByteBuf buf = Unpooled.buffer(4);
+                buf.writeInt(statusCode);
+                channel.writeAndFlush(new DefaultHttp2DataFrame(buf));
                 return;
             } else {
                 // http
-                channel.writeAndFlush(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
+                channel.writeAndFlush(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(statusCode)));
             }
             if (logger.isDebugEnabled()) {
                 logger.debug("notify cluster change event to: {}", channel.remoteAddress());
