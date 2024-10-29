@@ -96,6 +96,7 @@ public class ClusterWatcherManager implements ClusterChangeListener {
     }
     private void notify(Watcher<?> watcher, int statusCode) {
         Object ctx = watcher.getAsyncContext();
+        watcher.setDone(true);
         if (ctx instanceof Channel) {
             Channel channel = (Channel) ctx;
             if (channel instanceof Http2StreamChannel) {
@@ -115,7 +116,6 @@ public class ClusterWatcherManager implements ClusterChangeListener {
         } else if (ctx instanceof AsyncContext) {
             AsyncContext asyncContext = (AsyncContext) ctx;
             HttpServletResponse httpServletResponse = (HttpServletResponse) asyncContext.getResponse();
-            watcher.setDone(true);
             if (logger.isDebugEnabled()) {
                 logger.debug("notify cluster change event to: {}", asyncContext.getRequest().getRemoteAddr());
             }
