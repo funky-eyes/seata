@@ -207,9 +207,9 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
             : ProtocolConstants.MSGTYPE_RESQUEST_ONEWAY);
         Object body = rpcMessage.getBody();
         if (body instanceof MergeMessage) {
-            mergeMsgMap.put(rpcMessage.getId(), (MergeMessage)rpcMessage.getBody());
+            Integer parentId = rpcMessage.getId();
+            mergeMsgMap.put(parentId, (MergeMessage)rpcMessage.getBody());
             if (body instanceof MergedWarpMessage) {
-                Integer parentId = rpcMessage.getId();
                 for (Integer msgId : ((MergedWarpMessage)rpcMessage.getBody()).msgIds) {
                     childToParentMap.put(msgId, parentId);
                 }
@@ -379,6 +379,10 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
                         // fast fail
                         for (Integer msgId : mergeMessage.msgIds) {
                             MessageFuture messageFuture = futures.remove(msgId);
+                            Integer parentId = childToParentMap.remove(msgId);
+                            if (parentId != null) {
+                                mergeMsgMap.remove(parentId);
+                            }
                             if (messageFuture != null) {
                                 messageFuture.setResultMessage(
                                     new RuntimeException(String.format("%s is unreachable", address), e));
