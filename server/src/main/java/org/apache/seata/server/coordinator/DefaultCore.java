@@ -195,8 +195,8 @@ public class DefaultCore implements Core {
     @Override
     public boolean doGlobalCommit(GlobalSession globalSession, boolean retrying) throws TransactionException {
         return SessionHolder.lockAndExecute(globalSession, () -> {
-            if(retrying){
-                if(SessionStatusValidator.isEndGlobalStatus(globalSession.getStatus())){
+            if (retrying) {
+                if (SessionStatusValidator.isEndGlobalStatus(globalSession.getStatus())) {
                     return true;
                 }
             }
@@ -324,8 +324,8 @@ public class DefaultCore implements Core {
     @Override
     public boolean doGlobalRollback(GlobalSession globalSession, boolean retrying) throws TransactionException {
         return SessionHolder.lockAndExecute(globalSession, () -> {
-            if(retrying){
-                if(SessionStatusValidator.isEndGlobalStatus(globalSession.getStatus())){
+            if (retrying) {
+                if (SessionStatusValidator.isEndGlobalStatus(globalSession.getStatus())) {
                     return true;
                 }
             }
