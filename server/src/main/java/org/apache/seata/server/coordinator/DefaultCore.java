@@ -38,6 +38,7 @@ import org.apache.seata.server.session.GlobalSession;
 import org.apache.seata.server.session.SessionHelper;
 import org.apache.seata.server.session.SessionHolder;
 
+import org.apache.seata.server.session.SessionStatusValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -194,6 +195,11 @@ public class DefaultCore implements Core {
     @Override
     public boolean doGlobalCommit(GlobalSession globalSession, boolean retrying) throws TransactionException {
         return SessionHolder.lockAndExecute(globalSession, () -> {
+            if(retrying){
+                if(SessionStatusValidator.isEndGlobalStatus(globalSession.getStatus())){
+                    return true;
+                }
+            }
             boolean success = true;
             // start committing event
             MetricsPublisher.postSessionDoingEvent(globalSession, retrying);
@@ -318,6 +324,11 @@ public class DefaultCore implements Core {
     @Override
     public boolean doGlobalRollback(GlobalSession globalSession, boolean retrying) throws TransactionException {
         return SessionHolder.lockAndExecute(globalSession, () -> {
+            if(retrying){
+                if(SessionStatusValidator.isEndGlobalStatus(globalSession.getStatus())){
+                    return true;
+                }
+            }
             boolean success = true;
             // start rollback event
             MetricsPublisher.postSessionDoingEvent(globalSession, retrying);
