@@ -43,7 +43,16 @@ public class UpdateBranchSessionExecute extends AbstractRaftMsgExecute {
             }
             return false;
         }
-        BranchSession branchSession = globalSession.getBranch(sessionSyncMsg.getBranchSession().getBranchId());
+        long branchId = sessionSyncMsg.getBranchSession().getBranchId();
+        BranchSession branchSession = globalSession.getBranch(branchId);
+        if (branchSession == null) {
+            if (logger.isWarnEnabled()) {
+                logger.warn(
+                    "The branch session corresponding to the branchId: {} does not exist, which may cause a two-phase concurrency issue, msg type: {}",
+                    sessionSyncMsg.getBranchSession().getBranchId(), syncMsg.getMsgType());
+            }
+            return false;
+        }
         BranchStatus status = BranchStatus.get(sessionSyncMsg.getBranchSession().getStatus());
         branchSession.setStatus(status);
         if (logger.isDebugEnabled()) {
