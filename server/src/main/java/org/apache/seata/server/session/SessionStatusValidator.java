@@ -54,11 +54,9 @@ public class SessionStatusValidator {
                 || status == GlobalStatus.RollbackRetryTimeout;
     }
 
-    public static boolean isEndGlobalStatus(GlobalStatus status){
-        return status == GlobalStatus.Rollbacked
-                || status == GlobalStatus.TimeoutRollbacked
-                || status == GlobalStatus.Committed
-                || status == GlobalStatus.Finished;
+    public static boolean isEndGlobalStatus(GlobalStatus status) {
+        return status == GlobalStatus.Rollbacked || status == GlobalStatus.TimeoutRollbacked
+            || status == GlobalStatus.Committed || status == GlobalStatus.Finished;
     }
 
     /**
