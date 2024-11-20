@@ -165,15 +165,15 @@ Please copy database driver dependencies, such as `mysql-connector-java.jar`, to
     │   ├── failsafe-2.3.3.jar
     │   ├── failureaccess-1.0.1.jar
     │   ├── fastjson-1.2.83.jar
-    │   ├── grpc-api-1.66.0.jar
-    │   ├── grpc-context-1.66.0.jar
-    │   ├── grpc-core-1.66.0.jar
+    │   ├── grpc-api-1.55.1.jar
+    │   ├── grpc-context-1.55.1.jar
+    │   ├── grpc-core-1.55.1.jar
     │   ├── grpc-grpclb-1.27.1.jar
-    │   ├── grpc-netty-1.66.0.jar
-    │   ├── grpc-protobuf-1.66.0.jar
-    │   ├── grpc-protobuf-lite-1.66.0.jar
-    │   ├── grpc-stub-1.66.0.jar
-    │   ├── grpc-util-1.66.0.jar
+    │   ├── grpc-netty-1.55.1.jar
+    │   ├── grpc-protobuf-1.55.1.jar
+    │   ├── grpc-protobuf-lite-1.55.1.jar
+    │   ├── grpc-stub-1.55.1.jar
+    │   ├── grpc-util-1.55.1.jar
     │   ├── gson-2.9.1.jar
     │   ├── guava-32.1.3-jre.jar
     │   ├── guice-5.0.1.jar
@@ -581,15 +581,15 @@ Please copy database driver dependencies, such as `mysql-connector-java.jar`, to
     │   ├── failsafe-2.3.3.jar
     │   ├── failureaccess-1.0.1.jar
     │   ├── fastjson-1.2.83.jar
-    │   ├── grpc-api-1.66.0.jar
-    │   ├── grpc-context-1.66.0.jar
-    │   ├── grpc-core-1.66.0.jar
+    │   ├── grpc-api-1.55.1.jar
+    │   ├── grpc-context-1.55.1.jar
+    │   ├── grpc-core-1.55.1.jar
     │   ├── grpc-grpclb-1.27.1.jar
-    │   ├── grpc-netty-1.66.0.jar
-    │   ├── grpc-protobuf-1.66.0.jar
-    │   ├── grpc-protobuf-lite-1.66.0.jar
-    │   ├── grpc-stub-1.66.0.jar
-    │   ├── grpc-util-1.66.0.jar
+    │   ├── grpc-netty-1.55.1.jar
+    │   ├── grpc-protobuf-1.55.1.jar
+    │   ├── grpc-protobuf-lite-1.55.1.jar
+    │   ├── grpc-stub-1.55.1.jar
+    │   ├── grpc-util-1.55.1.jar
     │   ├── gson-2.9.1.jar
     │   ├── guava-32.1.3-jre.jar
     │   ├── guice-5.0.1.jar
