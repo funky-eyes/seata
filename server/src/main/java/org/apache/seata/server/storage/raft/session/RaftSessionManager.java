@@ -17,10 +17,12 @@
 package org.apache.seata.server.storage.raft.session;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import com.alipay.sofa.jraft.Closure;
 import org.apache.seata.common.loader.LoadLevel;
 import org.apache.seata.common.loader.Scope;
+import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.core.exception.TransactionException;
 import org.apache.seata.core.exception.TransactionExceptionCode;
 import org.apache.seata.core.model.BranchStatus;
@@ -80,7 +82,7 @@ public class RaftSessionManager extends FileSessionManager {
                             "seata raft state machine exception: " + status.getErrorMsg()));
                 } finally {
                     try {
-                        super.removeGlobalSession(globalSession);
+                        removeGlobalSession(globalSession);
                     } catch (TransactionException e) {
                         completableFuture.completeExceptionally(e);
                     }
@@ -91,6 +93,19 @@ public class RaftSessionManager extends FileSessionManager {
         SessionConverter.convertGlobalTransactionDO(globalTransactionDTO, globalSession);
         RaftGlobalSessionSyncMsg raftSyncMsg = new RaftGlobalSessionSyncMsg(ADD_GLOBAL_SESSION, globalTransactionDTO);
         RaftTaskUtil.createTask(closure, raftSyncMsg, completableFuture);
+    }
+
+    @Override
+    public void removeGlobalSession(GlobalSession session) throws TransactionException {
+        GlobalSession globalSession = sessionMap.remove(session.getXid());
+        if (globalSession != null) {
+            List<BranchSession> branchSessionList = globalSession.getBranchSessions();
+            if (CollectionUtils.isNotEmpty(branchSessionList)) {
+                for (BranchSession branchSession : branchSessionList) {
+                    branchSession.unlock();
+                }
+            }
+        }
     }
 
     @Override
@@ -191,7 +206,7 @@ public class RaftSessionManager extends FileSessionManager {
         Closure closure = status -> {
             if (status.isOk()) {
                 try {
-                    super.removeGlobalSession(globalSession);
+                    removeGlobalSession(globalSession);
                     completableFuture.complete(true);
                 } catch (TransactionException e) {
                     completableFuture.completeExceptionally(e);
