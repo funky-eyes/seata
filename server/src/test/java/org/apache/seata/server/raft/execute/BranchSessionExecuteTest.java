@@ -102,7 +102,7 @@ class BranchSessionExecuteTest {
             boolean success = execute.execute(convertToBranchSessionMsg(branchSession));
             Assertions.assertTrue(success);
 
-            branchSession = GLOBAL_SESSION.getBranch(BRANCH_ID);
+            branchSession = GLOBAL_SESSION.getBranch(branchSession.getBranchId());
             Assertions.assertNull(branchSession);
         }
     }

@@ -100,10 +100,14 @@ public class RaftSessionManager extends FileSessionManager {
         GlobalSession globalSession = sessionMap.remove(session.getXid());
         if (globalSession != null) {
             List<BranchSession> branchSessionList = globalSession.getBranchSessions();
+            // For the follower, the following code will not be executed because when the follower receives the remove global session
+            // the branch session on the leader side has already been completely cleared.
             if (CollectionUtils.isNotEmpty(branchSessionList)) {
                 for (BranchSession branchSession : branchSessionList) {
                     branchSession.unlock();
+                    onRemoveBranch(globalSession, branchSession);
                 }
+                end(globalSession);
             }
         }
     }
@@ -202,6 +206,10 @@ public class RaftSessionManager extends FileSessionManager {
 
     @Override
     public void onSuccessEnd(GlobalSession globalSession) throws TransactionException {
+        end(globalSession);
+    }
+
+    public void end(GlobalSession globalSession) throws TransactionException {
         CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
         Closure closure = status -> {
             if (status.isOk()) {
