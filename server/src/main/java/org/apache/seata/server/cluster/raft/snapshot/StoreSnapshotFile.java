@@ -16,15 +16,16 @@
  */
 package org.apache.seata.server.cluster.raft.snapshot;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import com.alipay.sofa.jraft.Status;
 import com.alipay.sofa.jraft.storage.snapshot.SnapshotReader;
 import com.alipay.sofa.jraft.storage.snapshot.SnapshotWriter;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
-/**
- */
 public interface StoreSnapshotFile {
 
     /**
@@ -44,7 +45,13 @@ public interface StoreSnapshotFile {
     boolean load(final SnapshotReader reader);
 
     default boolean save(final RaftSnapshot value, String path) throws IOException {
-        FileUtils.writeByteArrayToFile(new File(path), RaftSnapshotSerializer.encode(value));
+        File file = new File(path);
+        byte[] data = RaftSnapshotSerializer.encode(value);
+        int off = 0;
+        try (BufferedOutputStream bufferedOutputStream =
+            new BufferedOutputStream(FileUtils.openOutputStream(file, false))) {
+            bufferedOutputStream.write(data, off, data.length);
+        }
         return true;
     }
 
@@ -52,7 +59,13 @@ public interface StoreSnapshotFile {
      * Save value to snapshot file.
      */
     default Object load(String path) throws IOException {
-        RaftSnapshot raftSnapshot = RaftSnapshotSerializer.decode(FileUtils.readFileToByteArray(new File(path)));
+        File file = new File(path);
+        byte[] bytes;
+        try (BufferedInputStream in = new BufferedInputStream(FileUtils.openInputStream(file));) {
+            final long fileLength = file.length();
+            bytes = fileLength > 0 ? IOUtils.toByteArray(in, fileLength) : IOUtils.toByteArray(in);
+        }
+        RaftSnapshot raftSnapshot = RaftSnapshotSerializer.decode(bytes);
         return raftSnapshot.getBody();
     }
 
