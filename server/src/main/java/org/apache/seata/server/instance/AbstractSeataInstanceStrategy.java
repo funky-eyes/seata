@@ -1,0 +1,68 @@
+package org.apache.seata.server.instance;
+
+import java.util.Optional;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
+import org.apache.seata.common.metadata.namingserver.Instance;
+import org.apache.seata.common.thread.NamedThreadFactory;
+import org.apache.seata.common.util.StringUtils;
+import org.apache.seata.server.ServerRunner;
+import org.apache.seata.server.session.SessionHolder;
+import org.apache.seata.server.store.VGroupMappingStoreManager;
+import org.apache.seata.spring.boot.autoconfigure.properties.registry.RegistryNamingServerProperties;
+import org.apache.seata.spring.boot.autoconfigure.properties.registry.RegistryProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.web.ServerProperties;
+
+
+import static org.apache.seata.common.ConfigurationKeys.NAMING_SERVER;
+
+public abstract class AbstractSeataInstanceStrategy implements SeataInstanceStrategy {
+
+    @Resource
+    protected RegistryProperties             registryProperties;
+
+    @Resource
+    protected ServerProperties serverProperties;
+
+    @Resource
+    protected RegistryNamingServerProperties registryNamingServerProperties;
+
+    protected final           Logger                   LOGGER = LoggerFactory.getLogger(getClass());
+    protected static volatile ScheduledExecutorService EXECUTOR_SERVICE;
+
+    protected AtomicBoolean INIT = new AtomicBoolean(false);
+
+    public void init(){
+        if (!StringUtils.equals(registryProperties.getType(), NAMING_SERVER)) {
+            return;
+        }
+        Instance instance = serverInstanceInit();
+        if (INIT.compareAndSet(false, true)) {
+            VGroupMappingStoreManager vGroupMappingStoreManager = SessionHolder.getRootVGroupMappingManager();
+            // load vgroup mapping relationship
+            instance.addMetadata("vGroup", vGroupMappingStoreManager.loadVGroups());
+            EXECUTOR_SERVICE = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("scheduledExcuter", 1, true));
+            EXECUTOR_SERVICE.scheduleAtFixedRate(() -> {
+                try {
+                    SessionHolder.getRootVGroupMappingManager().notifyMapping();
+                } catch (Exception e) {
+                    LOGGER.error("Naming server register Exception", e);
+                }
+            }, registryNamingServerProperties.getHeartbeatPeriod(), registryNamingServerProperties.getHeartbeatPeriod(),
+                TimeUnit.MILLISECONDS);
+            ServerRunner.addDisposable(EXECUTOR_SERVICE::shutdown);
+        }
+    }
+
+    @PreDestroy
+    public void destroy() {
+        Optional.ofNullable(EXECUTOR_SERVICE).ifPresent(ScheduledExecutorService::shutdown);
+    }
+
+}
