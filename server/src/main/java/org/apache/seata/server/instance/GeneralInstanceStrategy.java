@@ -16,7 +16,6 @@
  */
 package org.apache.seata.server.instance;
 
-import java.util.Objects;
 import java.util.UUID;
 
 import org.apache.seata.common.XID;

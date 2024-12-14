@@ -16,7 +16,15 @@
  */
 package org.apache.seata.server.storage.file.store;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import java.util.concurrent.locks.ReadWriteLock;
 import org.apache.seata.common.loader.LoadLevel;
 import org.apache.seata.config.Configuration;
 import org.apache.seata.config.ConfigurationFactory;
@@ -27,13 +35,6 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @LoadLevel(name = "file")
 public class FileVGroupMappingStoreManager implements VGroupMappingStoreManager {
@@ -92,7 +93,7 @@ public class FileVGroupMappingStoreManager implements VGroupMappingStoreManager 
     }
 
     @Override
-    public HashMap<String, Object> readVGroups() {
+    public Map<String, Object> readVGroups() {
         Lock readLock = lock.readLock();
         readLock.lock();
         try {
@@ -103,7 +104,7 @@ public class FileVGroupMappingStoreManager implements VGroupMappingStoreManager 
     }
 
     @Override
-    public HashMap<String, Object> loadVGroups() {
+    public Map<String, Object> loadVGroups() {
         try {
             File fileToLoad = new File(storePath);
             if (!fileToLoad.exists()) {
