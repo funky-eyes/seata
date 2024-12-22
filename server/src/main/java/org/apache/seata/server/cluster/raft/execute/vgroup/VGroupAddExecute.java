@@ -14,25 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.seata.server.cluster.raft.execute;
+package org.apache.seata.server.cluster.raft.execute.vgroup;
 
-import org.apache.seata.server.session.SessionHolder;
-import org.apache.seata.server.storage.raft.sore.RaftVGroupMappingStoreManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.apache.seata.server.lock.LockerManagerFactory;
-import org.apache.seata.server.storage.raft.lock.RaftLockManager;
+import org.apache.seata.server.cluster.raft.execute.AbstractRaftMsgExecute;
+import org.apache.seata.server.cluster.raft.sync.msg.RaftBaseMsg;
+import org.apache.seata.server.cluster.raft.sync.msg.RaftVGroupSyncMsg;
 
 /**
  */
-public abstract class AbstractRaftMsgExecute implements RaftMsgExecute<Boolean> {
+public class VGroupAddExecute extends AbstractRaftMsgExecute {
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
-
-    protected RaftLockManager raftLockManager = (RaftLockManager)LockerManagerFactory.getLockManager();
-
-    protected RaftVGroupMappingStoreManager raftVGroupMappingStoreManager = (RaftVGroupMappingStoreManager) SessionHolder.getRootVGroupMappingManager();
-
+    @Override
+    public Boolean execute(RaftBaseMsg syncMsg) throws Throwable {
+        RaftVGroupSyncMsg vGroupSyncMsg = (RaftVGroupSyncMsg)syncMsg;
+        raftVGroupMappingStoreManager.addVGroup(vGroupSyncMsg.getMappingDO());
+        return true;
+    }
 
 }

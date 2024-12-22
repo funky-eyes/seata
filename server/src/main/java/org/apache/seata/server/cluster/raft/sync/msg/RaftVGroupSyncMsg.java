@@ -14,25 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.seata.server.cluster.raft.execute;
+package org.apache.seata.server.cluster.raft.sync.msg;
 
-import org.apache.seata.server.session.SessionHolder;
-import org.apache.seata.server.storage.raft.sore.RaftVGroupMappingStoreManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.seata.core.store.MappingDO;
 
-import org.apache.seata.server.lock.LockerManagerFactory;
-import org.apache.seata.server.storage.raft.lock.RaftLockManager;
+public class RaftVGroupSyncMsg extends RaftBaseMsg {
 
-/**
- */
-public abstract class AbstractRaftMsgExecute implements RaftMsgExecute<Boolean> {
+    MappingDO mappingDO;
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    public RaftVGroupSyncMsg(MappingDO mappingDO, RaftSyncMsgType raftSyncMsgType) {
+        this.msgType = raftSyncMsgType;
+        this.mappingDO = mappingDO;
+    }
 
-    protected RaftLockManager raftLockManager = (RaftLockManager)LockerManagerFactory.getLockManager();
+    public MappingDO getMappingDO() {
+        return mappingDO;
+    }
 
-    protected RaftVGroupMappingStoreManager raftVGroupMappingStoreManager = (RaftVGroupMappingStoreManager) SessionHolder.getRootVGroupMappingManager();
-
+    public void setMappingDO(MappingDO mappingDO) {
+        this.mappingDO = mappingDO;
+    }
 
 }
