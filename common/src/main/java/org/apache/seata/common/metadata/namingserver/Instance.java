@@ -22,7 +22,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.seata.common.metadata.ClusterRole;
 import org.apache.seata.common.metadata.Node;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -47,6 +49,10 @@ public class Instance {
 
     public static Instance getInstance() {
         return SingletonHolder.SERVER_INSTANCE;
+    }
+
+    public static List<Instance> getInstances() {
+        return SingletonHolder.SERVER_INSTANCES;
     }
 
 
@@ -188,8 +194,24 @@ public class Instance {
         return resultMap;
     }
 
+    public Instance clone() {
+        Instance instance = new Instance();
+        instance.setNamespace(namespace);
+        instance.setClusterName(clusterName);
+        instance.setUnit(unit);
+        instance.setControl(control);
+        instance.setTransaction(transaction);
+        instance.setWeight(weight);
+        instance.setHealthy(healthy);
+        instance.setTerm(term);
+        instance.setTimestamp(timestamp);
+        instance.setMetadata(metadata);
+        return instance;
+    }
+
     private static class SingletonHolder {
         private static final Instance SERVER_INSTANCE = new Instance();
+        private static final List<Instance> SERVER_INSTANCES = new ArrayList<>();
     }
 
 

@@ -231,6 +231,14 @@ public class NamingManager {
         });
     }
 
+    public boolean registerInstances(List<NamingServerNode> node, String namespace, String clusterName) {
+        boolean result = true;
+        for (NamingServerNode namingServerNode : node) {
+            result = registerInstance(namingServerNode, namespace, clusterName, namingServerNode.getUnit());
+        }
+        return result;
+    }
+
     public boolean registerInstance(NamingServerNode node, String namespace, String clusterName, String unitName) {
         try {
             Map<String, ClusterData> clusterDataHashMap =

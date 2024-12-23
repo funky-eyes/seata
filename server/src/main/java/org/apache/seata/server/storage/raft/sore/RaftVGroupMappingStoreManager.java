@@ -16,6 +16,7 @@
  */
 package org.apache.seata.server.storage.raft.sore;
 
+import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,9 +25,14 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import com.alipay.sofa.jraft.Closure;
+import org.apache.seata.common.XID;
 import org.apache.seata.common.loader.LoadLevel;
+import org.apache.seata.common.metadata.ClusterRole;
 import org.apache.seata.common.metadata.namingserver.Instance;
 import org.apache.seata.core.store.MappingDO;
+import org.apache.seata.discovery.registry.MultiRegistryFactory;
+import org.apache.seata.discovery.registry.RegistryService;
+import org.apache.seata.server.cluster.raft.RaftServerManager;
 import org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType;
 import org.apache.seata.server.cluster.raft.sync.msg.RaftVGroupSyncMsg;
 import org.apache.seata.server.cluster.raft.util.RaftTaskUtil;
@@ -134,12 +140,39 @@ public class RaftVGroupMappingStoreManager implements VGroupMappingStoreManager 
     }
 
     public Map<String/*vgroup*/, MappingDO> loadVGroupsByUnit(String unit) {
-        return VGROUP_MAPPING.getOrDefault(unit, Collections.emptyMap());
+        readLock.lock();
+        try {
+            return VGROUP_MAPPING.getOrDefault(unit, Collections.emptyMap());
+        } finally {
+            readLock.unlock();
+        }
     }
 
     @Override
     public Map<String, Object> readVGroups() {
         return loadVGroups();
+    }
+
+    @Override
+   public void notifyMapping() {
+        Instance instance = Instance.getInstance();
+        Map<String, Object> map = this.readVGroups();
+        instance.addMetadata("vGroup", map);
+        for (String group : RaftServerManager.groups()) {
+            Instance node = instance.clone();
+            node.setRole(RaftServerManager.isLeader(group) ? ClusterRole.LEADER : ClusterRole.FOLLOWER);
+            Instance.getInstances().add(node);
+        }
+        try {
+            InetSocketAddress address = new InetSocketAddress(XID.getIpAddress(), XID.getPort());
+            for (RegistryService<?> registryService : MultiRegistryFactory.getInstances()) {
+                registryService.register(address);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("vGroup mapping relationship notified failed! ", e);
+        } finally {
+            Instance.getInstances().clear();
+        }
     }
 
 }

@@ -18,6 +18,7 @@ package org.apache.seata.server.storage.file.store;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
@@ -51,6 +52,7 @@ public class FileVGroupMappingStoreManager implements VGroupMappingStoreManager 
 
     protected static final Configuration CONFIG = ConfigurationFactory.getInstance();
 
+    ObjectMapper objectMapper = new ObjectMapper();
 
     public FileVGroupMappingStoreManager() {
     }
@@ -124,7 +126,6 @@ public class FileVGroupMappingStoreManager implements VGroupMappingStoreManager 
             String fileContent = FileUtils.readFileToString(fileToLoad, "UTF-8");
 
             if (!fileContent.isEmpty()) {
-                ObjectMapper objectMapper = new ObjectMapper();
                 vGroupMapping = objectMapper.readValue(fileContent, new TypeReference<HashMap<String, Object>>() {
                 });
             }
@@ -139,9 +140,8 @@ public class FileVGroupMappingStoreManager implements VGroupMappingStoreManager 
 
     public boolean save(HashMap<String, Object> vGroupMapping) {
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
             String jsonMapping = objectMapper.writeValueAsString(vGroupMapping);
-            FileUtils.writeStringToFile(new File(storePath), jsonMapping, "UTF-8");
+            FileUtils.writeStringToFile(new File(storePath), jsonMapping, StandardCharsets.UTF_8);
             return true;
         } catch (IOException e) {
             LOGGER.error("mapping relationship saved failed! ", e);
