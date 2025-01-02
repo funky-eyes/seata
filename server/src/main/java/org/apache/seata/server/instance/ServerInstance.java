@@ -16,9 +16,10 @@
  */
 package org.apache.seata.server.instance;
 
+import org.apache.seata.common.XID;
 import org.apache.seata.common.holder.ObjectHolder;
+import org.apache.seata.common.metadata.Instance;
 import org.apache.seata.common.metadata.Node;
-import org.apache.seata.common.metadata.namingserver.Instance;
 import org.apache.seata.common.thread.NamedThreadFactory;
 import org.apache.seata.common.util.NetUtil;
 import org.apache.seata.common.util.StringUtils;
@@ -61,53 +62,57 @@ public class ServerInstance {
     private static final Logger LOGGER = LoggerFactory.getLogger(Server.class);
 
     public void serverInstanceInit() {
-        if (StringUtils.equals(registryProperties.getType(), NAMING_SERVER)) {
-            VGroupMappingStoreManager vGroupMappingStoreManager = SessionHolder.getRootVGroupMappingManager();
-            EXECUTOR_SERVICE = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("scheduledExcuter", 1, true));
-            ConfigurableEnvironment environment = (ConfigurableEnvironment) ObjectHolder.INSTANCE.getObject(OBJECT_KEY_SPRING_CONFIGURABLE_ENVIRONMENT);
+        VGroupMappingStoreManager vGroupMappingStoreManager = SessionHolder.getRootVGroupMappingManager();
+        ConfigurableEnvironment environment =
+            (ConfigurableEnvironment)ObjectHolder.INSTANCE.getObject(OBJECT_KEY_SPRING_CONFIGURABLE_ENVIRONMENT);
 
-            // load node properties
-            Instance instance = Instance.getInstance();
-            // load namespace
-            String namespace = registryNamingServerProperties.getNamespace();
-            instance.setNamespace(namespace);
-            // load cluster name
-            String clusterName = registryNamingServerProperties.getCluster();
-            instance.setClusterName(clusterName);
+        // load node properties
+        Instance instance = Instance.getInstance();
+        // load namespace
+        String namespace = registryNamingServerProperties.getNamespace();
+        instance.setNamespace(namespace);
+        // load cluster name
+        String clusterName = registryNamingServerProperties.getCluster();
+        instance.setClusterName(clusterName);
 
-            // load cluster type
-            String clusterType = String.valueOf(StoreConfig.getSessionMode());
-            instance.addMetadata("cluster-type", "raft".equals(clusterType) ? clusterType : "default");
+        // load cluster type
+        String clusterType = String.valueOf(StoreConfig.getSessionMode());
+        instance.addMetadata("cluster-type", "raft".equals(clusterType) ? clusterType : "default");
 
-            // load unit name
-            instance.setUnit(String.valueOf(UUID.randomUUID()));
+        // load unit name
+        instance.setUnit(String.valueOf(UUID.randomUUID()));
 
-            instance.setTerm(System.currentTimeMillis());
+        instance.setTerm(System.currentTimeMillis());
 
-            // load node Endpoint
-            instance.setControl(new Node.Endpoint(NetUtil.getLocalIp(), Integer.parseInt(Objects.requireNonNull(environment.getProperty("server.port"))), "http"));
+        // load node Endpoint
+        instance.setControl(new Node.Endpoint(NetUtil.getLocalIp(),
+            Integer.parseInt(Objects.requireNonNull(environment.getProperty("server.port"))), "http"));
 
-            // load metadata
-            for (PropertySource<?> propertySource : environment.getPropertySources()) {
-                if (propertySource instanceof EnumerablePropertySource) {
-                    EnumerablePropertySource<?> enumerablePropertySource = (EnumerablePropertySource<?>) propertySource;
-                    for (String propertyName : enumerablePropertySource.getPropertyNames()) {
-                        if (propertyName.startsWith(META_PREFIX)) {
-                            instance.addMetadata(propertyName.substring(META_PREFIX.length()), enumerablePropertySource.getProperty(propertyName));
-                        }
+        // load metadata
+        for (PropertySource<?> propertySource : environment.getPropertySources()) {
+            if (propertySource instanceof EnumerablePropertySource) {
+                EnumerablePropertySource<?> enumerablePropertySource = (EnumerablePropertySource<?>)propertySource;
+                for (String propertyName : enumerablePropertySource.getPropertyNames()) {
+                    if (propertyName.startsWith(META_PREFIX)) {
+                        instance.addMetadata(propertyName.substring(META_PREFIX.length()),
+                            enumerablePropertySource.getProperty(propertyName));
                     }
                 }
             }
+        }
+        instance.setTransaction(new Node.Endpoint(XID.getIpAddress(), XID.getPort(),"netty"));
+        if (StringUtils.equals(registryProperties.getType(), NAMING_SERVER)) {
             // load vgroup mapping relationship
             instance.addMetadata("vGroup", vGroupMappingStoreManager.loadVGroups());
-
+            EXECUTOR_SERVICE = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("scheduledExcuter", 1, true));
             EXECUTOR_SERVICE.scheduleAtFixedRate(() -> {
-                try {
-                    vGroupMappingStoreManager.notifyMapping();
-                } catch (Exception e) {
-                    LOGGER.error("Naming server register Exception", e);
-                }
-            }, registryNamingServerProperties.getHeartbeatPeriod(),  registryNamingServerProperties.getHeartbeatPeriod(), TimeUnit.MILLISECONDS);
+                    try {
+                        vGroupMappingStoreManager.notifyMapping();
+                    } catch (Exception e) {
+                        LOGGER.error("Naming server register Exception", e);
+                    }
+                }, registryNamingServerProperties.getHeartbeatPeriod(), registryNamingServerProperties.getHeartbeatPeriod(),
+                TimeUnit.MILLISECONDS);
             ServerRunner.addDisposable(EXECUTOR_SERVICE::shutdown);
         }
     }
