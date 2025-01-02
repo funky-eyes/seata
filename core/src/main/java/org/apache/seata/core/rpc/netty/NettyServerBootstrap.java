@@ -37,6 +37,7 @@ import org.apache.seata.common.XID;
 import org.apache.seata.common.metadata.Instance;
 import org.apache.seata.common.metadata.Node;
 import org.apache.seata.common.thread.NamedThreadFactory;
+import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.config.ConfigurationFactory;
 import org.apache.seata.core.rpc.RemotingBootstrap;
 import org.apache.seata.discovery.registry.MultiRegistryFactory;
@@ -173,7 +174,7 @@ public class NettyServerBootstrap implements RemotingBootstrap {
             this.serverBootstrap.bind(port).sync();
             LOGGER.info("Server started, service listen port: {}", getListenPort());
             Instance instance = Instance.getInstance();
-            if (instance.getTransaction() == null) {
+            if (instance.getTransaction() == null || StringUtils.isBlank(instance.getTransaction().getHost())) {
                 Instance.getInstance().setTransaction(new Node.Endpoint(XID.getIpAddress(), XID.getPort(), "netty"));
             }
             for (RegistryService<?> registryService : MultiRegistryFactory.getInstances()) {
