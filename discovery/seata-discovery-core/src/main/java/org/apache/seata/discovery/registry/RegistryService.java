@@ -71,10 +71,11 @@ public interface RegistryService<T> {
      * @param instance the address
      * @throws Exception the exception
      */
-   default void register(Instance instance) throws Exception{
-       InetSocketAddress inetSocketAddress = new InetSocketAddress(instance.getTransaction().getHost(), instance.getTransaction().getPort());
-       register(inetSocketAddress);
-   }
+    default void register(Instance instance) throws Exception {
+        InetSocketAddress inetSocketAddress =
+            new InetSocketAddress(instance.getTransaction().getHost(), instance.getTransaction().getPort());
+        register(inetSocketAddress);
+    }
 
     /**
      * Unregister.
@@ -91,10 +92,11 @@ public interface RegistryService<T> {
      * @param instance the instance
      * @throws Exception the exception
      */
-   default void unregister(Instance instance) throws Exception{
-         InetSocketAddress inetSocketAddress = new InetSocketAddress(instance.getTransaction().getHost(), instance.getTransaction().getPort());
-         unregister(inetSocketAddress);
-   }
+    default void unregister(Instance instance) throws Exception {
+        InetSocketAddress inetSocketAddress =
+            new InetSocketAddress(instance.getTransaction().getHost(), instance.getTransaction().getPort());
+        unregister(inetSocketAddress);
+    }
 
     /**
      * Subscribe.
