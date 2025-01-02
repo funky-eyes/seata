@@ -47,7 +47,6 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.entity.ContentType;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
-import org.apache.seata.common.metadata.Node;
 import org.apache.seata.common.metadata.Instance;
 import org.apache.seata.common.metadata.namingserver.MetaResponse;
 import org.apache.seata.common.thread.NamedThreadFactory;
