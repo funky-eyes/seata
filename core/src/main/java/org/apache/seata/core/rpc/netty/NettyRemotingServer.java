@@ -21,9 +21,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import io.netty.channel.Channel;
-import org.apache.seata.common.XID;
-import org.apache.seata.common.metadata.Instance;
-import org.apache.seata.common.metadata.Node;
 import org.apache.seata.common.thread.NamedThreadFactory;
 import org.apache.seata.core.protocol.MessageType;
 import org.apache.seata.core.rpc.ShutdownHook;
@@ -55,10 +52,6 @@ public class NettyRemotingServer extends AbstractNettyRemotingServer {
 
     @Override
     public void init() {
-        Instance instance = Instance.getInstance();
-        if (instance.getTransaction() == null) {
-            Instance.getInstance().setTransaction(new Node.Endpoint(XID.getIpAddress(), XID.getPort(), "netty"));
-        }
         // registry processor
         registerProcessor();
         if (initialized.compareAndSet(false, true)) {
