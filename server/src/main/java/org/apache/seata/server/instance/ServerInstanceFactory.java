@@ -49,8 +49,8 @@ import static org.apache.seata.common.ConfigurationKeys.NAMING_SERVER;
 import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_CONFIGURABLE_ENVIRONMENT;
 
 
-@Component("serverInstance")
-public class ServerInstance {
+@Component("serverInstanceFactory")
+public class ServerInstanceFactory {
     @Resource
     private RegistryProperties registryProperties;
 
@@ -104,7 +104,8 @@ public class ServerInstance {
         if (StringUtils.equals(registryProperties.getType(), NAMING_SERVER)) {
             // load vgroup mapping relationship
             instance.addMetadata("vGroup", vGroupMappingStoreManager.loadVGroups());
-            EXECUTOR_SERVICE = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("scheduledExcuter", 1, true));
+            EXECUTOR_SERVICE =
+                new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("heartbeat-namingserver", 1, true));
             EXECUTOR_SERVICE.scheduleAtFixedRate(() -> {
                 try {
                     vGroupMappingStoreManager.notifyMapping();
