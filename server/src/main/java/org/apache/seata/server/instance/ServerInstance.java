@@ -100,18 +100,18 @@ public class ServerInstance {
                 }
             }
         }
-        instance.setTransaction(new Node.Endpoint(XID.getIpAddress(), XID.getPort(),"netty"));
+        instance.setTransaction(new Node.Endpoint(XID.getIpAddress(), XID.getPort(), "netty"));
         if (StringUtils.equals(registryProperties.getType(), NAMING_SERVER)) {
             // load vgroup mapping relationship
             instance.addMetadata("vGroup", vGroupMappingStoreManager.loadVGroups());
             EXECUTOR_SERVICE = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("scheduledExcuter", 1, true));
             EXECUTOR_SERVICE.scheduleAtFixedRate(() -> {
-                    try {
-                        vGroupMappingStoreManager.notifyMapping();
-                    } catch (Exception e) {
-                        LOGGER.error("Naming server register Exception", e);
-                    }
-                }, registryNamingServerProperties.getHeartbeatPeriod(), registryNamingServerProperties.getHeartbeatPeriod(),
+                try {
+                    vGroupMappingStoreManager.notifyMapping();
+                } catch (Exception e) {
+                    LOGGER.error("Naming server register Exception", e);
+                }
+            }, registryNamingServerProperties.getHeartbeatPeriod(), registryNamingServerProperties.getHeartbeatPeriod(),
                 TimeUnit.MILLISECONDS);
             ServerRunner.addDisposable(EXECUTOR_SERVICE::shutdown);
         }
