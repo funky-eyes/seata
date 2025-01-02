@@ -85,7 +85,7 @@ public class ServerInstanceFactory {
         instance.setTerm(System.currentTimeMillis());
 
         // load node Endpoint
-        instance.setControl(new Node.Endpoint(NetUtil.getLocalIp(),
+        instance.setControl(new Node.Endpoint(XID.getIpAddress(),
             Integer.parseInt(Objects.requireNonNull(environment.getProperty("server.port"))), "http"));
 
         // load metadata

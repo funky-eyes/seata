@@ -174,7 +174,8 @@ public class NettyServerBootstrap implements RemotingBootstrap {
             this.serverBootstrap.bind(port).sync();
             LOGGER.info("Server started, service listen port: {}", getListenPort());
             Instance instance = Instance.getInstance();
-            if (instance.getTransaction() == null || StringUtils.isBlank(instance.getTransaction().getHost())) {
+            // Lines 177-180 are just for compatibility with test cases
+            if (instance.getTransaction() == null) {
                 Instance.getInstance().setTransaction(new Node.Endpoint(XID.getIpAddress(), XID.getPort(), "netty"));
             }
             for (RegistryService<?> registryService : MultiRegistryFactory.getInstances()) {

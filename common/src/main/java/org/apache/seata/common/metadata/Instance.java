@@ -28,8 +28,8 @@ public class Instance {
     private String namespace;
     private String clusterName;
     private String unit;
-    private Node.Endpoint control = new Node.Endpoint();
-    private Node.Endpoint transaction = new Node.Endpoint();
+    private Node.Endpoint control;
+    private Node.Endpoint transaction;
     private double weight = 1.0;
     private boolean healthy = true;
     private long term;
