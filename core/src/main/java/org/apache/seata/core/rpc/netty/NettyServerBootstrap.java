@@ -37,7 +37,6 @@ import org.apache.seata.common.XID;
 import org.apache.seata.common.metadata.Instance;
 import org.apache.seata.common.metadata.Node;
 import org.apache.seata.common.thread.NamedThreadFactory;
-import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.config.ConfigurationFactory;
 import org.apache.seata.core.rpc.RemotingBootstrap;
 import org.apache.seata.discovery.registry.MultiRegistryFactory;
