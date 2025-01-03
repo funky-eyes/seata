@@ -21,7 +21,6 @@ import org.apache.seata.common.holder.ObjectHolder;
 import org.apache.seata.common.metadata.Instance;
 import org.apache.seata.common.metadata.Node;
 import org.apache.seata.common.thread.NamedThreadFactory;
-import org.apache.seata.common.util.NetUtil;
 import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.server.Server;
 import org.apache.seata.server.ServerRunner;
