@@ -21,6 +21,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Resource;
 import org.apache.seata.common.XID;
 import org.apache.seata.common.holder.ObjectHolder;
 import org.apache.seata.common.thread.NamedThreadFactory;
@@ -35,7 +36,7 @@ import org.apache.seata.server.instance.SeataInstanceStrategy;
 import org.apache.seata.server.lock.LockerManagerFactory;
 import org.apache.seata.server.metrics.MetricsManager;
 import org.apache.seata.server.session.SessionHolder;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.seata.server.instance.ServerInstanceFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
@@ -52,7 +53,7 @@ import static org.apache.seata.spring.boot.autoconfigure.StarterConstants.REGIST
 @Component("seataServer")
 public class Server {
 
-    @Autowired(required = false) 
+    @Resource
     SeataInstanceStrategy seataInstanceStrategy;
 
     /**

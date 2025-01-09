@@ -14,20 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.seata.server.instance;
+package org.apache.seata.rm.datasource.undo.parser;
 
-import org.apache.seata.common.metadata.Instance;
+import org.apache.seata.common.loader.EnhancedServiceLoader;
+import org.apache.seata.rm.datasource.undo.BaseUndoLogParserTest;
+import org.apache.seata.rm.datasource.undo.UndoLogParser;
 
-public interface SeataInstanceStrategy {
 
-    Instance serverInstanceInit();
+public class FuryUndoLogParserTest extends BaseUndoLogParserTest {
 
-    void init();
+    FuryUndoLogParser parser = (FuryUndoLogParser) EnhancedServiceLoader.load(UndoLogParser.class, FuryUndoLogParser.NAME);
 
-    Type type();
-
-    enum Type {
-        GENERAL, RAFT
+    @Override
+    public UndoLogParser getParser() {
+        return parser;
     }
 
+    @Override
+    public void testTimestampEncodeAndDecode() {
+    }
 }

@@ -28,7 +28,7 @@ import com.alipay.sofa.jraft.Closure;
 import org.apache.seata.common.XID;
 import org.apache.seata.common.loader.LoadLevel;
 import org.apache.seata.common.metadata.ClusterRole;
-import org.apache.seata.common.metadata.namingserver.Instance;
+import org.apache.seata.common.metadata.Instance;
 import org.apache.seata.core.store.MappingDO;
 import org.apache.seata.discovery.registry.MultiRegistryFactory;
 import org.apache.seata.discovery.registry.RegistryService;

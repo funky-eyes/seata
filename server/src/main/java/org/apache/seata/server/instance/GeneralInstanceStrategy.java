@@ -20,8 +20,8 @@ import java.util.UUID;
 
 import org.apache.seata.common.XID;
 import org.apache.seata.common.holder.ObjectHolder;
+import org.apache.seata.common.metadata.Instance;
 import org.apache.seata.common.metadata.Node;
-import org.apache.seata.common.metadata.namingserver.Instance;
 import org.apache.seata.server.store.StoreConfig;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.core.env.ConfigurableEnvironment;
