@@ -27,21 +27,17 @@ import org.apache.seata.server.cluster.raft.RaftServerManager;
 import org.apache.seata.server.session.SessionHolder;
 import org.apache.seata.server.store.StoreConfig;
 import org.apache.seata.spring.boot.autoconfigure.properties.server.ServerRaftProperties;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.core.env.PropertySource;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
 
 
 import static org.apache.seata.common.ConfigurationKeys.META_PREFIX;
 import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_CONFIGURABLE_ENVIRONMENT;
 
-@Component
-@ConditionalOnProperty(name = "seata.store.type", havingValue = "raft")
 public class RaftServerInstanceStrategy extends AbstractSeataInstanceStrategy
     implements ClusterChangeListener, Ordered {
 

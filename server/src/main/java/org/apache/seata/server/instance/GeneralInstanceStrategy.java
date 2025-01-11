@@ -23,17 +23,13 @@ import org.apache.seata.common.holder.ObjectHolder;
 import org.apache.seata.common.metadata.Instance;
 import org.apache.seata.common.metadata.Node;
 import org.apache.seata.server.store.StoreConfig;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.core.env.PropertySource;
-import org.springframework.stereotype.Component;
 
 import static org.apache.seata.common.ConfigurationKeys.META_PREFIX;
 import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_CONFIGURABLE_ENVIRONMENT;
 
-@Component
-@ConditionalOnMissingBean(RaftServerInstanceStrategy.class)
 public class GeneralInstanceStrategy extends AbstractSeataInstanceStrategy {
 
     @Override
