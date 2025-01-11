@@ -21,6 +21,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import org.apache.seata.common.metadata.Instance;
@@ -33,6 +34,7 @@ import org.apache.seata.spring.boot.autoconfigure.properties.registry.RegistryPr
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
+import org.springframework.context.ApplicationContext;
 
 
 import static org.apache.seata.common.ConfigurationKeys.NAMING_SERVER;
@@ -42,8 +44,10 @@ public abstract class AbstractSeataInstanceStrategy implements SeataInstanceStra
     @Resource
     protected RegistryProperties             registryProperties;
 
-    @Resource
     protected ServerProperties serverProperties;
+
+    @Resource
+    protected ApplicationContext applicationContext;
 
     @Resource
     protected RegistryNamingServerProperties registryNamingServerProperties;
@@ -52,6 +56,10 @@ public abstract class AbstractSeataInstanceStrategy implements SeataInstanceStra
     protected static volatile ScheduledExecutorService EXECUTOR_SERVICE;
 
     protected AtomicBoolean INIT = new AtomicBoolean(false);
+    @PostConstruct
+    public void postConstruct() {
+        this.serverProperties = applicationContext.getBean(ServerProperties.class);
+    }
 
     @Override
     public void init(){
