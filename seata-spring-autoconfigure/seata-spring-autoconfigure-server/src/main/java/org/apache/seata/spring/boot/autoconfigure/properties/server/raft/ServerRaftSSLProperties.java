@@ -27,9 +27,9 @@ public class ServerRaftSSLProperties {
 
     private Boolean enabled = false;
 
-    private String kmfAlgorithm = "SunX509";
+    private String kmfAlgorithm;
 
-    private String tmfAlgorithm = "SunX509";
+    private String tmfAlgorithm;
 
     public Boolean getEnabled() {
         return enabled;

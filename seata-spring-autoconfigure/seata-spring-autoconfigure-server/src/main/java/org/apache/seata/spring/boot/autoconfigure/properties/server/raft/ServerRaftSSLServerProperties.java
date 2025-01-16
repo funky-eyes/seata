@@ -27,7 +27,7 @@ public class ServerRaftSSLServerProperties {
 
     private String path = "ssl/cbolt.pfx";
 
-    private String password = "password";
+    private String password;
 
     private String type = "pkcs12";
 
