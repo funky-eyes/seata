@@ -303,8 +303,8 @@ public class NamingManager {
 
     public List<Cluster> getClusterListByVgroup(String vGroup, String namespace) {
         // find the cluster where the transaction group is located
-        HashMap<String/* VGroup */, ConcurrentMap<String/* namespace */,NamespaceBO>> concurrentVgroupMap = new HashMap<>(vGroupMap.asMap());
-        ConcurrentMap<String/* namespace */, NamespaceBO> vgroupNamespaceMap = concurrentVgroupMap.get(vGroup);
+        Map<String/* VGroup */, ConcurrentMap<String/* namespace */,NamespaceBO>> concurrentVgroupMap = new HashMap<>(vGroupMap.asMap());
+        Map<String/* namespace */, NamespaceBO> vgroupNamespaceMap = concurrentVgroupMap.get(vGroup);
         List<Cluster> clusterList = new ArrayList<>();
         if (!CollectionUtils.isEmpty(vgroupNamespaceMap)) {
             NamespaceBO namespaceBO = vgroupNamespaceMap.get(namespace);
