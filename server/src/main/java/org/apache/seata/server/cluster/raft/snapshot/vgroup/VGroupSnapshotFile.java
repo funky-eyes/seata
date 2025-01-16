@@ -75,10 +75,10 @@ public class VGroupSnapshotFile implements Serializable, StoreSnapshotFile {
         }
         String path = new StringBuilder(reader.getPath()).append(File.separator).append(ROOT_MAPPING_MANAGER_NAME).toString();
         try {
-            Map<String/*vgroup*/, MappingDO> map = ( Map<String/*vgroup*/, MappingDO>)load(path);
+            Map<String/*vgroup*/, MappingDO> map = (Map<String/*vgroup*/, MappingDO>)load(path);
             RaftVGroupMappingStoreManager raftVGroupMappingStoreManager =
-                    (RaftVGroupMappingStoreManager)SessionHolder.getRootVGroupMappingManager();
-            raftVGroupMappingStoreManager.localAddVGroups(map,group);
+                (RaftVGroupMappingStoreManager)SessionHolder.getRootVGroupMappingManager();
+            raftVGroupMappingStoreManager.localAddVGroups(map, group);
             return true;
         } catch (final Exception e) {
             LOGGER.error("fail to load snapshot from {}", path, e);

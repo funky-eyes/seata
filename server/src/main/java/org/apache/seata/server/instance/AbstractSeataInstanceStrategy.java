@@ -42,7 +42,7 @@ import static org.apache.seata.common.ConfigurationKeys.NAMING_SERVER;
 public abstract class AbstractSeataInstanceStrategy implements SeataInstanceStrategy {
 
     @Resource
-    protected RegistryProperties             registryProperties;
+    protected RegistryProperties registryProperties;
 
     protected ServerProperties serverProperties;
 
@@ -52,22 +52,22 @@ public abstract class AbstractSeataInstanceStrategy implements SeataInstanceStra
     @Resource
     protected RegistryNamingServerProperties registryNamingServerProperties;
 
-    protected final           Logger                   LOGGER = LoggerFactory.getLogger(getClass());
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
     protected static volatile ScheduledExecutorService EXECUTOR_SERVICE;
 
-    protected AtomicBoolean INIT = new AtomicBoolean(false);
+    protected AtomicBoolean init = new AtomicBoolean(false);
     @PostConstruct
     public void postConstruct() {
         this.serverProperties = applicationContext.getBean(ServerProperties.class);
     }
 
     @Override
-    public void init(){
+    public void init() {
         if (!StringUtils.equals(registryProperties.getType(), NAMING_SERVER)) {
             return;
         }
         Instance instance = serverInstanceInit();
-        if (INIT.compareAndSet(false, true)) {
+        if (init.compareAndSet(false, true)) {
             VGroupMappingStoreManager vGroupMappingStoreManager = SessionHolder.getRootVGroupMappingManager();
             // load vgroup mapping relationship
             instance.addMetadata("vGroup", vGroupMappingStoreManager.loadVGroups());
@@ -78,7 +78,7 @@ public abstract class AbstractSeataInstanceStrategy implements SeataInstanceStra
                         SessionHolder.getRootVGroupMappingManager().notifyMapping();
                     }
                 } catch (Exception e) {
-                    LOGGER.error("Naming server register Exception", e);
+                    logger.error("Naming server register Exception", e);
                 }
             }, registryNamingServerProperties.getHeartbeatPeriod(), registryNamingServerProperties.getHeartbeatPeriod(),
                 TimeUnit.MILLISECONDS);

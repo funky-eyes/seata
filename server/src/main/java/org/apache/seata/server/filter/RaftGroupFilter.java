@@ -28,26 +28,25 @@ import org.apache.seata.server.cluster.raft.context.SeataClusterContext;
 
 public class RaftGroupFilter implements Filter {
 
-	@Override
-	public void init(FilterConfig filterConfig) throws ServletException {
-	}
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {}
 
-	@Override
-	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-		HttpServletRequest httpRequest = (HttpServletRequest) request;
-		String unit = httpRequest.getParameter("unit");
-		if (unit != null) {
-			SeataClusterContext.bindGroup(unit);
-		}
-		try {
-			chain.doFilter(request, response);
-		} finally {
-			SeataClusterContext.unbindGroup();
-		}
-	}
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+        throws IOException, ServletException {
+        HttpServletRequest httpRequest = (HttpServletRequest)request;
+        String unit = httpRequest.getParameter("unit");
+        if (unit != null) {
+            SeataClusterContext.bindGroup(unit);
+        }
+        try {
+            chain.doFilter(request, response);
+        } finally {
+            SeataClusterContext.unbindGroup();
+        }
+    }
 
-	@Override
-	public void destroy() {
-	}
+    @Override
+    public void destroy() {}
 
 }

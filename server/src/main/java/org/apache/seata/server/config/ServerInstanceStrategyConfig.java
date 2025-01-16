@@ -16,6 +16,7 @@
  */
 package org.apache.seata.server.config;
 
+import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.server.instance.GeneralInstanceStrategy;
 import org.apache.seata.server.instance.RaftServerInstanceStrategy;
 import org.apache.seata.server.instance.SeataInstanceStrategy;
@@ -25,12 +26,13 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ServerInstanceStrategyConfig {
+
     @Value("${sessionMode:file}")
     String sessionMode;
 
     @Bean
-    public SeataInstanceStrategy seataInstanceStrategy(){
-        if(sessionMode.equals("raft")) {
+    public SeataInstanceStrategy seataInstanceStrategy() {
+        if (StringUtils.equalsIgnoreCase("raft", sessionMode)) {
             return new RaftServerInstanceStrategy();
         }
         return new GeneralInstanceStrategy();
