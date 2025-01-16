@@ -97,12 +97,12 @@ seata:
         client:
           keystore:
             path: ssl/cbolt.pfx
-            password: seata
+            password: 
             type: pkcs12
         server:
           keystore:
             path: ssl/bolt.pfx
-            password: seata
+            password: 
             type: pkcs12
         kmf-algorithm: SunX509
         tmf-algorithm: SunX509
