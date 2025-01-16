@@ -19,6 +19,7 @@ package org.apache.seata.server.cluster.raft.execute.vgroup;
 import org.apache.seata.server.cluster.raft.execute.AbstractRaftMsgExecute;
 import org.apache.seata.server.cluster.raft.sync.msg.RaftBaseMsg;
 import org.apache.seata.server.cluster.raft.sync.msg.RaftVGroupSyncMsg;
+import org.apache.seata.server.storage.raft.sore.RaftVGroupMappingStoreManager;
 
 /**
  */
@@ -27,7 +28,7 @@ public class VGroupAddExecute extends AbstractRaftMsgExecute {
     @Override
     public Boolean execute(RaftBaseMsg syncMsg) throws Throwable {
         RaftVGroupSyncMsg vGroupSyncMsg = (RaftVGroupSyncMsg)syncMsg;
-        raftVGroupMappingStoreManager.addVGroup(vGroupSyncMsg.getMappingDO());
+        ((RaftVGroupMappingStoreManager)raftVGroupMappingStoreManager).localAddVGroup(vGroupSyncMsg.getMappingDO());
         return true;
     }
 

@@ -43,12 +43,7 @@ seata:
     type: file
   registry:
     # support: nacos, eureka, redis, zk, consul, etcd3, sofa
-    type: seata
-    seata:
-      server-addr: 127.0.0.1:8081
-      cluster: default
-      namespace: public
-      heartbeat-period: 5000
+    type: file
   store:
     # support: file 、 db 、 redis 、 raft
     mode: file

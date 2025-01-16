@@ -21,9 +21,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import com.alipay.sofa.jraft.Closure;
 import org.apache.seata.common.XID;
 import org.apache.seata.common.loader.LoadLevel;
@@ -44,30 +41,14 @@ public class RaftVGroupMappingStoreManager implements VGroupMappingStoreManager 
     private final static Map<String/*unit(raft group)*/, Map<String/*vgroup*/, MappingDO>> VGROUP_MAPPING =
         new HashMap<>();
 
-    private final ReadWriteLock lock = new ReentrantReadWriteLock();
-
-    private final Lock readLock = lock.readLock();
-    
-    private final Lock writeLock = lock.writeLock();
-
 
     public boolean localAddVGroup(MappingDO mappingDO) {
-        writeLock.lock();
-        try {
-            return VGROUP_MAPPING.computeIfAbsent(mappingDO.getUnit(), k -> new HashMap<>()).put(mappingDO.getVGroup(),
-                mappingDO) != null;
-        } finally {
-            writeLock.unlock();
-        }
+        return VGROUP_MAPPING.computeIfAbsent(mappingDO.getUnit(), k -> new HashMap<>()).put(mappingDO.getVGroup(),
+            mappingDO) != null;
     }
 
     public void localAddVGroups(Map<String/*vgroup*/, MappingDO> vGroups, String unit) {
-        writeLock.lock();
-        try {
-            VGROUP_MAPPING.computeIfAbsent(unit, k -> new HashMap<>()).putAll(vGroups);
-        } finally {
-            writeLock.unlock();
-        }
+        VGROUP_MAPPING.computeIfAbsent(unit, k -> new HashMap<>()).putAll(vGroups);
     }
 
     @Override
@@ -117,35 +98,23 @@ public class RaftVGroupMappingStoreManager implements VGroupMappingStoreManager 
     }
 
     public boolean localRemoveVGroup(String vGroup) {
-        writeLock.lock();
-        try {
-            VGROUP_MAPPING.forEach((unit, vgroup) -> vgroup.remove(vGroup));
-        } finally {
-            writeLock.unlock();
-        }
+        VGROUP_MAPPING.forEach((unit, vgroup) -> vgroup.remove(vGroup));
         return true;
     }
 
     @Override
     public Map<String, Object> loadVGroups() {
         Map<String, Object> result = new HashMap<>();
-        String clusterName = Instance.getInstance().getClusterName();
-        readLock.lock();
-        try {
-            result.put(clusterName, VGROUP_MAPPING);
-        } finally {
-            readLock.unlock();
-        }
+        VGROUP_MAPPING.forEach((unit, vgroup) -> {
+            for (String group : vgroup.keySet()) {
+                result.put(group, unit);
+            }
+        });
         return result;
     }
 
     public Map<String/*vgroup*/, MappingDO> loadVGroupsByUnit(String unit) {
-        readLock.lock();
-        try {
-            return VGROUP_MAPPING.getOrDefault(unit, Collections.emptyMap());
-        } finally {
-            readLock.unlock();
-        }
+        return VGROUP_MAPPING.getOrDefault(unit, Collections.emptyMap());
     }
 
     @Override

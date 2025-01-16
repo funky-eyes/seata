@@ -14,22 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.seata.server.cluster.raft.execute.vgroup;
+package org.apache.seata.server.config;
 
-import org.apache.seata.server.cluster.raft.execute.AbstractRaftMsgExecute;
-import org.apache.seata.server.cluster.raft.sync.msg.RaftBaseMsg;
-import org.apache.seata.server.cluster.raft.sync.msg.RaftVGroupSyncMsg;
-import org.apache.seata.server.storage.raft.sore.RaftVGroupMappingStoreManager;
+import org.apache.seata.server.filter.RaftGroupFilter;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-/**
- */
-public class VGroupRemoveExecute extends AbstractRaftMsgExecute {
+@Configuration
+public class SeataNamingserverWebConfig {
 
-    @Override
-    public Boolean execute(RaftBaseMsg syncMsg) throws Throwable {
-        RaftVGroupSyncMsg vGroupSyncMsg = (RaftVGroupSyncMsg)syncMsg;
-        ((RaftVGroupMappingStoreManager)raftVGroupMappingStoreManager).localRemoveVGroup(vGroupSyncMsg.getMappingDO().getVGroup());
-        return true;
-    }
+	@Bean
+	public FilterRegistrationBean<RaftGroupFilter> raftGroupFilter() {
+		FilterRegistrationBean<RaftGroupFilter> registrationBean = new FilterRegistrationBean<>();
+		registrationBean.setFilter(new RaftGroupFilter());
+		registrationBean.addUrlPatterns("/vgroup/v1/*");
+		return registrationBean;
+	}
 
 }

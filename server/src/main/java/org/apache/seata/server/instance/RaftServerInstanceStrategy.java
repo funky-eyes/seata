@@ -19,14 +19,16 @@ package org.apache.seata.server.instance;
 import javax.annotation.Resource;
 import org.apache.seata.common.XID;
 import org.apache.seata.common.holder.ObjectHolder;
+import org.apache.seata.common.metadata.ClusterRole;
 import org.apache.seata.common.metadata.Node;
 import org.apache.seata.common.metadata.Instance;
 import org.apache.seata.server.cluster.listener.ClusterChangeEvent;
 import org.apache.seata.server.cluster.listener.ClusterChangeListener;
 import org.apache.seata.server.cluster.raft.RaftServerManager;
+import org.apache.seata.server.cluster.raft.RaftStateMachine;
 import org.apache.seata.server.session.SessionHolder;
 import org.apache.seata.server.store.StoreConfig;
-import org.apache.seata.spring.boot.autoconfigure.properties.server.ServerRaftProperties;
+import org.apache.seata.spring.boot.autoconfigure.properties.server.raft.ServerRaftProperties;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -62,9 +64,10 @@ public class RaftServerInstanceStrategy extends AbstractSeataInstanceStrategy
         // load cluster type
         String clusterType = String.valueOf(StoreConfig.getSessionMode());
         instance.addMetadata("cluster-type", "raft".equals(clusterType) ? clusterType : "default");
+        RaftStateMachine stateMachine = RaftServerManager.getRaftServer(unit).getRaftStateMachine();
         long term = RaftServerManager.getRaftServer(unit).getRaftStateMachine().getCurrentTerm().get();
         instance.setTerm(term);
-
+        instance.setRole(stateMachine.isLeader() ? ClusterRole.LEADER : ClusterRole.FOLLOWER);
         // load node Endpoint
         instance.setControl(new Node.Endpoint(XID.getIpAddress(), serverProperties.getPort(), "http"));
 
@@ -98,6 +101,7 @@ public class RaftServerInstanceStrategy extends AbstractSeataInstanceStrategy
     @Async
     public void onChangeEvent(ClusterChangeEvent event) {
         Instance.getInstance().setTerm(event.getTerm());
+        Instance.getInstance().setRole(event.isLeader() ? ClusterRole.LEADER : ClusterRole.FOLLOWER);
         SessionHolder.getRootVGroupMappingManager().notifyMapping();
     }
 

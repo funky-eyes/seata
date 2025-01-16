@@ -74,7 +74,9 @@ public abstract class AbstractSeataInstanceStrategy implements SeataInstanceStra
             EXECUTOR_SERVICE = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("scheduledExcuter", 1, true));
             EXECUTOR_SERVICE.scheduleAtFixedRate(() -> {
                 try {
-                    SessionHolder.getRootVGroupMappingManager().notifyMapping();
+                    if (instance.getTerm() > 0) {
+                        SessionHolder.getRootVGroupMappingManager().notifyMapping();
+                    }
                 } catch (Exception e) {
                     LOGGER.error("Naming server register Exception", e);
                 }

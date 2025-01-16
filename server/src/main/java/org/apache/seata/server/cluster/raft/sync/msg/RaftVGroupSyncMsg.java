@@ -22,6 +22,9 @@ public class RaftVGroupSyncMsg extends RaftBaseMsg {
 
     MappingDO mappingDO;
 
+    public RaftVGroupSyncMsg() {
+    }
+
     public RaftVGroupSyncMsg(MappingDO mappingDO, RaftSyncMsgType raftSyncMsgType) {
         this.msgType = raftSyncMsgType;
         this.mappingDO = mappingDO;
