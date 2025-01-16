@@ -18,7 +18,6 @@ package org.apache.seata.spring.boot.autoconfigure.properties.server.raft;
 
 import static org.apache.seata.spring.boot.autoconfigure.StarterConstants.SERVER_RAFT_SSL_SERVER_KEYSTORE_PREFIX;
 
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -30,29 +29,29 @@ public class ServerRaftSSLServerProperties {
 
     private String password = "password";
 
-	private String type = "pkcs12";
+    private String type = "pkcs12";
 
-	public String getPath() {
-		return path;
-	}
+    public String getPath() {
+        return path;
+    }
 
-	public void setPath(String path) {
-		this.path = path;
-	}
+    public void setPath(String path) {
+        this.path = path;
+    }
 
-	public String getPassword() {
-		return password;
-	}
+    public String getPassword() {
+        return password;
+    }
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-	public String getType() {
-		return type;
-	}
+    public String getType() {
+        return type;
+    }
 
-	public void setType(String type) {
-		this.type = type;
-	}
+    public void setType(String type) {
+        this.type = type;
+    }
 }

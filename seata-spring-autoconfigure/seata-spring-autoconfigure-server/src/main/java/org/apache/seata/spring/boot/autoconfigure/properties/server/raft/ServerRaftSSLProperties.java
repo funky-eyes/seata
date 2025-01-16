@@ -31,27 +31,27 @@ public class ServerRaftSSLProperties {
 
     private String tmfAlgorithm = "SunX509";
 
-	public Boolean getEnabled() {
-		return enabled;
-	}
+    public Boolean getEnabled() {
+        return enabled;
+    }
 
-	public void setEnabled(Boolean enabled) {
-		this.enabled = enabled;
-	}
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
 
-	public String getKmfAlgorithm() {
-		return kmfAlgorithm;
-	}
+    public String getKmfAlgorithm() {
+        return kmfAlgorithm;
+    }
 
-	public void setKmfAlgorithm(String kmfAlgorithm) {
-		this.kmfAlgorithm = kmfAlgorithm;
-	}
+    public void setKmfAlgorithm(String kmfAlgorithm) {
+        this.kmfAlgorithm = kmfAlgorithm;
+    }
 
-	public String getTmfAlgorithm() {
-		return tmfAlgorithm;
-	}
+    public String getTmfAlgorithm() {
+        return tmfAlgorithm;
+    }
 
-	public void setTmfAlgorithm(String tmfAlgorithm) {
-		this.tmfAlgorithm = tmfAlgorithm;
-	}
+    public void setTmfAlgorithm(String tmfAlgorithm) {
+        this.tmfAlgorithm = tmfAlgorithm;
+    }
 }
