@@ -53,6 +53,8 @@ const enUs: ILocale = {
     subTitle: 'list',
     createTimeLabel: 'CreateTime',
     selectFilerPlaceholder: 'Please select filter criteria',
+    selectNamespaceFilerPlaceholder: 'Please select namespace',
+    selectClusterFilerPlaceholder: 'Please select cluster',
     inputFilterPlaceholder: 'Please enter filter criteria',
     branchSessionSwitchLabel: 'Whether to include branch sessions',
     resetButtonLabel: 'Reset',

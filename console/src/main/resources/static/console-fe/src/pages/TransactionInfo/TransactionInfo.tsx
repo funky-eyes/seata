@@ -48,6 +48,8 @@ type TransactionInfoState = {
   xid : string;
   currentBranchSession: Array<any>;
   globalSessionParam : GlobalSessionParam;
+  namespaceOptions: Array<{ key: string, values: Array<string> }>;
+  selectedNamespaceValues: Array<string>;
 }
 
 const statusList:Array<StatusType> = [
@@ -310,8 +312,12 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
       pageSize: 10,
       pageNum: 1,
     },
+    namespaceOptions: [
+      { key: 'public', values: ['default1', 'default2'] },
+      { key: 'private', values: ['custom1', 'custom2'] },
+    ],
+    selectedNamespaceValues: [],
   };
-
   componentDidMount = () => {
     // search once by default
     this.search();
@@ -364,12 +370,17 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
     });
   }
 
-  searchFilterOnChange = (key:string, val:string) => {
+  searchFilterOnChange = (key: string, val: string) => {
+    if (key === 'namespace') {
+      const selectedNamespace = this.state.namespaceOptions.find(option => option.key === val);
+      this.setState({
+        selectedNamespaceValues: selectedNamespace ? selectedNamespace.values : [],
+      });
+    }
     this.setState({
-      globalSessionParam: Object.assign(this.state.globalSessionParam,
-        { [key]: val }),
+      globalSessionParam: Object.assign(this.state.globalSessionParam, { [key]: val }),
     });
-  }
+  };
 
   branchSessionSwitchOnChange = (checked: boolean, e: any) => {
     this.setState({
@@ -776,6 +787,8 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
     const { locale = {} } = this.props;
     const { title, subTitle, createTimeLabel,
       selectFilerPlaceholder,
+      selectNamespaceFilerPlaceholder,
+      selectClusterFilerPlaceholder,
       inputFilterPlaceholder,
       branchSessionSwitchLabel,
       resetButtonLabel,
@@ -828,7 +841,21 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
               dataSource={statusList}
             />
           </FormItem>
-
+          <FormItem name="namespace" label="namespace">
+            <Select
+                hasClear
+                placeholder={selectNamespaceFilerPlaceholder}
+                onChange={(value: string) => { this.searchFilterOnChange('namespace', value); }}
+                dataSource={this.state.namespaceOptions.map(option => ({ label: option.key, value: option.key }))}
+            />
+          </FormItem>
+          <FormItem name="namespaceValue" label="cluster">
+            <Select
+                hasClear
+                placeholder={selectClusterFilerPlaceholder}
+                dataSource={this.state.selectedNamespaceValues.map(value => ({ label: value, value }))}
+            />
+          </FormItem>
           {/* {branch session switch} */}
           <FormItem name="withBranch" label={branchSessionSwitchLabel}>
             <Switch

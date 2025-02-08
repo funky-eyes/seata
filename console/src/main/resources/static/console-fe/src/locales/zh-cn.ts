@@ -53,6 +53,8 @@ const zhCn: ILocale = {
     subTitle: '基础列表页',
     createTimeLabel: '创建时间',
     selectFilerPlaceholder: '请选择筛选条件',
+    selectNamespaceFilerPlaceholder: '请选择命名空间',
+    selectClusterFilerPlaceholder: '请选择集群',
     inputFilterPlaceholder: '请输入筛选条件',
     branchSessionSwitchLabel: '是否包含分支事务',
     resetButtonLabel: '重置',
