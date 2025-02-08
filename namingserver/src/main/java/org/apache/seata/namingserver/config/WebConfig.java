@@ -1,0 +1,62 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.seata.namingserver.config;
+
+import javax.servlet.Filter;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.seata.namingserver.filter.ConsoleRemotingFilter;
+import org.apache.seata.namingserver.manager.NamingManager;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
+
+@Configuration
+public class WebConfig {
+
+	@Bean
+	public RestTemplate restTemplate() {
+		// Create a connection manager with custom settings
+		PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+		connectionManager.setMaxTotal(100); // Maximum total connections
+		connectionManager.setDefaultMaxPerRoute(20); // Maximum connections per route
+		// Create an HttpClient with the connection manager
+		CloseableHttpClient httpClient = HttpClients.custom()
+			.setConnectionManager(connectionManager)
+			.build();
+		// Create a request factory with the HttpClient
+		HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
+		requestFactory.setConnectTimeout(5000); // Connection timeout in milliseconds
+		requestFactory.setReadTimeout(5000); // Read timeout in milliseconds
+		// Create and return a RestTemplate with the custom request factory
+		return new RestTemplate(requestFactory);
+	}
+
+    @Bean
+    public FilterRegistrationBean<Filter> consoleRemotingFilter(NamingManager namingManager, RestTemplate restTemplate) {
+        ConsoleRemotingFilter consoleRemotingFilter = new ConsoleRemotingFilter(namingManager, restTemplate);
+        FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(consoleRemotingFilter);
+        registration.addUrlPatterns("/api/*/console/*");
+        registration.setOrder(1);
+        return registration;
+    }
+
+}
