@@ -30,8 +30,8 @@ console:
     username: seata
     password: seata
 heartbeat:
-  threshold: 90000
-  period: 60000
+  threshold: 5000
+  period: 5000
 seata:
   security:
     secretKey: SeataSecretKey0c382ef121d778043159209298fd40bf3850a017

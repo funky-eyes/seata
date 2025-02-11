@@ -34,23 +34,21 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class WebConfig {
 
-	@Bean
-	public RestTemplate restTemplate() {
-		// Create a connection manager with custom settings
-		PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-		connectionManager.setMaxTotal(100); // Maximum total connections
-		connectionManager.setDefaultMaxPerRoute(20); // Maximum connections per route
-		// Create an HttpClient with the connection manager
-		CloseableHttpClient httpClient = HttpClients.custom()
-			.setConnectionManager(connectionManager)
-			.build();
-		// Create a request factory with the HttpClient
-		HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
-		requestFactory.setConnectTimeout(5000); // Connection timeout in milliseconds
-		requestFactory.setReadTimeout(5000); // Read timeout in milliseconds
-		// Create and return a RestTemplate with the custom request factory
-		return new RestTemplate(requestFactory);
-	}
+    @Bean
+    public RestTemplate restTemplate() {
+        // Create a connection manager with custom settings
+        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+        connectionManager.setMaxTotal(100); // Maximum total connections
+        connectionManager.setDefaultMaxPerRoute(20); // Maximum connections per route
+        // Create an HttpClient with the connection manager
+        CloseableHttpClient httpClient = HttpClients.custom().setConnectionManager(connectionManager).build();
+        // Create a request factory with the HttpClient
+        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
+        requestFactory.setConnectTimeout(5000); // Connection timeout in milliseconds
+        requestFactory.setReadTimeout(5000); // Read timeout in milliseconds
+        // Create and return a RestTemplate with the custom request factory
+        return new RestTemplate(requestFactory);
+    }
 
     @Bean
     public AsyncRestTemplate asyncRestTemplate(RestTemplate restTemplate) {
@@ -63,7 +61,8 @@ public class WebConfig {
     }
 
     @Bean
-    public FilterRegistrationBean<Filter> consoleRemotingFilter(NamingManager namingManager, AsyncRestTemplate asyncRestTemplate) {
+    public FilterRegistrationBean<Filter> consoleRemotingFilter(NamingManager namingManager,
+        AsyncRestTemplate asyncRestTemplate) {
         ConsoleRemotingFilter consoleRemotingFilter = new ConsoleRemotingFilter(namingManager, asyncRestTemplate);
         FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>();
         registration.setFilter(consoleRemotingFilter);
