@@ -97,8 +97,6 @@ class GlobalLockInfo extends React.Component<GlobalProps, GlobalLockInfoState> {
       }
     }
     this.loadNamespaces();
-    // search once by default anyway
-/*    this.search();*/
   }
   loadNamespaces = async () => {
     try {
@@ -111,9 +109,25 @@ class GlobalLockInfo extends React.Component<GlobalProps, GlobalLockInfoState> {
           vgroups: namespaceData.vgroups,
         });
       });
-      this.setState({
-        namespaceOptions,
-      });
+      if (namespaceOptions.size > 0) {
+        // Set default namespace to the first option
+        const firstNamespace = Array.from(namespaceOptions.keys())[0];
+        const selectedNamespace = namespaceOptions.get(firstNamespace);
+        this.setState({
+          namespaceOptions,
+          globalLockParam: {
+            ...this.state.globalLockParam,
+            namespace: firstNamespace,
+            cluster: selectedNamespace ? selectedNamespace.clusters[0] : undefined,
+          },
+          clusters: selectedNamespace ? selectedNamespace.clusters : [],
+        });
+        this.search();
+      } else {
+        this.setState({
+          namespaceOptions,
+        });
+      }
     } catch (error) {
       console.error('Failed to fetch namespaces:', error);
     }
@@ -309,6 +323,7 @@ class GlobalLockInfo extends React.Component<GlobalProps, GlobalLockInfoState> {
                   this.searchFilterOnChange('namespace', value);
                 }}
                 dataSource={Array.from(this.state.namespaceOptions.keys()).map(key => ({ label: key, value: key }))}
+                value={this.state.globalLockParam.namespace}
             />
           </FormItem>
           <FormItem name="cluster" label="cluster">
@@ -319,6 +334,7 @@ class GlobalLockInfo extends React.Component<GlobalProps, GlobalLockInfoState> {
                   this.searchFilterOnChange('cluster', value);
                 }}
                 dataSource={this.state.clusters.map(value => ({ label: value, value }))}
+                value={this.state.globalLockParam.cluster}
             />
           </FormItem>
           <FormItem name="vgroup" label="vgroup">
