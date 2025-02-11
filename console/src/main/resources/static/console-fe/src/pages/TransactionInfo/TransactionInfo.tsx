@@ -370,17 +370,17 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
         element.cluster = this.state.globalSessionParam.cluster;
         element.namespace = this.state.globalSessionParam.namespace;
         element.vgroup = this.state.globalSessionParam.vgroup;
+        element.branchSessionVOs.forEach((element: any) => {
+          element.cluster = this.state.globalSessionParam.cluster;
+          element.namespace = this.state.globalSessionParam.namespace;
+          element.vgroup = this.state.globalSessionParam.vgroup;
+        });
       });
 
       if (this.state.branchSessionDialogVisible) {
         data.data.forEach((item: any) => {
           if (item.xid == this.state.xid) {
             this.state.currentBranchSession = item.branchSessionVOs
-            this.state.currentBranchSession.forEach((session) => {
-              session.cluster = this.state.globalSessionParam.cluster;
-              session.namespace = this.state.globalSessionParam.namespace;
-              session.vgroup = this.state.globalSessionParam.vgroup;
-            });
           }
         })
       }
