@@ -105,6 +105,7 @@ public class ConsoleRemotingFilter implements Filter {
                             @Override
                             public void onFailure(Throwable ex) {
                                 try {
+                                    logger.error(ex.getMessage(), ex);
                                     response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                                 } finally {
                                     asyncContext.complete();
