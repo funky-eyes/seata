@@ -21,23 +21,23 @@ import java.util.List;
 
 public class NamespaceVO {
 
-	List<String> clusters = new ArrayList<>();
+    List<String> clusters = new ArrayList<>();
 
-	List<String> vgroups = new ArrayList<>();
+    List<String> vgroups = new ArrayList<>();
 
-	public List<String> getClusters() {
-		return clusters;
-	}
+    public List<String> getClusters() {
+        return clusters;
+    }
 
-	public void setClusters(List<String> clusters) {
-		this.clusters = clusters;
-	}
+    public void setClusters(List<String> clusters) {
+        this.clusters = clusters;
+    }
 
-	public List<String> getVgroups() {
-		return vgroups;
-	}
+    public List<String> getVgroups() {
+        return vgroups;
+    }
 
-	public void setVgroups(List<String> vgroups) {
-		this.vgroups = vgroups;
-	}
+    public void setVgroups(List<String> vgroups) {
+        this.vgroups = vgroups;
+    }
 }

@@ -16,7 +16,8 @@
  */
 package org.apache.seata.namingserver.filter;
 
-import javax.servlet.*;
+import javax.servlet.ReadListener;
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.ByteArrayInputStream;
@@ -25,52 +26,52 @@ import java.io.InputStream;
 import org.apache.commons.io.IOUtils;
 
 public class CachedBodyHttpServletRequest extends HttpServletRequestWrapper {
-	private final byte[] cachedBody;
+    private final byte[] cachedBody;
 
-	public CachedBodyHttpServletRequest(HttpServletRequest request) throws IOException {
-		super(request);
-		InputStream requestInputStream = request.getInputStream();
-		this.cachedBody = toByteArray(requestInputStream);
-	}
+    public CachedBodyHttpServletRequest(HttpServletRequest request) throws IOException {
+        super(request);
+        InputStream requestInputStream = request.getInputStream();
+        this.cachedBody = toByteArray(requestInputStream);
+    }
 
-	@Override
-	public ServletInputStream getInputStream() throws IOException {
-		return new CachedBodyServletInputStream(this.cachedBody);
-	}
+    @Override
+    public ServletInputStream getInputStream() throws IOException {
+        return new CachedBodyServletInputStream(this.cachedBody);
+    }
 
-	private byte[] toByteArray(InputStream input) throws IOException {
-		return IOUtils.toByteArray(input);
-	}
+    private byte[] toByteArray(InputStream input) throws IOException {
+        return IOUtils.toByteArray(input);
+    }
 
-	public byte[] getCachedBody() {
-		return cachedBody;
-	}
+    public byte[] getCachedBody() {
+        return cachedBody;
+    }
 
-	private static class CachedBodyServletInputStream extends ServletInputStream {
-		private final ByteArrayInputStream inputStream;
+    private static class CachedBodyServletInputStream extends ServletInputStream {
+        private final ByteArrayInputStream inputStream;
 
-		public CachedBodyServletInputStream(byte[] cachedBody) {
-			this.inputStream = new ByteArrayInputStream(cachedBody);
-		}
+        public CachedBodyServletInputStream(byte[] cachedBody) {
+            this.inputStream = new ByteArrayInputStream(cachedBody);
+        }
 
-		@Override
-		public boolean isFinished() {
-			return inputStream.available() == 0;
-		}
+        @Override
+        public boolean isFinished() {
+            return inputStream.available() == 0;
+        }
 
-		@Override
-		public boolean isReady() {
-			return true;
-		}
+        @Override
+        public boolean isReady() {
+            return true;
+        }
 
-		@Override
-		public void setReadListener(ReadListener readListener) {
-			throw new UnsupportedOperationException();
-		}
+        @Override
+        public void setReadListener(ReadListener readListener) {
+            throw new UnsupportedOperationException();
+        }
 
-		@Override
-		public int read() throws IOException {
-			return inputStream.read();
-		}
-	}
+        @Override
+        public int read() throws IOException {
+            return inputStream.read();
+        }
+    }
 }
