@@ -25,7 +25,10 @@ import org.apache.seata.namingserver.manager.NamingManager;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.http.client.HttpComponentsAsyncClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
@@ -50,12 +53,22 @@ public class WebConfig {
 	}
 
     @Bean
-    public FilterRegistrationBean<Filter> consoleRemotingFilter(NamingManager namingManager, RestTemplate restTemplate) {
-        ConsoleRemotingFilter consoleRemotingFilter = new ConsoleRemotingFilter(namingManager, restTemplate);
+    public AsyncRestTemplate asyncRestTemplate(RestTemplate restTemplate) {
+        HttpComponentsAsyncClientHttpRequestFactory asyncClientHttpRequestFactory =
+            new HttpComponentsAsyncClientHttpRequestFactory();
+        asyncClientHttpRequestFactory.setConnectionRequestTimeout(5000); // Connection request timeout in milliseconds
+        asyncClientHttpRequestFactory.setConnectTimeout(5000); // Connection timeout in milliseconds
+        asyncClientHttpRequestFactory.setReadTimeout(5000); // Read timeout in milliseconds
+        return new AsyncRestTemplate(asyncClientHttpRequestFactory, restTemplate);
+    }
+
+    @Bean
+    public FilterRegistrationBean<Filter> consoleRemotingFilter(NamingManager namingManager, AsyncRestTemplate asyncRestTemplate) {
+        ConsoleRemotingFilter consoleRemotingFilter = new ConsoleRemotingFilter(namingManager, asyncRestTemplate);
         FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>();
         registration.setFilter(consoleRemotingFilter);
-        registration.addUrlPatterns("/api/*/console/*");
-        registration.setOrder(1);
+        registration.addUrlPatterns("/api/v1/console/*");
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
         return registration;
     }
 

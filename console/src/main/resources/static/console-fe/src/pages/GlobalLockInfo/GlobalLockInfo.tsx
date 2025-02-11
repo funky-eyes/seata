@@ -15,7 +15,19 @@
  * limitations under the License.
  */
 import React from 'react';
-import { ConfigProvider, Table, Button, DatePicker, Form, Icon, Pagination, Input, Dialog, Message } from '@alicloud/console-components';
+import {
+  ConfigProvider,
+  Table,
+  Button,
+  DatePicker,
+  Form,
+  Icon,
+  Pagination,
+  Input,
+  Dialog,
+  Message,
+  Select
+} from '@alicloud/console-components';
 import Actions, { LinkButton } from '@alicloud/console-components-actions';
 import { withRouter } from 'react-router-dom';
 import Page from '@/components/Page';
@@ -28,6 +40,7 @@ import moment from 'moment';
 import './index.scss';
 import {get} from "lodash";
 import {enUsKey, getCurrentLanguage} from "@/reducers/locale";
+import {fetchNamespace} from "@/service/transactionInfo";
 
 const { RangePicker } = DatePicker;
 const FormItem = Form.Item;
@@ -35,6 +48,9 @@ const FormItem = Form.Item;
 type GlobalLockInfoState = {
   list: Array<any>;
   total: number;
+  namespaceOptions: Map<string, { clusters: string[], vgroups: string[] }>;
+  clusters: Array<string>;
+  vgroups: Array<string>;
   loading: boolean;
   globalLockParam: GlobalLockParam;
 }
@@ -55,17 +71,24 @@ class GlobalLockInfo extends React.Component<GlobalProps, GlobalLockInfoState> {
       pageSize: 10,
       pageNum: 1,
     },
+    namespaceOptions: new Map<string, { clusters: string[], vgroups: string[] }>(),
+    clusters: [],
+    vgroups: [],
   }
 
   componentDidMount = () => {
     // @ts-ignore
     const { query } = this.props.history.location;
     if (query !== undefined) {
-      const { xid } = query;
-      if (xid !== undefined) {
+      const { xid,vgroup ,namespace,cluster} = query;
+      if (xid !== undefined && vgroup !== undefined) {
+        console.log('query:', query);
         this.setState({
           globalLockParam: {
             xid,
+            vgroup,
+            namespace,
+            cluster,
             pageSize: 10,
             pageNum: 1,
           },
@@ -73,10 +96,28 @@ class GlobalLockInfo extends React.Component<GlobalProps, GlobalLockInfoState> {
         return;
       }
     }
+    this.loadNamespaces();
     // search once by default anyway
-    this.search();
+/*    this.search();*/
   }
-
+  loadNamespaces = async () => {
+    try {
+      const namespaces = await fetchNamespace();
+      const namespaceOptions = new Map<string, { clusters: string[], vgroups: string[] }>();
+      Object.keys(namespaces).forEach(namespaceKey => {
+        const namespaceData = namespaces[namespaceKey];
+        namespaceOptions.set(namespaceKey, {
+          clusters: namespaceData.clusters,
+          vgroups: namespaceData.vgroups,
+        });
+      });
+      this.setState({
+        namespaceOptions,
+      });
+    } catch (error) {
+      console.error('Failed to fetch namespaces:', error);
+    }
+  }
   resetSearchFilter = () => {
     this.setState({
       globalLockParam: {
@@ -128,10 +169,19 @@ class GlobalLockInfo extends React.Component<GlobalProps, GlobalLockInfoState> {
   }
 
   searchFilterOnChange = (key:string, val:string) => {
-    this.setState({
-      globalLockParam: Object.assign(this.state.globalLockParam,
-        { [key]: val }),
-    });
+    if (key === 'namespace') {
+      const selectedNamespace = this.state.namespaceOptions.get(val);
+      this.setState({
+        clusters: selectedNamespace ? selectedNamespace.clusters : [],
+        vgroups: selectedNamespace ? selectedNamespace.vgroups : [],
+        globalLockParam: Object.assign(this.state.globalLockParam, {[key]: val}),
+      });
+    } else {
+      this.setState({
+        globalLockParam: Object.assign(this.state.globalLockParam,
+            {[key]: val}),
+      });
+    }
   }
 
   paginationOnChange = (current: number, e: {}) => {
@@ -194,6 +244,9 @@ class GlobalLockInfo extends React.Component<GlobalProps, GlobalLockInfoState> {
     const { locale = {} } = this.props;
     const { title, subTitle, createTimeLabel,
       inputFilterPlaceholder,
+      selectNamespaceFilerPlaceholder,
+      selectClusterFilerPlaceholder,
+      selectVGroupFilerPlaceholder,
       searchButtonLabel,
       resetButtonLabel,
       operateTitle,
@@ -248,7 +301,36 @@ class GlobalLockInfo extends React.Component<GlobalProps, GlobalLockInfoState> {
               onChange={(value: string) => { this.searchFilterOnChange('branchId', value); }}
             />
           </FormItem>
-
+          <FormItem name="namespace" label="namespace">
+            <Select
+                hasClear
+                placeholder={selectNamespaceFilerPlaceholder}
+                onChange={(value: string) => {
+                  this.searchFilterOnChange('namespace', value);
+                }}
+                dataSource={Array.from(this.state.namespaceOptions.keys()).map(key => ({ label: key, value: key }))}
+            />
+          </FormItem>
+          <FormItem name="cluster" label="cluster">
+            <Select
+                hasClear
+                placeholder={selectClusterFilerPlaceholder}
+                onChange={(value: string) => {
+                  this.searchFilterOnChange('cluster', value);
+                }}
+                dataSource={this.state.clusters.map(value => ({ label: value, value }))}
+            />
+          </FormItem>
+          <FormItem name="vgroup" label="vgroup">
+            <Select
+                hasClear
+                placeholder={selectVGroupFilerPlaceholder}
+                onChange={(value: string) => {
+                  this.searchFilterOnChange('vgroup', value);
+                }}
+                dataSource={this.state.vgroups.map(value => ({ label: value, value }))}
+            />
+          </FormItem>
           {/* {reset search filter button} */}
           <FormItem>
             <Form.Reset onClick={this.resetSearchFilter}>
