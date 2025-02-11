@@ -104,11 +104,8 @@ public class ConsoleRemotingFilter implements Filter {
                         responseEntityFuture.addCallback(new ListenableFutureCallback<ResponseEntity<byte[]>>() {
                             @Override
                             public void onFailure(Throwable ex) {
-                                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                                 try {
-                                    response.getWriter().write(ex.getMessage());
-                                } catch (IOException e) {
-                                    logger.error(e.getMessage(), e);
+                                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                                 } finally {
                                     asyncContext.complete();
                                 }
