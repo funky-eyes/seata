@@ -82,7 +82,6 @@ class GlobalLockInfo extends React.Component<GlobalProps, GlobalLockInfoState> {
     if (query !== undefined) {
       const { xid,vgroup ,namespace,cluster} = query;
       if (xid !== undefined && vgroup !== undefined) {
-        console.log('query:', query);
         this.setState({
           globalLockParam: {
             xid,
