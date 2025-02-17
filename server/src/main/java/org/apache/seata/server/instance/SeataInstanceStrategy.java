@@ -27,7 +27,14 @@ public interface SeataInstanceStrategy {
     Type type();
 
     enum Type {
-        GENERAL, RAFT
+        /**
+         * General type.
+         */
+        GENERAL,
+        /**
+         * Raft type.
+         */
+        RAFT
     }
 
 }

@@ -24,12 +24,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SeataNamingserverWebConfig {
 
-	@Bean
-	public FilterRegistrationBean<RaftGroupFilter> raftGroupFilter() {
-		FilterRegistrationBean<RaftGroupFilter> registrationBean = new FilterRegistrationBean<>();
-		registrationBean.setFilter(new RaftGroupFilter());
-		registrationBean.addUrlPatterns("/vgroup/v1/*");
-		return registrationBean;
-	}
+    @Bean
+    public FilterRegistrationBean<RaftGroupFilter> raftGroupFilter() {
+        FilterRegistrationBean<RaftGroupFilter> registrationBean = new FilterRegistrationBean<>();
+        registrationBean.setFilter(new RaftGroupFilter());
+        registrationBean.addUrlPatterns("/vgroup/v1/*");
+        return registrationBean;
+    }
 
 }

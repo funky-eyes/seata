@@ -208,6 +208,9 @@ public class SessionHolder {
                                 throw new RuntimeException(e);
                             }
                         }
+                    case StopCommitOrCommitRetry:
+                    case StopRollbackOrRollbackRetry:
+                    case Deleting:
                         break;
                     default: {
                         if (acquireLock) {
