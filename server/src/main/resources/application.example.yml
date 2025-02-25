@@ -82,6 +82,10 @@ seata:
       cluster: default
       namespace: public
       heartbeat-period: 5000
+      metadata-max-age-ms: 30000
+      username: seata
+      password: seata
+      tokenValidityInMilliseconds: 1740000
     nacos:
       application: seata-server
       server-addr: 127.0.0.1:8848
