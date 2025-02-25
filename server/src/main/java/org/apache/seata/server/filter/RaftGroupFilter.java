@@ -40,7 +40,7 @@ public class RaftGroupFilter implements Filter {
         throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest)request;
         String unit = httpRequest.getParameter("unit");
-        if(StringUtils.isBlank(unit)){
+        if (StringUtils.isBlank(unit)) {
             unit = httpRequest.getHeader(RAFT_GROUP_HEADER);
         }
         if (unit != null) {

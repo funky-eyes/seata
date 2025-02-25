@@ -321,7 +321,7 @@ public class NamingManager {
     }
 
     public List<Node> getInstances(String namespace, String clusterName) {
-       return getInstances(namespace, clusterName, false);
+        return getInstances(namespace, clusterName, false);
     }
 
     public List<Node> getInstances(String namespace, String clusterName, boolean readOnly) {

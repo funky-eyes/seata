@@ -394,7 +394,7 @@ public class NamingserverRegistryServiceImpl implements RegistryService<NamingLi
                 try {
                     refreshGroup(vGroup);
                 } catch (Exception e) {
-	                throw new RuntimeException(e);
+                    throw new RuntimeException(e);
                 }
             }, key);
         }
