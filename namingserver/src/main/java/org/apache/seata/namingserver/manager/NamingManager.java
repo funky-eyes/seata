@@ -331,9 +331,10 @@ public class NamingManager {
             LOGGER.warn("no instances in {} : {}", namespace, clusterName);
             return Collections.emptyList();
         }
-        return readOnly ? clusterData.getInstanceList().stream()
-            .filter(node -> node.getRole() == ClusterRole.LEADER || node.getRole() == ClusterRole.MEMBER)
-            .collect(Collectors.toList()) : clusterData.getInstanceList();
+        return readOnly ? clusterData.getInstanceList()
+            : clusterData.getInstanceList().stream()
+                .filter(node -> node.getRole() == ClusterRole.LEADER || node.getRole() == ClusterRole.MEMBER)
+                .collect(Collectors.toList());
     }
 
     public List<Node> getInstancesByVgroupAndNamespace(String namespace, String vgroup, boolean readOnly) {
