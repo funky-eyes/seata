@@ -49,7 +49,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class SagaActionInterceptorParserTest {
 
-    public static String DEFAULT_XID = "default_xid";
+    public static String DEFAULT_XID = "default_xid5";
 
     @BeforeAll
     public static void init() throws IOException {
