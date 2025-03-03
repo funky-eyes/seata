@@ -32,6 +32,7 @@ import org.apache.seata.saga.rm.interceptor.parser.SagaAnnotationActionIntercept
 import org.apache.seata.tm.TransactionManagerHolder;
 import org.apache.seata.tm.api.GlobalTransaction;
 import org.apache.seata.tm.api.GlobalTransactionContext;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -49,7 +50,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class SagaActionInterceptorParserTest {
 
-    public static String DEFAULT_XID = "default_xid";
+    public static String DEFAULT_XID = "default_xid5";
 
     @BeforeAll
     public static void init() throws IOException {
@@ -57,11 +58,46 @@ public class SagaActionInterceptorParserTest {
         System.setProperty("config.file.name", "file.conf");
         System.setProperty("txServiceGroup", "default_tx_group");
         System.setProperty("service.vgroupMapping.default_tx_group", "default");
+      transactionManager =  new TransactionManager() {
+            @Override
+            public String begin(String applicationId, String transactionServiceGroup, String name, int timeout) throws TransactionException {
+                return DEFAULT_XID;
+            }
+
+            @Override
+            public GlobalStatus commit(String xid) throws TransactionException {
+                return GlobalStatus.Committed;
+            }
+
+            @Override
+            public GlobalStatus rollback(String xid) throws TransactionException {
+
+                rollbackAll(xid);
+
+                return GlobalStatus.Rollbacked;
+            }
+
+            @Override
+            public GlobalStatus getStatus(String xid) throws TransactionException {
+                return GlobalStatus.Begin;
+            }
+
+            @Override
+            public GlobalStatus globalReport(String xid, GlobalStatus globalStatus) throws TransactionException {
+                return globalStatus;
+            }
+        };
     }
 
     @AfterEach
     public void clearTccResource() {
         DefaultResourceManager.get().getResourceManager(BranchType.SAGA_ANNOTATION).getManagedResources().clear();
+    }
+    
+    @AfterAll
+    public static void destroy() {
+        DefaultResourceManager.get().getResourceManager(BranchType.SAGA_ANNOTATION).getManagedResources().clear();
+        transactionManager = null;
     }
 
     @Test
@@ -146,35 +182,7 @@ public class SagaActionInterceptorParserTest {
     private static Map<String, List<BranchSessionMock>> applicationDataMap = new ConcurrentHashMap<>();
 
 
-    private static TransactionManager transactionManager = new TransactionManager() {
-        @Override
-        public String begin(String applicationId, String transactionServiceGroup, String name, int timeout) throws TransactionException {
-            return DEFAULT_XID;
-        }
-
-        @Override
-        public GlobalStatus commit(String xid) throws TransactionException {
-            return GlobalStatus.Committed;
-        }
-
-        @Override
-        public GlobalStatus rollback(String xid) throws TransactionException {
-
-            rollbackAll(xid);
-
-            return GlobalStatus.Rollbacked;
-        }
-
-        @Override
-        public GlobalStatus getStatus(String xid) throws TransactionException {
-            return GlobalStatus.Begin;
-        }
-
-        @Override
-        public GlobalStatus globalReport(String xid, GlobalStatus globalStatus) throws TransactionException {
-            return globalStatus;
-        }
-    };
+    private static TransactionManager transactionManager;
 
 
     private static ResourceManager resourceManager = new SagaAnnotationResourceManager() {

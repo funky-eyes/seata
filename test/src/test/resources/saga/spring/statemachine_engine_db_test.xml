@@ -53,6 +53,7 @@
 		<property name="sagaJsonParser" value="jackson"/>
 		<property name="sagaRetryPersistModeUpdate" value="false" />
 		<property name="sagaCompensatePersistModeUpdate" value="false" />
+		<property name="defaultTenantId" value="000001" />
 	</bean>
 
 	<bean id="threadExecutor"
