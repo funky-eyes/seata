@@ -38,7 +38,7 @@ import org.junit.jupiter.api.Test;
 
 public class ProxyUtilsTccTest {
 
-    private final String DEFAULT_XID = "default_xid4";
+    private final String DEFAULT_XID = "default_xid";
 
     AtomicReference<String> branchReference = new AtomicReference<String>();
 

@@ -699,12 +699,12 @@ public class StateMachineDBTests extends AbstractServerTest {
         String businessKey = "bizKey";
 
         SagaCostPrint.executeAndPrint("3-24", () -> {
-            Assertions.assertDoesNotThrow(() -> stateMachineEngine.startWithBusinessKey(stateMachineName, "000001", businessKey, new HashMap<>()));
+            Assertions.assertDoesNotThrow(() -> stateMachineEngine.startWithBusinessKey(stateMachineName, null, businessKey, new HashMap<>()));
         });
 
         SagaCostPrint.executeAndPrint("3-25", () -> {
             // use same biz key to mock exception
-            Assertions.assertThrows(StoreException.class, () -> stateMachineEngine.startWithBusinessKey(stateMachineName, "000001", businessKey, new HashMap<>()));
+            Assertions.assertThrows(StoreException.class, () -> stateMachineEngine.startWithBusinessKey(stateMachineName, null, businessKey, new HashMap<>()));
             Assertions.assertNull(RootContext.getXID());
         });
     }

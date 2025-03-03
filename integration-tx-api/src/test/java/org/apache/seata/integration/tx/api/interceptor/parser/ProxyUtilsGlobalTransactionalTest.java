@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class ProxyUtilsGlobalTransactionalTest {
 
-    private final String DEFAULT_XID = "default_xid3";
+    private final String DEFAULT_XID = "default_xid";
 
 
     @Test

@@ -29,7 +29,6 @@
 		<property name="resources" value="saga/statelang/*.json"/>
 		<property name="enableAsync" value="true"/>
 		<property name="threadPoolExecutor" ref="threadExecutor" />
-		<property name="defaultTenantId" value="000001" />
 	</bean>
 	<bean id="threadExecutor"
 		  class="org.springframework.scheduling.concurrent.ThreadPoolExecutorFactoryBean">
