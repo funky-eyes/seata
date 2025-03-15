@@ -67,17 +67,13 @@ public class GlobalLockFileServiceImpl extends AbstractLockService implements Gl
         final Collection<GlobalSession> allSessions = SessionHolder.getRootSessionManager().allSessions();
 
 
-        List<GlobalLockQueryBO> result = new ArrayList<>();
-        for (GlobalSession globalSession : allSessions) {
-            if (obtainGlobalSessionPredicate(param).test(globalSession)) {
-                for (BranchSession branchSession : globalSession.getBranchSessions()) {
-                    if (obtainBranchSessionPredicate(param).test(branchSession)) {
-                        filterAndMap(param, branchSession)
-                            .forEach(lock -> result.add(new GlobalLockQueryBO(lock, globalSession)));
-                    }
-                }
-            }
-        }
+        List<GlobalLockQueryBO> result = allSessions.parallelStream()
+                .filter(obtainGlobalSessionPredicate(param))
+                .flatMap(globalSession -> globalSession.getBranchSessions().stream()
+                        .filter(obtainBranchSessionPredicate(param))
+                        .flatMap(branchSession -> filterAndMap(param, branchSession)
+                                .map(lock -> new GlobalLockQueryBO(lock, globalSession))))
+                .collect(Collectors.toList());
 
         return PageResult.build(convert(result), param.getPageNum(), param.getPageSize());
 
