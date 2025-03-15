@@ -16,9 +16,9 @@
  */
 package org.apache.seata.server.console.impl.file;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -27,12 +27,13 @@ import org.apache.seata.common.result.SingleResult;
 import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.core.exception.TransactionException;
+import org.apache.seata.server.console.entity.bo.GlobalLockQueryBO;
 import org.apache.seata.server.console.exception.ConsoleException;
 import org.apache.seata.server.console.impl.AbstractLockService;
 import org.apache.seata.server.console.impl.redis.GlobalLockRedisServiceImpl;
-import org.apache.seata.server.console.param.GlobalLockParam;
+import org.apache.seata.server.console.entity.param.GlobalLockParam;
 import org.apache.seata.common.result.PageResult;
-import org.apache.seata.server.console.vo.GlobalLockVO;
+import org.apache.seata.server.console.entity.vo.GlobalLockVO;
 import org.apache.seata.core.lock.RowLock;
 import org.apache.seata.server.console.service.GlobalLockService;
 import org.apache.seata.server.lock.LockerManagerFactory;
@@ -46,7 +47,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
 import static org.apache.seata.common.util.StringUtils.isBlank;
-import static org.apache.seata.server.console.vo.GlobalLockVO.convert;
+import static org.apache.seata.server.console.entity.vo.GlobalLockVO.convert;
 import static java.util.Objects.isNull;
 
 /**
@@ -65,15 +66,18 @@ public class GlobalLockFileServiceImpl extends AbstractLockService implements Gl
 
         final Collection<GlobalSession> allSessions = SessionHolder.getRootSessionManager().allSessions();
 
-        final AtomicInteger total = new AtomicInteger();
-        List<RowLock> result = allSessions
-                .parallelStream()
-                .filter(obtainGlobalSessionPredicate(param))
-                .flatMap(globalSession -> globalSession.getBranchSessions().stream())
-                .filter(obtainBranchSessionPredicate(param))
-                .flatMap(branchSession -> filterAndMap(param, branchSession))
-                .peek(globalSession -> total.incrementAndGet())
-                .collect(Collectors.toList());
+
+        List<GlobalLockQueryBO> result = new ArrayList<>();
+        for (GlobalSession globalSession : allSessions) {
+            if (obtainGlobalSessionPredicate(param).test(globalSession)) {
+                for (BranchSession branchSession : globalSession.getBranchSessions()) {
+                    if (obtainBranchSessionPredicate(param).test(branchSession)) {
+                        filterAndMap(param, branchSession)
+                            .forEach(lock -> result.add(new GlobalLockQueryBO(lock, globalSession)));
+                    }
+                }
+            }
+        }
 
         return PageResult.build(convert(result), param.getPageNum(), param.getPageSize());
 
