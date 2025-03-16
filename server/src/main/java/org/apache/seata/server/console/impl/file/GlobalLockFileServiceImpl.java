@@ -85,21 +85,22 @@ public class GlobalLockFileServiceImpl extends AbstractLockService implements Gl
             LOGGER.debug("start to delete global lock,xid:{} branchId:{}",
                     param.getXid(), param.getBranchId());
         }
+        GlobalSession globalSession = SessionHolder.getRootSessionManager().findGlobalSession(param.getXid(), true);
+        if (globalSession != null) {
+            List<BranchSession> branchSessions = globalSession.getBranchSessions().stream()
+                .filter(branchSession -> branchSession.getBranchId() == Long.parseLong(param.getBranchId()))
+                .collect(Collectors.toList());
 
-        List<BranchSession> branchSessions = SessionHolder.getRootSessionManager().findGlobalSession(param.getXid(),
-                true).getBranchSessions().stream().filter(branchSession ->
-                branchSession.getBranchId() == Long.parseLong(param.getBranchId())).collect(Collectors.toList());
-
-        if (branchSessions.size() != 1) {
-            throw new ConsoleException(new UnsupportedOperationException("branch session size is not one"),
-                    String.format("delete global lock," +
-                    "xid:%s ,branchId:%s", param.getXid(), param.getBranchId()));
-        }
-        try {
-            lockManager.releaseLock(branchSessions.get(0));
-        } catch (TransactionException e) {
-            throw new ConsoleException(e, String.format("delete global lock," +
-                    "xid:%s ,branchId:%s", param.getXid(), param.getBranchId()));
+            if (branchSessions.size() != 1) {
+                throw new ConsoleException(new UnsupportedOperationException("branch session size is not one"),
+                    String.format("delete global lock," + "xid:%s ,branchId:%s", param.getXid(), param.getBranchId()));
+            }
+            try {
+                lockManager.releaseLock(branchSessions.get(0));
+            } catch (TransactionException e) {
+                throw new ConsoleException(e,
+                    String.format("delete global lock," + "xid:%s ,branchId:%s", param.getXid(), param.getBranchId()));
+            }
         }
         return SingleResult.success();
     }
