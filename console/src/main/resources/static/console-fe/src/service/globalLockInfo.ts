@@ -74,7 +74,7 @@ export async function checkData(params: GlobalLockParam): Promise<any> {
     params: {
       xid,
       branchId,
-      vgoup: vgroup
+      vgroup: vgroup
     },
     headers: {
       'x-seata-namespace': params.namespace,
