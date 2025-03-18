@@ -100,8 +100,9 @@ public class RaftServerInstanceStrategy extends AbstractSeataInstanceStrategy
     @EventListener
     @Async
     public void onChangeEvent(ClusterChangeEvent event) {
-        Instance.getInstance().setTerm(event.getTerm());
-        Instance.getInstance().setRole(event.isLeader() ? ClusterRole.LEADER : ClusterRole.FOLLOWER);
+        Instance instance = Instance.getInstance();
+        instance.setTerm(event.getTerm());
+        instance.setRole(event.isLeader() ? ClusterRole.LEADER : ClusterRole.FOLLOWER);
         SessionHolder.getRootVGroupMappingManager().notifyMapping();
     }
 

@@ -123,19 +123,18 @@ public class RaftVGroupMappingStoreManager implements VGroupMappingStoreManager 
     }
 
     @Override
-   public void notifyMapping() {
+    public void notifyMapping() {
         Instance instance = Instance.getInstance();
         Map<String, Object> map = this.readVGroups();
         instance.addMetadata("vGroup", map);
-        for (String group : RaftServerManager.groups()) {
-            Instance node = instance.clone();
-            node.setRole(RaftServerManager.isLeader(group) ? ClusterRole.LEADER : ClusterRole.FOLLOWER);
-            Instance.getInstances().add(node);
-        }
         try {
-            InetSocketAddress address = new InetSocketAddress(XID.getIpAddress(), XID.getPort());
-            for (RegistryService<?> registryService : MultiRegistryFactory.getInstances()) {
-                registryService.register(address);
+            for (String group : RaftServerManager.groups()) {
+                Instance node = instance.clone();
+                node.setRole(RaftServerManager.isLeader(group) ? ClusterRole.LEADER : ClusterRole.FOLLOWER);
+                Instance.getInstances().add(node);
+                for (RegistryService<?> registryService : MultiRegistryFactory.getInstances()) {
+                    registryService.register(node);
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException("vGroup mapping relationship notified failed! ", e);
