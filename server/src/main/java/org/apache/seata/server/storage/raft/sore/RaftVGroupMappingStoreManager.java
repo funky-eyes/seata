@@ -114,7 +114,7 @@ public class RaftVGroupMappingStoreManager implements VGroupMappingStoreManager 
     }
 
     public Map<String/*vgroup*/, MappingDO> loadVGroupsByUnit(String unit) {
-        return VGROUP_MAPPING.getOrDefault(unit, Collections.emptyMap());
+        return VGROUP_MAPPING.getOrDefault(unit, new HashMap<>());
     }
 
     @Override
