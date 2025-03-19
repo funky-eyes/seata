@@ -18,6 +18,7 @@ package org.apache.seata.discovery.registry.namingserver;
 
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.http.entity.ContentType;
 import org.apache.http.protocol.HTTP;
 import org.apache.seata.common.holder.ObjectHolder;
+import org.apache.seata.common.metadata.Cluster;
+import org.apache.seata.common.metadata.ClusterRole;
+import org.apache.seata.common.metadata.Node;
+import org.apache.seata.common.metadata.namingserver.MetaResponse;
+import org.apache.seata.common.metadata.namingserver.NamingServerNode;
+import org.apache.seata.common.metadata.namingserver.Unit;
 import org.apache.seata.config.Configuration;
 import org.apache.seata.config.ConfigurationFactory;
 import org.apache.seata.common.util.HttpClientUtil;
@@ -47,7 +54,6 @@ import org.springframework.core.env.PropertiesPropertySource;
 import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_CONFIGURABLE_ENVIRONMENT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Disabled
 class NamingserverRegistryServiceImplTest {
 
     private static final Configuration FILE_CONFIG = ConfigurationFactory.CURRENT_FILE_INSTANCE;
@@ -131,6 +137,38 @@ class NamingserverRegistryServiceImplTest {
 
     }
 
+    @Test
+    public void testHandleMetadata() {
+        NamingserverRegistryServiceImpl registryService = NamingserverRegistryServiceImpl.getInstance();
+
+        // Create a mock MetaResponse
+        MetaResponse metaResponse = new MetaResponse();
+        metaResponse.setTerm(1);
+
+        Cluster cluster = new Cluster();
+        Unit unit = new Unit();
+        List<NamingServerNode> namingInstanceList = new ArrayList<>();
+        NamingServerNode node = new NamingServerNode();
+        node.setRole(ClusterRole.LEADER);
+        node.setTerm(1);
+        node.setTransaction(new Node.Endpoint("127.0.0.1", 8091));
+        namingInstanceList.add(node);
+        unit.setNamingInstanceList(namingInstanceList);
+        List<Unit> unitData = new ArrayList<>();
+        unitData.add(unit);
+        cluster.setUnitData(unitData);
+        List<Cluster> clusterList = new ArrayList<>();
+        clusterList.add(cluster);
+        metaResponse.setClusterList(clusterList);
+
+        // Call the method to test
+        List<InetSocketAddress> result = registryService.handleMetadata(metaResponse, "testGroup");
+
+        // Verify the result
+        assertEquals(1, result.size());
+        assertEquals("127.0.0.1", result.get(0).getAddress().getHostAddress());
+        assertEquals(8080, result.get(0).getPort());
+    }
 
     @Test
     public void testRegister2() throws Exception {

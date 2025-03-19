@@ -434,32 +434,36 @@ public class NamingserverRegistryServiceImpl implements RegistryService<NamingLi
             // jsonResponse -> MetaResponse
             MetaResponse metaResponse = OBJECT_MAPPER.readValue(jsonResponse, new TypeReference<MetaResponse>() {
             });
-            // MetaResponse -> endpoint list
-            List<NamingServerNode> newAddressList = new ArrayList<>();
-            if (metaResponse.getTerm() > 0) {
-                term = metaResponse.getTerm();
-            }
-            for (Cluster cluster : metaResponse.getClusterList()) {
-                for (Unit unitDatum : cluster.getUnitData()) {
-                    // In raft mode, only the leader is cached, while in non-raft cluster mode, all nodes are cached.
-                    newAddressList.addAll(unitDatum.getNamingInstanceList().stream()
-                        .filter(instance -> (instance.getRole() == ClusterRole.LEADER && instance.getTerm() >= term)
-                            || instance.getRole() == ClusterRole.MEMBER)
-                        .collect(Collectors.toList()));
-                }
-            }
-            List<InetSocketAddress> inetSocketAddresses = new ArrayList<>();
-            for (NamingServerNode node : newAddressList) {
-                Node.Endpoint endpoint = node.getTransaction();
-                inetSocketAddresses.add(new InetSocketAddress(endpoint.getHost(), endpoint.getPort()));
-            }
-            removeOfflineAddressesIfNecessary(vGroup,vGroup,inetSocketAddresses);
-            VGROUP_ADDRESS_MAP.put(vGroup, newAddressList);
-            return inetSocketAddresses;
+            return handleMetadata(metaResponse, vGroup);
         } catch (IOException e) {
             LOGGER.error(e.getMessage());
             throw new RemoteException();
         }
+    }
+
+    public List<InetSocketAddress> handleMetadata(MetaResponse metaResponse, String vGroup){
+        // MetaResponse -> endpoint list
+        List<NamingServerNode> newAddressList = new ArrayList<>();
+        if (metaResponse.getTerm() > 0) {
+            term = metaResponse.getTerm();
+        }
+        for (Cluster cluster : metaResponse.getClusterList()) {
+            for (Unit unitDatum : cluster.getUnitData()) {
+                // In raft mode, only the leader is cached, while in non-raft cluster mode, all nodes are cached.
+                newAddressList.addAll(unitDatum.getNamingInstanceList().stream()
+                    .filter(instance -> (instance.getRole() == ClusterRole.LEADER && instance.getTerm() >= term)
+                        || instance.getRole() == ClusterRole.MEMBER)
+                    .collect(Collectors.toList()));
+            }
+        }
+        List<InetSocketAddress> inetSocketAddresses = new ArrayList<>();
+        for (NamingServerNode node : newAddressList) {
+            Node.Endpoint endpoint = node.getTransaction();
+            inetSocketAddresses.add(new InetSocketAddress(endpoint.getHost(), endpoint.getPort()));
+        }
+        removeOfflineAddressesIfNecessary(vGroup,vGroup,inetSocketAddresses);
+        VGROUP_ADDRESS_MAP.put(vGroup, newAddressList);
+        return inetSocketAddresses;
     }
 
     @Override
