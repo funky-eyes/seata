@@ -16,13 +16,10 @@
  */
 package org.apache.seata.server.storage.raft.sore;
 
-import java.net.InetSocketAddress;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import com.alipay.sofa.jraft.Closure;
-import org.apache.seata.common.XID;
 import org.apache.seata.common.loader.LoadLevel;
 import org.apache.seata.common.metadata.ClusterRole;
 import org.apache.seata.common.metadata.Instance;
