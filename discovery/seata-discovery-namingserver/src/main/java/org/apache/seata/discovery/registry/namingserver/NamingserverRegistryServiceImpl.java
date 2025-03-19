@@ -547,7 +547,7 @@ public class NamingserverRegistryServiceImpl implements RegistryService<NamingLi
         String namingAddrsKey = String.join(FILE_CONFIG_SPLIT_CHAR, FILE_ROOT_REGISTRY, REGISTRY_TYPE, NAMING_SERVICE_URL_KEY);
 
         String urlListStr = FILE_CONFIG.getConfig(namingAddrsKey);
-        if (urlListStr.isEmpty()) {
+        if (StringUtils.isBlank(urlListStr)) {
             throw new NamingRegistryException("Naming server url can not be null!");
         }
         return Arrays.stream(urlListStr.split(",")).collect(Collectors.toList());

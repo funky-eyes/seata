@@ -60,9 +60,9 @@ class NamingserverRegistryServiceImplTest {
 
     @BeforeAll
     public static void beforeClass() throws Exception {
-        System.setProperty("registry.namingserver.namespace", "dev");
-        System.setProperty("registry.namingserver.cluster", "cluster1");
-        System.setProperty("registry.namingserver.serverAddr", "127.0.0.1:8080");
+        System.setProperty("registry.seata.namespace", "dev");
+        System.setProperty("registry.seata.cluster", "cluster1");
+        System.setProperty("registry.seata.server-addr", "127.0.0.1:8080");
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 
         // 获取应用程序环境
@@ -167,7 +167,7 @@ class NamingserverRegistryServiceImplTest {
         // Verify the result
         assertEquals(1, result.size());
         assertEquals("127.0.0.1", result.get(0).getAddress().getHostAddress());
-        assertEquals(8080, result.get(0).getPort());
+        assertEquals(8091, result.get(0).getPort());
     }
 
     @Test
