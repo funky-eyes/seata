@@ -436,17 +436,17 @@ public class NamingserverRegistryServiceImpl implements RegistryService<NamingLi
             });
             // MetaResponse -> endpoint list
             List<NamingServerNode> newAddressList = new ArrayList<>();
+            if (metaResponse.getTerm() > 0) {
+                term = metaResponse.getTerm();
+            }
             for (Cluster cluster : metaResponse.getClusterList()) {
                 for (Unit unitDatum : cluster.getUnitData()) {
                     // In raft mode, only the leader is cached, while in non-raft cluster mode, all nodes are cached.
                     newAddressList.addAll(unitDatum.getNamingInstanceList().stream()
-                        .filter(instance -> instance.getRole() == ClusterRole.LEADER
+                        .filter(instance -> (instance.getRole() == ClusterRole.LEADER && instance.getTerm() >= term)
                             || instance.getRole() == ClusterRole.MEMBER)
                         .collect(Collectors.toList()));
                 }
-            }
-            if (metaResponse.getTerm() > 0) {
-                term = metaResponse.getTerm();
             }
             List<InetSocketAddress> inetSocketAddresses = new ArrayList<>();
             for (NamingServerNode node : newAddressList) {
