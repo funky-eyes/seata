@@ -441,7 +441,7 @@ public class NamingserverRegistryServiceImpl implements RegistryService<NamingLi
         }
     }
 
-    public List<InetSocketAddress> handleMetadata(MetaResponse metaResponse, String vGroup){
+    public List<InetSocketAddress> handleMetadata(MetaResponse metaResponse, String vGroup) {
         // MetaResponse -> endpoint list
         List<NamingServerNode> newAddressList = new ArrayList<>();
         if (metaResponse.getTerm() > 0) {
@@ -461,7 +461,7 @@ public class NamingserverRegistryServiceImpl implements RegistryService<NamingLi
             Node.Endpoint endpoint = node.getTransaction();
             inetSocketAddresses.add(new InetSocketAddress(endpoint.getHost(), endpoint.getPort()));
         }
-        removeOfflineAddressesIfNecessary(vGroup,vGroup,inetSocketAddresses);
+        removeOfflineAddressesIfNecessary(vGroup, vGroup, inetSocketAddresses);
         VGROUP_ADDRESS_MAP.put(vGroup, newAddressList);
         return inetSocketAddresses;
     }
