@@ -19,6 +19,7 @@ package org.apache.seata.server.storage.raft.sore;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import com.alipay.sofa.jraft.Closure;
 import org.apache.seata.common.loader.LoadLevel;
 import org.apache.seata.common.metadata.ClusterRole;
@@ -36,12 +37,12 @@ import org.apache.seata.server.store.VGroupMappingStoreManager;
 public class RaftVGroupMappingStoreManager implements VGroupMappingStoreManager {
 
     private final static Map<String/*unit(raft group)*/, Map<String/*vgroup*/, MappingDO>> VGROUP_MAPPING =
-        new HashMap<>();
+        new ConcurrentHashMap<>();
 
 
     public boolean localAddVGroup(MappingDO mappingDO) {
         return VGROUP_MAPPING.computeIfAbsent(mappingDO.getUnit(), k -> new HashMap<>()).put(mappingDO.getVGroup(),
-            mappingDO) != null;
+            mappingDO) == null;
     }
 
     public void localAddVGroups(Map<String/*vgroup*/, MappingDO> vGroups, String unit) {
@@ -112,6 +113,10 @@ public class RaftVGroupMappingStoreManager implements VGroupMappingStoreManager 
 
     public Map<String/*vgroup*/, MappingDO> loadVGroupsByUnit(String unit) {
         return VGROUP_MAPPING.getOrDefault(unit, new HashMap<>());
+    }
+
+    public void clear(String unit) {
+        VGROUP_MAPPING.remove(unit);
     }
 
     @Override
