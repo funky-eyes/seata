@@ -116,7 +116,7 @@ public class NamingserverRegistryServiceImpl implements RegistryService<NamingLi
     private volatile boolean isSubscribed = false;
     private static final Configuration FILE_CONFIG = ConfigurationFactory.CURRENT_FILE_INSTANCE;
     private String namingServerAddressCache;
-    private static ConcurrentMap<String /* namingserver address */, AtomicInteger /* Number of Health Check Continues Failures */> AVAILABLE_NAMINGSERVER_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String /* namingserver address */, AtomicInteger /* Number of Health Check Continues Failures */> AVAILABLE_NAMINGSERVER_MAP = new ConcurrentHashMap<>();
     private static final ConcurrentMap<String/* vgroup */, List<NamingServerNode>> VGROUP_ADDRESS_MAP = new ConcurrentHashMap<>();
     private static final ConcurrentMap<String/* vgroup */, List<NamingListener>> LISTENER_SERVICE_MAP = new ConcurrentHashMap<>();
     protected static final ScheduledExecutorService

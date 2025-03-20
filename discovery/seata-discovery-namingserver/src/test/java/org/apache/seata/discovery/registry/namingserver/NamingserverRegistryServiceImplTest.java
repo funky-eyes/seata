@@ -16,6 +16,7 @@
  */
 package org.apache.seata.discovery.registry.namingserver;
 
+import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -42,6 +43,8 @@ import org.apache.seata.config.ConfigurationFactory;
 import org.apache.seata.common.util.HttpClientUtil;
 import org.apache.seata.discovery.registry.RegistryService;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.junit.After;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -74,9 +77,14 @@ class NamingserverRegistryServiceImplTest {
         PropertiesPropertySource customPropertySource = new PropertiesPropertySource("customSource", customProperties);
         propertySources.addLast(customPropertySource);
         ObjectHolder.INSTANCE.setObject(OBJECT_KEY_SPRING_CONFIGURABLE_ENVIRONMENT, environment);
-
     }
 
+    @AfterAll
+    public static void afterClass() {
+        System.clearProperty("registry.seata.namespace");
+        System.clearProperty("registry.seata.cluster");
+        System.clearProperty("registry.seata.server-addr");
+    }
 
     @Test
     public void unregister1() throws Exception {
@@ -118,7 +126,6 @@ class NamingserverRegistryServiceImplTest {
 
         //2.create vGroup in cluster
         createGroupInCluster("dev", "group1", "cluster1");
-
         //3.get instances
         List<InetSocketAddress> list = registryService.lookup("group1");
 
@@ -133,8 +140,12 @@ class NamingserverRegistryServiceImplTest {
     }
 
     @Test
-    public void testHandleMetadata() {
+    public void testHandleMetadata() throws Exception {
         NamingserverRegistryServiceImpl registryService = NamingserverRegistryServiceImpl.getInstance();
+        // Use reflection to set the isSubscribed field to true
+        Field isSubscribedField = NamingserverRegistryServiceImpl.class.getDeclaredField("isSubscribed");
+        isSubscribedField.setAccessible(true);
+        isSubscribedField.set(registryService, true);
 
         // Create a mock MetaResponse
         MetaResponse metaResponse = new MetaResponse();
@@ -158,11 +169,12 @@ class NamingserverRegistryServiceImplTest {
 
         // Call the method to test
         List<InetSocketAddress> result = registryService.handleMetadata(metaResponse, "testGroup");
-
+        registryService.lookup("testGroup");
         // Verify the result
         assertEquals(1, result.size());
         assertEquals("127.0.0.1", result.get(0).getAddress().getHostAddress());
         assertEquals(8091, result.get(0).getPort());
+        isSubscribedField.set(registryService, false);
     }
 
     @Test
