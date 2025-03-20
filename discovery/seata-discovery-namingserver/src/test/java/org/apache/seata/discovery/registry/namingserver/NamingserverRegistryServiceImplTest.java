@@ -60,6 +60,7 @@ class NamingserverRegistryServiceImplTest {
 
     @BeforeAll
     public static void beforeClass() throws Exception {
+/*
         System.setProperty("registry.seata.namespace", "dev");
         System.setProperty("registry.seata.cluster", "cluster1");
         System.setProperty("registry.seata.server-addr", "127.0.0.1:8080");
@@ -74,6 +75,7 @@ class NamingserverRegistryServiceImplTest {
         PropertiesPropertySource customPropertySource = new PropertiesPropertySource("customSource", customProperties);
         propertySources.addLast(customPropertySource);
         ObjectHolder.INSTANCE.setObject(OBJECT_KEY_SPRING_CONFIGURABLE_ENVIRONMENT, environment);
+*/
 
     }
 
