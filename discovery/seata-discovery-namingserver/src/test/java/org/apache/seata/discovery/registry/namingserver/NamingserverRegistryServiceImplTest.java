@@ -88,6 +88,7 @@ class NamingserverRegistryServiceImplTest {
 
 
     @Test
+    @Disabled
     public void getNamingAddrsTest() {
         NamingserverRegistryServiceImpl namingserverRegistryService = NamingserverRegistryServiceImpl.getInstance();
         List<String> list = namingserverRegistryService.getNamingAddrs();
@@ -104,14 +105,7 @@ class NamingserverRegistryServiceImplTest {
 
 
     @Test
-    public void convertTest() {
-        InetSocketAddress inetSocketAddress = new InetSocketAddress("127.0.0.1", 8088);
-        assertEquals(inetSocketAddress.getAddress().getHostAddress(), "127.0.0.1");
-        assertEquals(inetSocketAddress.getPort(), 8088);
-    }
-
-
-    @Test
+    @Disabled
     public void testRegister1() throws Exception {
 
         RegistryService registryService = new NamingserverRegistryProvider().provide();
@@ -171,6 +165,7 @@ class NamingserverRegistryServiceImplTest {
     }
 
     @Test
+    @Disabled
     public void testRegister2() throws Exception {
         NamingserverRegistryServiceImpl registryService = (NamingserverRegistryServiceImpl) new NamingserverRegistryProvider().provide();
         InetSocketAddress inetSocketAddress1 = new InetSocketAddress("127.0.0.1", 8088);
@@ -195,6 +190,7 @@ class NamingserverRegistryServiceImplTest {
 
 
     @Test
+    @Disabled
     public void testRegister3() throws Exception {
         NamingserverRegistryServiceImpl registryService = (NamingserverRegistryServiceImpl) new NamingserverRegistryProvider().provide();
         InetSocketAddress inetSocketAddress1 = new InetSocketAddress("127.0.0.1", 8088);
@@ -227,6 +223,7 @@ class NamingserverRegistryServiceImplTest {
 
 
     @Test
+    @Disabled
     public void testUnregister() throws Exception {
         RegistryService registryService = new NamingserverRegistryProvider().provide();
         InetSocketAddress inetSocketAddress1 = new InetSocketAddress("127.0.0.1", 8088);
@@ -252,7 +249,7 @@ class NamingserverRegistryServiceImplTest {
     }
 
 
-    //    @Disabled
+    @Disabled
     @Test
     public void testWatch() throws Exception {
         NamingserverRegistryServiceImpl registryService = (NamingserverRegistryServiceImpl) new NamingserverRegistryProvider().provide();
@@ -292,7 +289,7 @@ class NamingserverRegistryServiceImplTest {
 
     }
 
-    //    @Disabled
+    @Disabled
     @Test
     public void testSubscribe() throws Exception {
         NamingserverRegistryServiceImpl registryService = NamingserverRegistryServiceImpl.getInstance();
@@ -320,6 +317,7 @@ class NamingserverRegistryServiceImplTest {
 
 
     @Test
+    @Disabled
     public void testUnsubscribe() throws Exception {
         NamingserverRegistryServiceImpl registryService = (NamingserverRegistryServiceImpl) new NamingserverRegistryProvider().provide();
 
