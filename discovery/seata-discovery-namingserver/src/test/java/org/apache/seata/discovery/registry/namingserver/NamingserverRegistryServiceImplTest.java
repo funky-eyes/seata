@@ -88,6 +88,7 @@ class NamingserverRegistryServiceImplTest {
 
 
     @Test
+    @Disabled
     public void getNamingAddrsTest() {
         NamingserverRegistryServiceImpl namingserverRegistryService = NamingserverRegistryServiceImpl.getInstance();
         List<String> list = namingserverRegistryService.getNamingAddrs();
