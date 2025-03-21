@@ -17,7 +17,6 @@
 package org.apache.seata.server.storage.raft.store;
 
 import org.apache.seata.core.store.MappingDO;
-import org.apache.seata.server.storage.raft.sore.RaftVGroupMappingStoreManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
