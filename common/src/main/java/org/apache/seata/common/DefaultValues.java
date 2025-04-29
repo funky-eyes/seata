@@ -156,7 +156,6 @@ public interface DefaultValues {
      * The constant DEFAULT_PROTOCOL.
      */
     String DEFAULT_PROTOCOL = "seata";
-    String DEFAULT_HTTP_VERSION = "http";
 
     /**
      * The constant DEFAULT_TRANSPORT_HEARTBEAT.

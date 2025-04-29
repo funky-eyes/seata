@@ -16,13 +16,10 @@
  */
 package org.apache.seata.namingserver;
 
-import org.apache.seata.spring.boot.autoconfigure.http.RestControllerBeanPostProcessor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Import;
 
 @SpringBootApplication
-@Import(RestControllerBeanPostProcessor.class)
 public class NamingserverApplication {
 
     public static void main(String[] args) {

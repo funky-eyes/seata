@@ -16,14 +16,6 @@
  */
 package org.apache.seata.namingserver.manager;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
-import io.netty.handler.codec.http.DefaultHttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
-import io.netty.handler.codec.http2.Http2StreamChannel;
 import org.apache.seata.namingserver.listener.ClusterChangeEvent;
 import org.apache.seata.namingserver.listener.ClusterChangeListener;
 import org.apache.seata.namingserver.listener.Watcher;
@@ -36,6 +28,8 @@ import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.AsyncContext;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -94,23 +88,18 @@ public class ClusterWatcherManager implements ClusterChangeListener {
     }
 
     private void notify(Watcher<?> watcher) {
-        notify(watcher, HttpResponseStatus.OK.code());
+        notify(watcher, HttpServletResponse.SC_OK);
     }
 
     private void notify(Watcher<?> watcher, int statusCode) {
-        Channel channel = (Channel) watcher.getAsyncContext();
-        if (channel instanceof Http2StreamChannel) {
-            ByteBuf buf = Unpooled.buffer(4);
-            buf.writeInt(statusCode);
-            channel.writeAndFlush(new DefaultHttp2DataFrame(buf));
-            return;
-        } else {
-            // http
-            channel.writeAndFlush(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(statusCode)));
-        }
+        AsyncContext asyncContext = (AsyncContext) watcher.getAsyncContext();
+        HttpServletResponse httpServletResponse = (HttpServletResponse) asyncContext.getResponse();
+        watcher.setDone(true);
         if (logger.isDebugEnabled()) {
-            logger.debug("notify cluster change event to: {}", watcher.getClientEndpoint());
+            logger.debug("notify cluster change event to: {}", asyncContext.getRequest().getRemoteAddr());
         }
+        httpServletResponse.setStatus(statusCode);
+        asyncContext.complete();
     }
 
     public void registryWatcher(Watcher<?> watcher) {
