@@ -31,6 +31,8 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.List;
+import java.util.ArrayList;
 
 
 /**
@@ -136,18 +138,29 @@ public class NetUtil {
         if (address.charAt(0) == '[') {
             address = removeBrackets(address);
         }
-        String[] serverAddArr = null;
         int i = address.lastIndexOf(Constants.IP_PORT_SPLIT_CHAR);
         if (i > -1) {
-            serverAddArr = new String[2];
-            String hostAddress = address.substring(0,i);
+            String hostAddress = address.substring(0, i);
             if (hostAddress.contains("%")) {
                 hostAddress = hostAddress.substring(0, hostAddress.indexOf("%"));
             }
-            serverAddArr[0] = hostAddress;
-            serverAddArr[1] = address.substring(i + 1);
+            String portStr = address.substring(i + 1);
+            if (StringUtils.isBlank(hostAddress) || StringUtils.isBlank(portStr)) {
+                throw new IllegalArgumentException("Invalid endpoint format: " + address + ". Endpoint should be in the format ip:port.");
+            }
+            try {
+                int port = Integer.parseInt(portStr);
+                if (port < 1 || port > 65535) {
+                    throw new IllegalArgumentException("Invalid endpoint format: " + address + ". Port must be between 1 and 65535.");
+                }
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Invalid endpoint format: " + address + ". Port must be a numeric value.", e);
+            }
+
+            return new String[]{hostAddress, portStr};
+        } else {
+            throw new IllegalArgumentException("Invalid endpoint format: " + address + ". Endpoint should be in the format ip:port.");
         }
-        return serverAddArr;
     }
 
     /**
@@ -366,5 +379,28 @@ public class NetUtil {
             return "";
         }
         return str.replaceAll("[\\[\\]]", "");
+    }
+
+    public static List<String> getHostByName(String ipOrDomain) {
+        if (ipOrDomain == null) {
+            return null;
+        }
+        List<String> ipAddressList = new ArrayList<>();
+        if (isValidIPv4(ipOrDomain) || isValidIPv6(ipOrDomain)) {
+            ipAddressList.add(ipOrDomain);
+            return ipAddressList;
+        } else {
+            try {
+                InetAddress[] allByName = InetAddress.getAllByName(ipOrDomain);
+                for (InetAddress address : allByName) {
+                    ipAddressList.add(address.getHostAddress());
+                }
+                return ipAddressList;
+            } catch (UnknownHostException e) {
+                LOGGER.warn("Failed to resolve ip address, {}", e.getMessage());
+                ipAddressList.add(ipOrDomain);
+                return ipAddressList;
+            }
+        }
     }
 }
