@@ -75,6 +75,7 @@ public class MockTest {
         String xid = doTestRollback(0);
         Assertions.assertEquals(0, Action1Impl.getCommitTimes(xid));
         Assertions.assertEquals(1, Action1Impl.getRollbackTimes(xid));
+
     }
 
     @Test
