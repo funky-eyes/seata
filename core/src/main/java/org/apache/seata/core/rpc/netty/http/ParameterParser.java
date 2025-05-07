@@ -92,7 +92,7 @@ public class ParameterParser {
             JsonNode body = paramMap.get("body");
             return objectMapper.convertValue(body, parameterType);
         } else {
-            return paramMap.get(parameterName).asText(null);
+            return paramMap.get("param").get(parameterName).asText(null);
         }
     }
 }
