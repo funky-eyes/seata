@@ -71,16 +71,18 @@ public class NettyServerBootstrap implements RemotingBootstrap {
         this.nettyServerConfig = nettyServerConfig;
         if (NettyServerConfig.enableEpoll()) {
             this.eventLoopGroupBoss = new EpollEventLoopGroup(nettyServerConfig.getBossThreadSize(),
-                new NamedThreadFactory(nettyServerConfig.getBossThreadPrefix(), nettyServerConfig.getBossThreadSize()));
+                    new NamedThreadFactory(nettyServerConfig.getBossThreadPrefix(),
+                            nettyServerConfig.getBossThreadSize(), false));
             this.eventLoopGroupWorker = new EpollEventLoopGroup(nettyServerConfig.getServerWorkerThreads(),
-                new NamedThreadFactory(nettyServerConfig.getWorkerThreadPrefix(),
-                    nettyServerConfig.getServerWorkerThreads()));
+                    new NamedThreadFactory(nettyServerConfig.getWorkerThreadPrefix(),
+                            nettyServerConfig.getServerWorkerThreads(), false));
         } else {
             this.eventLoopGroupBoss = new NioEventLoopGroup(nettyServerConfig.getBossThreadSize(),
-                new NamedThreadFactory(nettyServerConfig.getBossThreadPrefix(), nettyServerConfig.getBossThreadSize()));
+                    new NamedThreadFactory(nettyServerConfig.getBossThreadPrefix(),
+                            nettyServerConfig.getBossThreadSize(), false));
             this.eventLoopGroupWorker = new NioEventLoopGroup(nettyServerConfig.getServerWorkerThreads(),
-                new NamedThreadFactory(nettyServerConfig.getWorkerThreadPrefix(),
-                    nettyServerConfig.getServerWorkerThreads()));
+                    new NamedThreadFactory(nettyServerConfig.getWorkerThreadPrefix(),
+                            nettyServerConfig.getServerWorkerThreads(), false));
         }
 
         if (nettyServerConfig.getServerListenPort() > 0) {
@@ -175,7 +177,7 @@ public class NettyServerBootstrap implements RemotingBootstrap {
             });
 
         try {
-            ChannelFuture future = this.serverBootstrap.bind(port).sync();
+            this.serverBootstrap.bind(port).sync();
             LOGGER.info("Server started, service listen port: {}", getListenPort());
             Instance instance = Instance.getInstance();
             // Lines 177-180 are just for compatibility with test cases
@@ -186,7 +188,6 @@ public class NettyServerBootstrap implements RemotingBootstrap {
                 registryService.register(Instance.getInstance());
             }
             initialized.set(true);
-            future.channel().closeFuture().sync();
         } catch (SocketException se) {
             throw new RuntimeException("Server start failed, the listen port: " + getListenPort(), se);
         } catch (Exception exx) {
