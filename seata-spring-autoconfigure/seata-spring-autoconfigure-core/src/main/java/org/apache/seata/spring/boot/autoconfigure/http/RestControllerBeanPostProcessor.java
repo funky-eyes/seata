@@ -44,7 +44,6 @@ import java.util.Map;
  * Handles classes annotated with @RestController to establish a request path -> controller mapping relationship
  *
  * @see ControllerManager
- * @author yiqi
  */
 @Component
 public class RestControllerBeanPostProcessor implements BeanPostProcessor {
