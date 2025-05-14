@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -174,7 +175,7 @@ public class NettyServerBootstrap implements RemotingBootstrap {
             });
 
         try {
-            this.serverBootstrap.bind(port).sync();
+            ChannelFuture future = this.serverBootstrap.bind(port).sync();
             LOGGER.info("Server started, service listen port: {}", getListenPort());
             Instance instance = Instance.getInstance();
             // Lines 177-180 are just for compatibility with test cases
@@ -185,6 +186,7 @@ public class NettyServerBootstrap implements RemotingBootstrap {
                 registryService.register(Instance.getInstance());
             }
             initialized.set(true);
+            future.channel().closeFuture().sync();
         } catch (SocketException se) {
             throw new RuntimeException("Server start failed, the listen port: " + getListenPort(), se);
         } catch (Exception exx) {
