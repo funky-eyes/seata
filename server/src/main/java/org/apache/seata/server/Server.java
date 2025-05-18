@@ -90,7 +90,7 @@ public class Server {
         XID.setPort(nettyRemotingServer.getListenPort());
         UUIDGenerator.init(parameterParser.getServerNode());
         ConfigurableListableBeanFactory beanFactory =
-                ((AnnotationConfigApplicationContext) ObjectHolder.INSTANCE
+                ((ConfigurableApplicationContext) ObjectHolder.INSTANCE
                         .getObject(OBJECT_KEY_SPRING_APPLICATION_CONTEXT)).getBeanFactory();
         DefaultCoordinator coordinator = DefaultCoordinator.getInstance(nettyRemotingServer);
         if (coordinator instanceof ApplicationListener) {
