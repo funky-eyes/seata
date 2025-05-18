@@ -23,7 +23,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ServerConfig {
     @Bean
-    public ServerProperties emptyServerProperties(){
+    public ServerProperties emptyServerProperties() {
         return new ServerProperties();
     }
 }
