@@ -16,6 +16,7 @@
  */
 package org.apache.seata.core.rpc.netty.http;
 
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -28,6 +29,8 @@ public class ControllerManager {
     }
 
     public static void addHttpInvocation(HttpInvocation httpInvocation) {
+        Method handleMethod = httpInvocation.getMethod();
+        handleMethod.setAccessible(true);
         HTTP_CONTROLLER_MAP.put(httpInvocation.getPath(), httpInvocation);
     }
 }
