@@ -30,7 +30,9 @@ public class ControllerManager {
 
     public static void addHttpInvocation(HttpInvocation httpInvocation) {
         Method handleMethod = httpInvocation.getMethod();
-        handleMethod.setAccessible(true);
+        if (handleMethod != null) {
+            handleMethod.setAccessible(true);
+        }
         HTTP_CONTROLLER_MAP.put(httpInvocation.getPath(), httpInvocation);
     }
 }
