@@ -106,7 +106,7 @@ public abstract class AbstractDataSourceProvider implements DataSourceProvider, 
                     .filter(File::isDirectory)
                     // Only the MySQL driver needs to be placed in the jdbc folder.
                     .map(file -> (MYSQL8_DRIVER_CLASS_NAME.equals(driverClassName)
-                                    || MYSQL8_DRIVER_CLASS_NAME.equals(driverClassName))
+                                    || MYSQL_DRIVER_CLASS_NAME.equals(driverClassName))
                             ? new File(file, "jdbc")
                             : file)
                     .filter(File::exists)
