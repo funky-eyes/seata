@@ -38,8 +38,7 @@ public class ParameterParser {
             new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     public static ObjectNode convertParamMap(Map<String, List<String>> paramMap) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        ObjectNode paramNode = objectMapper.createObjectNode();
+        ObjectNode paramNode = OBJECT_MAPPER.createObjectNode();
         for (Map.Entry<String, List<String>> entry : paramMap.entrySet()) {
             List<String> list = entry.getValue();
             if (list == null || list.isEmpty()) {
