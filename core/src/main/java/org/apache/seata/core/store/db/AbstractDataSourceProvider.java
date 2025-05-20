@@ -114,7 +114,7 @@ public abstract class AbstractDataSourceProvider implements DataSourceProvider, 
                     .distinct()
                     .findAny()
                     .map(File::getAbsolutePath)
-                    .orElseThrow(() -> new ShouldNeverHappenException("can not find jdbc folder"));
+                    .orElseThrow(() -> new ShouldNeverHappenException("cannot find jdbc folder"));
             throw new StoreException(String.format(
                     "The driver {%s} cannot be found in the path %s. Please ensure that the appropriate database driver dependencies are included in the classpath.",
                     driverClassName, driverClassPath));
