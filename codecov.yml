@@ -24,21 +24,20 @@ coverage:
       default:
         threshold: 1%
         if_not_found: success
-        target: 2.x
-    changes: yes  #only care the changed files
+    changes: no
   precision: 2
   range: "50...100"
 ignore:
- - "**/test/**"
- - "test/.*"
- - ".github/.*"
- - ".mvn/.*"
- - ".style/.*"
- - "**/**.md"
- - "distribution/.*"
- - "rm-datasource/src/test/java/org/apache/seata/rm/datasource/mock"
- - "sqlparser/seata-sqlparser-antlr/src/main/java/org/apache/seata/sqlparser/antlr/mysql/antlr/.*"
- - "sqlparser/seata-sqlparser-antlr/src/main/java/org/apache/seata/sqlparser/antlr/mysql/parser/.*"
+  - "**/test/**"
+  - "test/.*"
+  - ".github/.*"
+  - ".mvn/.*"
+  - ".style/.*"
+  - "**/**.md"
+  - "distribution/.*"
+  - "rm-datasource/src/test/java/org/apache/seata/rm/datasource/mock"
+  - "sqlparser/seata-sqlparser-antlr/src/main/java/org/apache/seata/sqlparser/antlr/mysql/antlr/.*"
+  - "sqlparser/seata-sqlparser-antlr/src/main/java/org/apache/seata/sqlparser/antlr/mysql/parser/.*"
 comment:
   layout: "diff,flags,files,reach"
   behavior: default

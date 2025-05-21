@@ -98,6 +98,7 @@ public abstract class AbstractDataSourceProvider implements DataSourceProvider, 
             if (folderPath == null) {
                 folderPath = System.getProperty("java.class.path");
             }
+            LOGGER.info("validate driver class name, folderPath: {}", folderPath);
             String driverClassPath = Stream.of(folderPath.split(File.pathSeparator))
                     .map(File::new)
                     .filter(File::exists)
@@ -172,6 +173,7 @@ public abstract class AbstractDataSourceProvider implements DataSourceProvider, 
         if (cp == null || cp.isEmpty()) {
             return loaders;
         }
+        LOGGER.info("create mysql driver class loaders, loader.path: {}", cp);
         Stream.of(cp.split(File.pathSeparator))
                 .map(File::new)
                 .filter(File::exists)
