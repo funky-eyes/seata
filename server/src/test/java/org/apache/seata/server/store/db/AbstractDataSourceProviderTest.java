@@ -54,6 +54,7 @@ public class AbstractDataSourceProviderTest {
     @Test
     @Order(2)
     public void testLoadMysqlDriver() {
+        System.setProperty("loader.path","/test");
         System.setProperty("store.db.driverClassName", mysqlJdbcDriver);
         try {
             DataSource dataSource = EnhancedServiceLoader.load(DataSourceProvider.class, dbcpDatasourceType).provide();
@@ -118,4 +119,5 @@ public class AbstractDataSourceProviderTest {
         Class<?> driverClass = Class.forName(mysqlJdbcDriver, true, classLoader);
         Assertions.assertNotNull(driverClass);
     }
+
 }
