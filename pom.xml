@@ -482,6 +482,13 @@
                             <goal>report</goal>
                         </goals>
                     </execution>
+                    <execution>
+                        <id>report-aggregate</id>
+                        <phase>verify</phase> <!-- 在 verify 阶段执行聚合报告 -->
+                        <goals>
+                            <goal>report-aggregate</goal>
+                        </goals>
+                    </execution>
                 </executions>
             </plugin>
             <!-- SureFire -->
