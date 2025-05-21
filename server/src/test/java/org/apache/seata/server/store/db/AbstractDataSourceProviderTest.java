@@ -20,14 +20,19 @@ import javax.sql.DataSource;
 
 import org.apache.seata.common.loader.EnhancedServiceLoader;
 import org.apache.seata.common.loader.EnhancedServiceNotFoundException;
+import org.apache.seata.config.ConfigurationFactory;
 import org.apache.seata.core.store.db.DataSourceProvider;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.boot.test.context.SpringBootTest;
 
 /**
  */
 @SpringBootTest
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AbstractDataSourceProviderTest {
 
     private final String dbcpDatasourceType = "dbcp";
@@ -40,12 +45,14 @@ public class AbstractDataSourceProviderTest {
     private final String mysql8JdbcDriver = "com.mysql.cj.jdbc.Driver";
 
     @Test
+    @Order(1)
     public void testDbcpDataSourceProvider() {
         DataSource dataSource = EnhancedServiceLoader.load(DataSourceProvider.class, dbcpDatasourceType).provide();
         Assertions.assertNotNull(dataSource);
     }
 
     @Test
+    @Order(2)
     public void testLoadMysqlDriver() {
         System.setProperty("store.db.driverClassName", mysqlJdbcDriver);
         try {
@@ -55,24 +62,28 @@ public class AbstractDataSourceProviderTest {
             dataSource = EnhancedServiceLoader.load(DataSourceProvider.class, dbcpDatasourceType).provide();
             Assertions.assertNotNull(dataSource);
         } finally {
-            EnhancedServiceLoader.unload(DataSourceProvider.class, dbcpDatasourceType);
+            EnhancedServiceLoader.unloadAll();
+            ConfigurationFactory.reload();
             System.clearProperty("store.db.driverClassName");
         }
     }
 
     @Test
+    @Order(3)
     public void testLoadDMDriver() {
         System.setProperty("store.db.driverClassName", "dm.jdbc.driver.DmDriver");
         try {
             DataSource dataSource = EnhancedServiceLoader.load(DataSourceProvider.class, dbcpDatasourceType).provide();
             Assertions.assertNotNull(dataSource);
         } finally {
-            EnhancedServiceLoader.unload(DataSourceProvider.class, dbcpDatasourceType);
+            EnhancedServiceLoader.unloadAll();
+            ConfigurationFactory.reload();
             System.clearProperty("store.db.driverClassName");
         }
     }
 
     @Test
+    @Order(4)
     public void testLoadDriverFailed() {
         System.setProperty("store.db.driverClassName", "dm.jdbc.driver.DmDriver1");
         try {
@@ -80,24 +91,28 @@ public class AbstractDataSourceProviderTest {
                 EnhancedServiceLoader.load(DataSourceProvider.class, dbcpDatasourceType).provide();
             });
         } finally {
-            EnhancedServiceLoader.unload(DataSourceProvider.class, dbcpDatasourceType);
+            EnhancedServiceLoader.unloadAll();
+            ConfigurationFactory.reload();
             System.clearProperty("store.db.driverClassName");
         }
     }
 
     @Test
+    @Order(5)
     public void testDruidDataSourceProvider() {
         DataSource dataSource = EnhancedServiceLoader.load(DataSourceProvider.class, druidDatasourceType).provide();
         Assertions.assertNotNull(dataSource);
     }
 
     @Test
+    @Order(6)
     public void testHikariDataSourceProvider() {
         DataSource dataSource = EnhancedServiceLoader.load(DataSourceProvider.class, hikariDatasourceType).provide();
         Assertions.assertNotNull(dataSource);
     }
 
     @Test
+    @Order(7)
     public void testMySQLDataSourceProvider() throws ClassNotFoundException {
         ClassLoader classLoader = ClassLoader.getSystemClassLoader();
         Class<?> driverClass = Class.forName(mysqlJdbcDriver, true, classLoader);
