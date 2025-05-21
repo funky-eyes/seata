@@ -19,6 +19,7 @@ package org.apache.seata.server.store.db;
 import javax.sql.DataSource;
 
 import org.apache.seata.common.loader.EnhancedServiceLoader;
+import org.apache.seata.common.loader.EnhancedServiceNotFoundException;
 import org.apache.seata.core.store.db.DataSourceProvider;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -36,11 +37,52 @@ public class AbstractDataSourceProviderTest {
     private final String hikariDatasourceType = "hikari";
 
     private final String mysqlJdbcDriver = "com.mysql.jdbc.Driver";
+    private final String mysql8JdbcDriver = "com.mysql.cj.jdbc.Driver";
 
     @Test
     public void testDbcpDataSourceProvider() {
         DataSource dataSource = EnhancedServiceLoader.load(DataSourceProvider.class, dbcpDatasourceType).provide();
         Assertions.assertNotNull(dataSource);
+    }
+
+    @Test
+    public void testLoadMysqlDriver() {
+        System.setProperty("store.db.driverClassName", mysqlJdbcDriver);
+        try {
+            DataSource dataSource = EnhancedServiceLoader.load(DataSourceProvider.class, dbcpDatasourceType).provide();
+            Assertions.assertNotNull(dataSource);
+            System.setProperty("store.db.driverClassName", mysql8JdbcDriver);
+            dataSource = EnhancedServiceLoader.load(DataSourceProvider.class, dbcpDatasourceType).provide();
+            Assertions.assertNotNull(dataSource);
+        } finally {
+            EnhancedServiceLoader.unload(DataSourceProvider.class, dbcpDatasourceType);
+            System.clearProperty("store.db.driverClassName");
+        }
+    }
+
+    @Test
+    public void testLoadDMDriver() {
+        System.setProperty("store.db.driverClassName", "dm.jdbc.driver.DmDriver");
+        try {
+            DataSource dataSource = EnhancedServiceLoader.load(DataSourceProvider.class, dbcpDatasourceType).provide();
+            Assertions.assertNotNull(dataSource);
+        } finally {
+            EnhancedServiceLoader.unload(DataSourceProvider.class, dbcpDatasourceType);
+            System.clearProperty("store.db.driverClassName");
+        }
+    }
+
+    @Test
+    public void testLoadDriverFailed() {
+        System.setProperty("store.db.driverClassName", "dm.jdbc.driver.DmDriver1");
+        try {
+            Assertions.assertThrows(EnhancedServiceNotFoundException.class, () -> {
+                EnhancedServiceLoader.load(DataSourceProvider.class, dbcpDatasourceType).provide();
+            });
+        } finally {
+            EnhancedServiceLoader.unload(DataSourceProvider.class, dbcpDatasourceType);
+            System.clearProperty("store.db.driverClassName");
+        }
     }
 
     @Test
