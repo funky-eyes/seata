@@ -61,12 +61,12 @@ public abstract class AbstractDataSourceProvider implements DataSourceProvider, 
 
     private static final String MYSQL_DRIVER_FILE_PREFIX = "mysql-connector-j";
 
-    private static final Map<String, ClassLoader> MYSQL_DRIVER_LOADERS;
+    private static final Map<String, ClassLoader> DRIVER_LOADERS;
 
     private static final long DEFAULT_DB_MAX_WAIT = 5000;
 
     static {
-        MYSQL_DRIVER_LOADERS = createMysqlDriverClassLoaders();
+        DRIVER_LOADERS = createMysqlDriverClassLoaders();
     }
 
     @Override
@@ -159,7 +159,7 @@ public abstract class AbstractDataSourceProvider implements DataSourceProvider, 
     }
 
     protected ClassLoader getDriverClassLoader() {
-        return MYSQL_DRIVER_LOADERS.getOrDefault(
+        return DRIVER_LOADERS.getOrDefault(
                 getDriverClassName(), this.getClass().getClassLoader());
     }
 
