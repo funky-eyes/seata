@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.seata.core.store.db;
+package org.apache.seata.server.store;
 
 import static org.apache.seata.common.DefaultValues.DEFAULT_DB_MAX_CONN;
 import static org.apache.seata.common.DefaultValues.DEFAULT_DB_MIN_CONN;
@@ -37,6 +37,7 @@ import org.apache.seata.config.Configuration;
 import org.apache.seata.config.ConfigurationFactory;
 import org.apache.seata.core.constants.ConfigurationKeys;
 import org.apache.seata.core.constants.DBType;
+import org.apache.seata.core.store.db.DataSourceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

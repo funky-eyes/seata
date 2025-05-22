@@ -18,7 +18,6 @@ package org.apache.seata.server.store;
 
 import org.apache.seata.common.ConfigurationKeys;
 import org.apache.seata.common.loader.LoadLevel;
-import org.apache.seata.core.store.db.AbstractDataSourceProvider;
 import org.apache.commons.dbcp2.BasicDataSource;
 
 import javax.sql.DataSource;

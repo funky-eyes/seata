@@ -20,7 +20,6 @@ import javax.sql.DataSource;
 
 import org.apache.seata.common.ConfigurationKeys;
 import org.apache.seata.common.loader.LoadLevel;
-import org.apache.seata.core.store.db.AbstractDataSourceProvider;
 import com.alibaba.druid.pool.DruidDataSource;
 
 import java.sql.Connection;
