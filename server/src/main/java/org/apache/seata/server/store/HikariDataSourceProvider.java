@@ -21,6 +21,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.util.IsolationLevel;
 import org.apache.seata.common.ConfigurationKeys;
 import org.apache.seata.common.loader.LoadLevel;
+import org.apache.seata.core.store.db.AbstractDataSourceProvider;
 
 import javax.sql.DataSource;
 import java.util.Properties;
