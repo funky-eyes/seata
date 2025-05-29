@@ -47,8 +47,7 @@ public class HttpDispatchHandler extends SimpleChannelInboundHandler<HttpRequest
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpRequest httpRequest) throws Exception {
-            boolean keepAlive =
-                HttpUtil.isKeepAlive(httpRequest) && httpRequest.protocolVersion().isKeepAliveDefault();
+        boolean keepAlive = HttpUtil.isKeepAlive(httpRequest) && httpRequest.protocolVersion().isKeepAliveDefault();
         FullHttpResponse response;
         try {
             QueryStringDecoder queryStringDecoder = new QueryStringDecoder(httpRequest.uri());
@@ -84,9 +83,8 @@ public class HttpDispatchHandler extends SimpleChannelInboundHandler<HttpRequest
 
             Object httpController = httpInvocation.getController();
             Method handleMethod = httpInvocation.getMethod();
-            Object[] args =
-                ParameterParser.getArgValues(httpInvocation.getParamMetaData(), handleMethod, requestDataNode,
-                    httpContext);
+            Object[] args = ParameterParser.getArgValues(httpInvocation.getParamMetaData(), handleMethod,
+                requestDataNode, httpContext);
             Object result = handleMethod.invoke(httpController, args);
 
             if (httpContext.isAsync()) {
@@ -120,8 +118,8 @@ public class HttpDispatchHandler extends SimpleChannelInboundHandler<HttpRequest
     }
 
     private void sendNotFound(ChannelHandlerContext ctx, boolean keepAlive) {
-        FullHttpResponse response = new DefaultFullHttpResponse(
-                HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND, Unpooled.wrappedBuffer(Unpooled.EMPTY_BUFFER));
+        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND,
+            Unpooled.wrappedBuffer(Unpooled.EMPTY_BUFFER));
         if (!keepAlive) {
             ctx.writeAndFlush(response).addListeners(ChannelFutureListener.CLOSE);
         } else {

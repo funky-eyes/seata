@@ -87,7 +87,7 @@ class ParameterParserTest {
         Object[] args = ParameterParser.getArgValues(
                 new ParamMetaData[]{paramMetaData},
                 method,
-                paramMap
+                paramMap,null
         );
 
         assertEquals(1, args.length);

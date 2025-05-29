@@ -36,8 +36,8 @@ public class ParameterParser {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ParameterParser.class);
 
-    private static final ObjectMapper OBJECT_MAPPER =
-            new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).configure(FAIL_ON_EMPTY_BEANS,false);
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).configure(FAIL_ON_EMPTY_BEANS, false);
 
     public static ObjectNode convertParamMap(Map<String, List<String>> paramMap) {
         ObjectNode paramNode = OBJECT_MAPPER.createObjectNode();
@@ -58,23 +58,22 @@ public class ParameterParser {
         return paramNode;
     }
 
-    public static Object[] getArgValues(ParamMetaData[] paramMetaDatas, Method handleMethod, ObjectNode paramMap, HttpContext httpContext)
-            throws JsonProcessingException {
+    public static Object[] getArgValues(ParamMetaData[] paramMetaDatas, Method handleMethod, ObjectNode paramMap,
+        HttpContext httpContext) throws JsonProcessingException {
         Class<?>[] parameterTypes = handleMethod.getParameterTypes();
         Parameter[] parameters = handleMethod.getParameters();
-        return getParameters(parameterTypes, paramMetaDatas, parameters, paramMap,httpContext);
+        return getParameters(parameterTypes, paramMetaDatas, parameters, paramMap, httpContext);
     }
 
-    private static Object[] getParameters(
-            Class<?>[] parameterTypes, ParamMetaData[] paramMetaDatas, Parameter[] parameters, ObjectNode paramMap,HttpContext httpContext)
-            throws JsonProcessingException {
+    private static Object[] getParameters(Class<?>[] parameterTypes, ParamMetaData[] paramMetaDatas,
+        Parameter[] parameters, ObjectNode paramMap, HttpContext httpContext) throws JsonProcessingException {
         int length = parameterTypes.length;
         Object[] ret = new Object[length];
         for (int i = 0; i < length; i++) {
             Class<?> parameterType = parameterTypes[i];
             String parameterName = parameters[i].getName();
             ParamMetaData paramMetaData = paramMetaDatas[i];
-            Object value  = getArgValue(parameterType, parameterName, paramMetaData, paramMap, httpContext);
+            Object value = getArgValue(parameterType, parameterName, paramMetaData, paramMap, httpContext);
             if (value != null && !parameterType.isAssignableFrom(value.getClass())) {
                 LOGGER.error("[HttpDispatchHandler] not compatible parameter type, expect {}, but {}", parameterType,
                     ret[i].getClass());
@@ -87,9 +86,8 @@ public class ParameterParser {
         return ret;
     }
 
-    private static Object getArgValue(
-            Class<?> parameterType, String parameterName, ParamMetaData paramMetaData, ObjectNode paramMap,HttpContext httpContext)
-            throws JsonProcessingException {
+    private static Object getArgValue(Class<?> parameterType, String parameterName, ParamMetaData paramMetaData,
+        ObjectNode paramMap, HttpContext httpContext) throws JsonProcessingException {
         ParamMetaData.ParamConvertType paramConvertType = paramMetaData.getParamConvertType();
         if (parameterType.equals(HttpContext.class)) {
             return httpContext;
@@ -98,14 +96,14 @@ public class ParameterParser {
             return OBJECT_MAPPER.convertValue(param, parameterType);
         } else if (ParamMetaData.ParamConvertType.REQUEST_BODY.equals(paramConvertType)) {
             JsonNode body = paramMap.get("body");
-           return OBJECT_MAPPER.convertValue(body, parameterType);
+            return OBJECT_MAPPER.convertValue(body, parameterType);
         } else {
-         JsonNode jsonNode =   paramMap.get("param").get(parameterName);
-         if(jsonNode!=null){
-             String value = jsonNode.asText(null);
-             return value!=null ? OBJECT_MAPPER.convertValue(value, parameterType) : null;
-         }
-         return null;
+            JsonNode jsonNode = paramMap.get("param").get(parameterName);
+            if (jsonNode != null) {
+                String value = jsonNode.asText(null);
+                return value != null ? OBJECT_MAPPER.convertValue(value, parameterType) : null;
+            }
+            return null;
 
         }
     }
