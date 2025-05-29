@@ -26,6 +26,15 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletResponse;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
+import org.apache.seata.common.rpc.http.HttpContext;
 import org.apache.seata.common.thread.NamedThreadFactory;
 import org.apache.seata.server.cluster.listener.ClusterChangeEvent;
 import org.apache.seata.server.cluster.listener.ClusterChangeListener;
@@ -58,11 +67,8 @@ public class ClusterWatcherManager implements ClusterChangeListener {
                 Optional.ofNullable(WATCHERS.remove(group))
                     .ifPresent(watchers -> watchers.parallelStream().forEach(watcher -> {
                         if (System.currentTimeMillis() >= watcher.getTimeout()) {
-                            HttpServletResponse httpServletResponse =
-                                (HttpServletResponse)((AsyncContext)watcher.getAsyncContext()).getResponse();
                             watcher.setDone(true);
-                            httpServletResponse.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-                            ((AsyncContext)watcher.getAsyncContext()).complete();
+                            sendWatcherResponse(watcher, HttpServletResponse.SC_NOT_MODIFIED, HttpResponseStatus.NOT_MODIFIED);
                         }
                         if (!watcher.isDone()) {
                             // Re-register
@@ -81,19 +87,53 @@ public class ClusterWatcherManager implements ClusterChangeListener {
             GROUP_UPDATE_TIME.put(event.getGroup(), event.getTerm());
             // Notifications are made of changes in cluster information
             Optional.ofNullable(WATCHERS.remove(event.getGroup()))
-                .ifPresent(watchers -> watchers.parallelStream().forEach(this::notify));
+                .ifPresent(watchers -> watchers.parallelStream().forEach(this::notifyWatcher));
         }
     }
 
-    private void notify(Watcher<?> watcher) {
-        AsyncContext asyncContext = (AsyncContext)watcher.getAsyncContext();
-        HttpServletResponse httpServletResponse = (HttpServletResponse)asyncContext.getResponse();
+    private void notifyWatcher(Watcher<?> watcher) {
         watcher.setDone(true);
-        if (logger.isDebugEnabled()) {
-            logger.debug("notify cluster change event to: {}", asyncContext.getRequest().getRemoteAddr());
+        sendWatcherResponse(watcher, HttpServletResponse.SC_OK, HttpResponseStatus.OK);
+    }
+
+    private void sendWatcherResponse(Watcher<?> watcher, int servletStatus, HttpResponseStatus nettyStatus) {
+        Object context = watcher.getAsyncContext();
+        if (context instanceof AsyncContext) {
+            AsyncContext asyncContext = (AsyncContext) context;
+            HttpServletResponse httpServletResponse = (HttpServletResponse) asyncContext.getResponse();
+            try {
+                if (!httpServletResponse.isCommitted()) {
+                    httpServletResponse.setStatus(servletStatus);
+                }
+            } catch (IllegalStateException e) {
+                logger.warn("Error setting servlet response status for watcher on group {}: {}", watcher.getGroup(), e.getMessage());
+            } finally {
+                try {
+                    asyncContext.complete();
+                } catch (IllegalStateException e) {
+                    // This can happen if already completed due to an error or race, log as warning
+                    logger.warn("AsyncContext already completed for watcher on group {}: {}", watcher.getGroup(), e.getMessage());
+                }
+            }
+        } else if (context instanceof HttpContext) {
+            HttpContext httpContext = (HttpContext) context;
+            ChannelHandlerContext ctx = httpContext.getContext();
+            if (ctx.channel().isActive()) {
+                HttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
+                    nettyStatus, Unpooled.EMPTY_BUFFER);
+                response.headers().set(HttpHeaderNames.CONTENT_LENGTH, 0);
+
+                if (!httpContext.isKeepAlive()) {
+                    ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+                } else {
+                    ctx.writeAndFlush(response);
+                }
+            } else {
+                logger.warn("Netty channel is not active for watcher on group {}, cannot send response.", watcher.getGroup());
+            }
+        } else {
+            logger.warn("Unsupported context type for watcher on group {}: {}", watcher.getGroup(), context != null ? context.getClass().getName() : "null");
         }
-        httpServletResponse.setStatus(HttpServletResponse.SC_OK);
-        asyncContext.complete();
     }
 
     public void registryWatcher(Watcher<?> watcher) {
@@ -102,8 +142,7 @@ public class ClusterWatcherManager implements ClusterChangeListener {
         if (term == null || watcher.getTerm() >= term) {
             WATCHERS.computeIfAbsent(group, value -> new ConcurrentLinkedQueue<>()).add(watcher);
         } else {
-            notify(watcher);
+            notifyWatcher(watcher);
         }
     }
-
 }

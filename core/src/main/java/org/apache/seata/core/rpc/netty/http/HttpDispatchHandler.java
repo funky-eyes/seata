@@ -34,6 +34,7 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.multipart.Attribute;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
+import org.apache.seata.common.rpc.http.HttpContext;
 import java.lang.reflect.Method;
 
 public class HttpDispatchHandler extends SimpleChannelInboundHandler<HttpRequest> {
@@ -52,10 +53,10 @@ public class HttpDispatchHandler extends SimpleChannelInboundHandler<HttpRequest
             sendNotFound(ctx, keepAlive);
             return;
         }
-
+        HttpContext httpContext = new HttpContext(httpRequest,ctx, keepAlive);
         ObjectNode requestDataNode = OBJECT_MAPPER.createObjectNode();
         requestDataNode.putIfAbsent("param", ParameterParser.convertParamMap(queryStringDecoder.parameters()));
-        requestDataNode.putPOJO("channel", ctx.channel());
+        requestDataNode.putPOJO("httpContext", httpContext);
 
         if (httpRequest.method() == HttpMethod.POST) {
             HttpPostRequestDecoder httpPostRequestDecoder = null;
@@ -82,7 +83,7 @@ public class HttpDispatchHandler extends SimpleChannelInboundHandler<HttpRequest
         Object[] args = ParameterParser.getArgValues(httpInvocation.getParamMetaData(), handleMethod, requestDataNode);
         Object result = handleMethod.invoke(httpController, args);
 
-        if (requestDataNode.get("channel") == null) {
+        if (httpContext.isAsync()) {
             return;
         }
         FullHttpResponse response;

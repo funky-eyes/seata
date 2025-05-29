@@ -20,10 +20,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import javax.servlet.AsyncContext;
-import javax.servlet.http.HttpServletRequest;
 
 import com.alipay.sofa.jraft.RouteTable;
 import com.alipay.sofa.jraft.conf.Configuration;
@@ -32,6 +29,7 @@ import org.apache.seata.common.ConfigurationKeys;
 import org.apache.seata.common.metadata.MetadataResponse;
 import org.apache.seata.common.metadata.Node;
 import org.apache.seata.common.result.Result;
+import org.apache.seata.common.rpc.http.HttpContext;
 import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.config.ConfigurationFactory;
 import org.apache.seata.server.cluster.manager.ClusterWatcherManager;
@@ -41,8 +39,6 @@ import org.apache.seata.server.cluster.raft.sync.msg.dto.RaftClusterMetadata;
 import org.apache.seata.server.cluster.watch.Watcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
-import org.springframework.context.ApplicationContext;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -63,15 +59,6 @@ public class ClusterController {
     @Resource
     private ClusterWatcherManager clusterWatcherManager;
 
-    private ServerProperties serverProperties;
-
-    @Resource
-    ApplicationContext applicationContext;
-
-    @PostConstruct
-    private void init() {
-        this.serverProperties = applicationContext.getBean(ServerProperties.class);
-    }
 
     @PostMapping("/changeCluster")
     public Result<?> changeCluster(@RequestParam String raftClusterStr) {
@@ -123,12 +110,11 @@ public class ClusterController {
     }
 
     @PostMapping("/watch")
-    public void watch(HttpServletRequest request, @RequestParam Map<String, Object> groupTerms,
+    public void watch(HttpContext context, @RequestParam Map<String, Object> groupTerms,
         @RequestParam(defaultValue = "28000") int timeout) {
-        AsyncContext context = request.startAsync();
-        context.setTimeout(0L);
+        context.setAsync(true);
         groupTerms.forEach((group, term) -> {
-            Watcher<AsyncContext> watcher =
+            Watcher<HttpContext> watcher =
                 new Watcher<>(group, context, timeout, Long.parseLong(String.valueOf(term)));
             clusterWatcherManager.registryWatcher(watcher);
         });

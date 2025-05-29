@@ -27,6 +27,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.List;
 import java.util.Map;
+import org.apache.seata.common.rpc.http.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,9 +90,9 @@ public class ParameterParser {
             Class<?> parameterType, String parameterName, ParamMetaData paramMetaData, ObjectNode paramMap)
             throws JsonProcessingException {
         ParamMetaData.ParamConvertType paramConvertType = paramMetaData.getParamConvertType();
-        if (parameterType.equals(Channel.class)) {
-            JsonNode jsonNode = paramMap.get("channel");
-            paramMap.putPOJO("channel", null);
+        if (parameterType.equals(HttpContext.class)) {
+            JsonNode jsonNode = paramMap.get("httpContext");
+            paramMap.putPOJO("httpContext", null);
             return OBJECT_MAPPER.convertValue(jsonNode, Channel.class);
         } else if (ParamMetaData.ParamConvertType.MODEL_ATTRIBUTE.equals(paramConvertType)) {
             JsonNode param = paramMap.get("param");
