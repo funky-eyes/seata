@@ -41,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -110,12 +111,16 @@ public class ClusterController {
     }
 
     @PostMapping("/watch")
-    public void watch(HttpContext context, @RequestParam Map<String, Object> groupTerms,
-        @RequestParam(defaultValue = "28000") int timeout) {
+    public void watch(HttpContext context, @RequestBody Map<String, Object> groupTerms,
+        @RequestParam(defaultValue = "28000") Integer timeout) {
         context.setAsync(true);
+        if(timeout==null){
+            timeout = 28000;
+        }
+        Integer finalTimeout = timeout;
         groupTerms.forEach((group, term) -> {
             Watcher<HttpContext> watcher =
-                new Watcher<>(group, context, timeout, Long.parseLong(String.valueOf(term)));
+                new Watcher<>(group, context, finalTimeout, Long.parseLong(String.valueOf(term)));
             clusterWatcherManager.registryWatcher(watcher);
         });
     }
