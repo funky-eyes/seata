@@ -24,8 +24,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
-import javax.servlet.AsyncContext;
-import javax.servlet.http.HttpServletResponse;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -68,7 +66,7 @@ public class ClusterWatcherManager implements ClusterChangeListener {
                     .ifPresent(watchers -> watchers.parallelStream().forEach(watcher -> {
                         if (System.currentTimeMillis() >= watcher.getTimeout()) {
                             watcher.setDone(true);
-                            sendWatcherResponse(watcher, HttpServletResponse.SC_NOT_MODIFIED, HttpResponseStatus.NOT_MODIFIED);
+                            sendWatcherResponse(watcher, HttpResponseStatus.NOT_MODIFIED);
                         }
                         if (!watcher.isDone()) {
                             // Re-register
@@ -93,29 +91,12 @@ public class ClusterWatcherManager implements ClusterChangeListener {
 
     private void notifyWatcher(Watcher<?> watcher) {
         watcher.setDone(true);
-        sendWatcherResponse(watcher, HttpServletResponse.SC_OK, HttpResponseStatus.OK);
+        sendWatcherResponse(watcher, HttpResponseStatus.OK);
     }
 
-    private void sendWatcherResponse(Watcher<?> watcher, int servletStatus, HttpResponseStatus nettyStatus) {
+    private void sendWatcherResponse(Watcher<?> watcher, HttpResponseStatus nettyStatus) {
         Object context = watcher.getAsyncContext();
-        if (context instanceof AsyncContext) {
-            AsyncContext asyncContext = (AsyncContext) context;
-            HttpServletResponse httpServletResponse = (HttpServletResponse) asyncContext.getResponse();
-            try {
-                if (!httpServletResponse.isCommitted()) {
-                    httpServletResponse.setStatus(servletStatus);
-                }
-            } catch (IllegalStateException e) {
-                logger.warn("Error setting servlet response status for watcher on group {}: {}", watcher.getGroup(), e.getMessage());
-            } finally {
-                try {
-                    asyncContext.complete();
-                } catch (IllegalStateException e) {
-                    // This can happen if already completed due to an error or race, log as warning
-                    logger.warn("AsyncContext already completed for watcher on group {}: {}", watcher.getGroup(), e.getMessage());
-                }
-            }
-        } else if (context instanceof HttpContext) {
+         if (context instanceof HttpContext) {
             HttpContext httpContext = (HttpContext) context;
             ChannelHandlerContext ctx = httpContext.getContext();
             if (ctx.channel().isActive()) {
