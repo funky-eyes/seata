@@ -49,8 +49,6 @@ import org.springframework.web.bind.annotation.RestController;
 import static org.apache.seata.common.ConfigurationKeys.STORE_MODE;
 import static org.apache.seata.common.DefaultValues.DEFAULT_SEATA_GROUP;
 
-/**
- */
 @RestController
 @RequestMapping("/metadata/v1")
 public class ClusterController {
@@ -59,7 +57,6 @@ public class ClusterController {
 
     @Resource
     private ClusterWatcherManager clusterWatcherManager;
-
 
     @PostMapping("/changeCluster")
     public Result<?> changeCluster(@RequestParam String raftClusterStr) {
@@ -114,7 +111,7 @@ public class ClusterController {
     public void watch(HttpContext context, @RequestBody Map<String, Object> groupTerms,
         @RequestParam(defaultValue = "28000") Integer timeout) {
         context.setAsync(true);
-        if(timeout==null){
+        if (timeout == null) {
             timeout = 28000;
         }
         Integer finalTimeout = timeout;
