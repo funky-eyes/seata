@@ -32,6 +32,8 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
@@ -44,6 +46,7 @@ import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_APPLICATION_CO
 @SpringBootTest
 @TestPropertySource(locations = "classpath:test-cluster-controller.properties")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Execution(ExecutionMode.SAME_THREAD)
 class ClusterControllerTest {
 
     @BeforeAll
