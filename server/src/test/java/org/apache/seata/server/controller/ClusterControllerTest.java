@@ -27,13 +27,8 @@ import org.apache.seata.common.holder.ObjectHolder;
 import org.apache.seata.common.util.HttpClientUtil;
 import org.apache.seata.server.cluster.listener.ClusterChangeEvent;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
@@ -45,16 +40,13 @@ import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_APPLICATION_CO
 
 @SpringBootTest
 @TestPropertySource(locations = "classpath:test-cluster-controller.properties")
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@Execution(ExecutionMode.SAME_THREAD)
 class ClusterControllerTest {
 
-    @BeforeAll
-    public static void setUp(ApplicationContext context) {
+    @BeforeEach
+    public void setUp(ApplicationContext context) {
     }
 
     @Test
-    @Order(1)
     void watchTimeoutTest() throws Exception {
         Map<String, String> header = new HashMap<>();
         header.put(HTTP.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED.getMimeType());
@@ -73,7 +65,6 @@ class ClusterControllerTest {
     }
 
     @Test
-    @Order(2)
     void watch() throws Exception {
         Map<String, String> header = new HashMap<>();
         header.put(HTTP.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED.getMimeType());
