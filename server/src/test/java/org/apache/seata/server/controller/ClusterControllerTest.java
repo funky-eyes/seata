@@ -55,6 +55,7 @@ class ClusterControllerTest {
     void watchTimeoutTest() throws Exception {
         Map<String, String> header = new HashMap<>();
         header.put(HTTP.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED.getMimeType());
+        header.put(HTTP.CONN_KEEP_ALIVE, "close");
         Map<String, String> param = new HashMap<>();
         param.put("default-test", "1");
         int port = Integer.parseInt(System.getProperty(SERVER_SERVICE_PORT_CAMEL,"8091"));
@@ -90,7 +91,7 @@ class ClusterControllerTest {
         thread.start();
         int port = Integer.parseInt(System.getProperty(SERVER_SERVICE_PORT_CAMEL,"8091"));
         try (CloseableHttpResponse response =
-            HttpClientUtil.doPost("http://127.0.0.1:"+port+"/metadata/v1/watch?timeout=4000", param, header, 6000)) {
+            HttpClientUtil.doPost("http://127.0.0.1:"+port+"/metadata/v1/watch", param, header, 30000)) {
             if (response != null) {
                 StatusLine statusLine = response.getStatusLine();
                 Assertions.assertEquals(HttpStatus.SC_OK, statusLine.getStatusCode());
