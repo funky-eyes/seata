@@ -94,26 +94,26 @@ public class ClusterWatcherManager implements ClusterChangeListener {
 
     private void sendWatcherResponse(Watcher<?> watcher, HttpResponseStatus nettyStatus) {
         Object context = watcher.getAsyncContext();
-        if (context instanceof HttpContext) {
-            HttpContext httpContext = (HttpContext)context;
-            ChannelHandlerContext ctx = httpContext.getContext();
-            if (ctx.channel().isActive()) {
-                HttpResponse response =
-                    new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, nettyStatus, Unpooled.EMPTY_BUFFER);
-                response.headers().set(HttpHeaderNames.CONTENT_LENGTH, 0);
-
-                if (!httpContext.isKeepAlive()) {
-                    ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-                } else {
-                    ctx.writeAndFlush(response);
-                }
-            } else {
-                logger.warn("Netty channel is not active for watcher on group {}, cannot send response.",
-                    watcher.getGroup());
-            }
-        } else {
+        if (!(context instanceof HttpContext)) {
             logger.warn("Unsupported context type for watcher on group {}: {}", watcher.getGroup(),
                 context != null ? context.getClass().getName() : "null");
+            return;
+        }
+        HttpContext httpContext = (HttpContext)context;
+        ChannelHandlerContext ctx = httpContext.getContext();
+        if (ctx.channel().isActive()) {
+            HttpResponse response =
+                new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, nettyStatus, Unpooled.EMPTY_BUFFER);
+            response.headers().set(HttpHeaderNames.CONTENT_LENGTH, 0);
+
+            if (!httpContext.isKeepAlive()) {
+                ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+            } else {
+                ctx.writeAndFlush(response);
+            }
+        } else {
+            logger.warn("Netty channel is not active for watcher on group {}, cannot send response.",
+                watcher.getGroup());
         }
     }
 

@@ -87,7 +87,7 @@ public class ParameterParser {
     }
 
     private static Object getArgValue(Class<?> parameterType, String parameterName, ParamMetaData paramMetaData,
-        ObjectNode paramMap, HttpContext httpContext) throws JsonProcessingException {
+        ObjectNode paramMap, HttpContext httpContext) {
         ParamMetaData.ParamConvertType paramConvertType = paramMetaData.getParamConvertType();
         if (parameterType.equals(HttpContext.class)) {
             return httpContext;
@@ -98,13 +98,15 @@ public class ParameterParser {
             JsonNode body = paramMap.get("body");
             return OBJECT_MAPPER.convertValue(body, parameterType);
         } else {
-            JsonNode jsonNode = paramMap.get("param").get(parameterName);
-            if (jsonNode != null) {
-                String value = jsonNode.asText(null);
-                return value != null ? OBJECT_MAPPER.convertValue(value, parameterType) : null;
+            JsonNode paramNode = paramMap.get("param");
+            if (paramNode != null) {
+                JsonNode jsonNode = paramNode.get(parameterName);
+                if (jsonNode != null) {
+                    String value = jsonNode.asText(null);
+                    return value != null ? OBJECT_MAPPER.convertValue(value, parameterType) : null;
+                }
             }
             return null;
-
         }
     }
 }
