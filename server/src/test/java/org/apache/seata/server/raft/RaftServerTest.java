@@ -24,6 +24,7 @@ import org.apache.seata.server.cluster.raft.RaftServerManager;
 import org.apache.seata.server.lock.LockerManagerFactory;
 import org.apache.seata.server.session.SessionHolder;
 import org.apache.seata.server.store.StoreConfig;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -90,6 +91,13 @@ public class RaftServerTest {
                 XID.getIpAddress() + ":9091" + "," + XID.getIpAddress() + ":9092" + "," + XID.getIpAddress() + ":9093");
         StoreConfig.setStartupParameter("raft", "raft", "raft");
         Assertions.assertThrows(IllegalArgumentException.class, RaftServerManager::init);
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        LockerManagerFactory.destroy();
+        SessionHolder.destroy();
+        RaftServerManager.destroy();
     }
 
 }
