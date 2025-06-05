@@ -27,8 +27,11 @@ import org.apache.seata.common.holder.ObjectHolder;
 import org.apache.seata.common.util.HttpClientUtil;
 import org.apache.seata.server.cluster.listener.ClusterChangeEvent;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
@@ -40,18 +43,20 @@ import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_APPLICATION_CO
 
 @SpringBootTest
 @TestPropertySource(locations = "classpath:test-cluster-controller.properties")
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ClusterControllerTest {
 
-    @BeforeEach
-    public void setUp(ApplicationContext context) {
+    @BeforeAll
+    public static void setUp(ApplicationContext context) {
     }
 
     @Test
+    @Order(1)
     void watchTimeoutTest() throws Exception {
         Map<String, String> header = new HashMap<>();
         header.put(HTTP.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED.getMimeType());
         Map<String, String> param = new HashMap<>();
-        param.put("default", "1");
+        param.put("default-test", "1");
         int port = Integer.parseInt(System.getProperty(SERVER_SERVICE_PORT_CAMEL,"8091"));
         try (CloseableHttpResponse response =
             HttpClientUtil.doPost("http://127.0.0.1:"+port+"/metadata/v1/watch?timeout=3000", param, header, 5000)) {
@@ -65,11 +70,12 @@ class ClusterControllerTest {
     }
 
     @Test
+    @Order(2)
     void watch() throws Exception {
         Map<String, String> header = new HashMap<>();
         header.put(HTTP.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED.getMimeType());
         Map<String, String> param = new HashMap<>();
-        param.put("default", "1");
+        param.put("default-test", "1");
         Thread thread = new Thread(new Runnable(){
             @Override public void run() {
 	            try {
@@ -78,7 +84,7 @@ class ClusterControllerTest {
 		            throw new RuntimeException(e);
 	            }
 	            ((ApplicationEventPublisher)ObjectHolder.INSTANCE.getObject(OBJECT_KEY_SPRING_APPLICATION_CONTEXT))
-                    .publishEvent(new ClusterChangeEvent(this, "default",2, true));
+                    .publishEvent(new ClusterChangeEvent(this, "default-test",2, true));
             }
         });
         thread.start();
