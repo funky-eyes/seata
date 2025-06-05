@@ -27,7 +27,7 @@ import org.apache.seata.common.holder.ObjectHolder;
 import org.apache.seata.common.util.HttpClientUtil;
 import org.apache.seata.server.cluster.listener.ClusterChangeEvent;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
@@ -40,8 +40,9 @@ import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_APPLICATION_CO
 @SpringBootTest
 class ClusterControllerTest {
 
-    @BeforeAll
-    public static void setUp(ApplicationContext context) {}
+    @BeforeEach
+    public void setUp(ApplicationContext context) {
+    }
 
     @Test
     void watchTimeoutTest() throws Exception {
