@@ -34,6 +34,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 
 
+import static org.apache.seata.common.ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL;
 import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_APPLICATION_CONTEXT;
 
 @SpringBootTest
@@ -48,8 +49,9 @@ class ClusterControllerTest {
         header.put(HTTP.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED.getMimeType());
         Map<String, String> param = new HashMap<>();
         param.put("default", "1");
+        int port = Integer.parseInt(System.getProperty(SERVER_SERVICE_PORT_CAMEL,"8091"));
         try (CloseableHttpResponse response =
-            HttpClientUtil.doPost("http://127.0.0.1:8091/metadata/v1/watch?timeout=3000", param, header, 5000)) {
+            HttpClientUtil.doPost("http://127.0.0.1:"+port+"/metadata/v1/watch?timeout=3000", param, header, 5000)) {
             if (response != null) {
                 StatusLine statusLine = response.getStatusLine();
                 Assertions.assertEquals(HttpStatus.SC_NOT_MODIFIED, statusLine.getStatusCode());
@@ -77,8 +79,9 @@ class ClusterControllerTest {
             }
         });
         thread.start();
+        int port = Integer.parseInt(System.getProperty(SERVER_SERVICE_PORT_CAMEL,"8091"));
         try (CloseableHttpResponse response =
-            HttpClientUtil.doPost("http://127.0.0.1:8091/metadata/v1/watch?timeout=4000", param, header, 6000)) {
+            HttpClientUtil.doPost("http://127.0.0.1:"+port+"/metadata/v1/watch?timeout=4000", param, header, 6000)) {
             if (response != null) {
                 StatusLine statusLine = response.getStatusLine();
                 Assertions.assertEquals(HttpStatus.SC_OK, statusLine.getStatusCode());
