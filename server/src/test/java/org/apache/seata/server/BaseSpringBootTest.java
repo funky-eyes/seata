@@ -16,20 +16,23 @@
  */
 package org.apache.seata.server;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
 
 
 import static org.apache.seata.common.ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL;
 
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@TestPropertySource(properties = { "server.servicePort=${random.int[10000,20000]}"})
 public abstract class BaseSpringBootTest {
 
-    @AfterEach
-    public void tearDown() {
+    @AfterAll
+    public static void afterAll() {
         System.clearProperty(SERVER_SERVICE_PORT_CAMEL);
     }
 

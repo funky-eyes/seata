@@ -50,7 +50,6 @@ import static org.apache.seata.common.ConfigurationKeys.SERVER_SERVICE_PORT_CAME
  * The type Default core test.
  *
  */
-@TestPropertySource(properties = { "server.servicePort=18093"})
 public class DefaultCoreTest extends BaseSpringBootTest {
 
     private static DefaultCore core;

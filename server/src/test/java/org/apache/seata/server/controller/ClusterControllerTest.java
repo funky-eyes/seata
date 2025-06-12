@@ -38,22 +38,21 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.env.Environment;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.TestPropertySource;
 
 import static org.apache.seata.common.ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL;
 import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_APPLICATION_CONTEXT;
 
-@TestPropertySource(locations = "classpath:test-cluster-controller.properties")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ClusterControllerTest extends BaseSpringBootTest {
 
 
     private static Environment environment;
+    private static int port;
 
     @BeforeAll
     public static void setUp(ApplicationContext context) {
         environment = context.getEnvironment();
+        port = Integer.parseInt(environment.getProperty(SERVER_SERVICE_PORT_CAMEL,"18091"));
     }
 
     @Test
@@ -64,7 +63,6 @@ class ClusterControllerTest extends BaseSpringBootTest {
         header.put(HTTP.CONN_KEEP_ALIVE, "close");
         Map<String, String> param = new HashMap<>();
         param.put("default-test", "1");
-        int port = Integer.parseInt(environment.getProperty(SERVER_SERVICE_PORT_CAMEL,"18091"));
         try (CloseableHttpResponse response =
             HttpClientUtil.doPost("http://127.0.0.1:"+port+"/metadata/v1/watch?timeout=3000", param, header, 5000)) {
             if (response != null) {
@@ -95,7 +93,6 @@ class ClusterControllerTest extends BaseSpringBootTest {
             }
         });
         thread.start();
-        int port = Integer.parseInt(environment.getProperty(SERVER_SERVICE_PORT_CAMEL,"18091"));
         try (CloseableHttpResponse response =
             HttpClientUtil.doPost("http://127.0.0.1:"+port+"/metadata/v1/watch", param, header, 30000)) {
             if (response != null) {

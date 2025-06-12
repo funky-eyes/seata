@@ -70,7 +70,6 @@ import static org.apache.seata.common.ConfigurationKeys.SERVER_SERVICE_PORT_CAME
  * The type DefaultCoordinator test.
  *
  */
-@TestPropertySource(properties = {"server.servicePort=18092"})
 public class DefaultCoordinatorTest extends BaseSpringBootTest {
     private static DefaultCoordinator defaultCoordinator;
 
