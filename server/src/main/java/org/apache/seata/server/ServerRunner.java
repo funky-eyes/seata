@@ -33,8 +33,6 @@ import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 
 
-import static org.apache.seata.common.ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL;
-
 /**
  */
 @Component
