@@ -240,7 +240,7 @@ public class DefaultCoordinatorTest extends BaseSpringBootTest {
     }
 
     @AfterEach
-    public void tearDown() throws IOException {
+    public void tearDown() {
         MetricsManager.get().getRegistry().clearUp();
         StoreUtil.deleteDataFile();
     }
