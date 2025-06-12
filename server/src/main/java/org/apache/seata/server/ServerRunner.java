@@ -92,8 +92,6 @@ public class ServerRunner implements CommandLineRunner, DisposableBean,
             disposable.destroy();
         }
 
-        System.clearProperty(SERVER_SERVICE_PORT_CAMEL);
-
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("destoryAll finish");
         }

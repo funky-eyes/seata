@@ -16,6 +16,8 @@
  */
 package org.apache.seata.server.spring.listener;
 
+import org.apache.seata.config.Configuration;
+import org.apache.seata.config.ConfigurationCache;
 import org.apache.seata.core.constants.ConfigurationKeys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,12 +47,12 @@ public class ClearServerServicePortInitializer implements GenericApplicationList
         }
         // Listen to environment preparation, context refresh, and context close events
         return ApplicationEnvironmentPreparedEvent.class.isAssignableFrom(rawClass) ||
-               ContextRefreshedEvent.class.isAssignableFrom(rawClass) ||
                ContextClosedEvent.class.isAssignableFrom(rawClass);
     }
 
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
+        ConfigurationCache.clear();
         // Clear the property for any of the supported events
         System.clearProperty(ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL);
         log.info("Cleared system property: " + ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL);
@@ -63,3 +65,4 @@ public class ClearServerServicePortInitializer implements GenericApplicationList
         return LoggingApplicationListener.DEFAULT_ORDER - 2;
     }
 }
+

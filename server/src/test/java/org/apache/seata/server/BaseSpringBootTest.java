@@ -16,6 +16,7 @@
  */
 package org.apache.seata.server;
 
+import org.apache.seata.core.constants.ConfigurationKeys;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 
@@ -24,17 +25,19 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 
 
-import static org.apache.seata.common.ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL;
-
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-@TestPropertySource(properties = { "server.servicePort=${random.int[10000,20000]}"})
+@TestPropertySource(properties = { "server.port=${random.int[10000,20000]}"})
 public abstract class BaseSpringBootTest {
 
     @AfterAll
     public static void afterAll() {
-        System.clearProperty(SERVER_SERVICE_PORT_CAMEL);
+        System.clearProperty(ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL);
+    }
+
+    @AfterEach
+    public void tearDownBase() {
+        System.clearProperty(ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL);
     }
 
 }
-
