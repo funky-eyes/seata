@@ -30,13 +30,14 @@ import org.apache.seata.core.protocol.transaction.GlobalRollbackRequest;
 import org.apache.seata.core.protocol.transaction.GlobalRollbackResponse;
 import org.apache.seata.core.rpc.RpcContext;
 import org.apache.seata.metrics.Measurement;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.metrics.MetricsManager;
 import org.apache.seata.server.session.SessionHolder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+
 import org.springframework.context.ApplicationContext;
 
 import static org.apache.seata.server.coordinator.DefaultCoordinatorTest.MockServerMessageSender;
@@ -45,9 +46,8 @@ import static org.apache.seata.server.coordinator.DefaultCoordinatorTest.MockSer
  * Test Metrics
  *
  */
-@SpringBootTest
 @Disabled
-public class DefaultCoordinatorMetricsTest {
+public class DefaultCoordinatorMetricsTest extends BaseSpringBootTest {
 
     @BeforeAll
     public static void setUp(ApplicationContext context) throws InterruptedException {

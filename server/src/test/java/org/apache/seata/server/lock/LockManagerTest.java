@@ -32,6 +32,7 @@ import org.apache.seata.common.result.PageResult;
 import org.apache.seata.core.exception.TransactionException;
 import org.apache.seata.core.model.BranchType;
 import org.apache.seata.common.util.UUIDGenerator;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.console.entity.param.GlobalLockParam;
 import org.apache.seata.server.console.service.GlobalLockService;
 import org.apache.seata.server.console.entity.vo.GlobalLockVO;
@@ -45,7 +46,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.boot.test.context.SpringBootTest;
+
 import org.springframework.context.ApplicationContext;
 
 import static org.apache.seata.common.DefaultValues.DEFAULT_TX_GROUP;
@@ -55,8 +56,7 @@ import static org.apache.seata.common.DefaultValues.DEFAULT_TX_GROUP;
  *
  * @since 2019 /1/23
  */
-@SpringBootTest
-public class LockManagerTest {
+public class LockManagerTest extends BaseSpringBootTest {
 
 
     @Resource(type = GlobalLockService.class)

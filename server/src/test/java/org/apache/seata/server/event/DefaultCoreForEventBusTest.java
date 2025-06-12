@@ -32,6 +32,7 @@ import org.apache.seata.core.exception.TransactionException;
 import org.apache.seata.core.model.GlobalStatus;
 import org.apache.seata.core.rpc.RemotingServer;
 import org.apache.seata.metrics.registry.Registry;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.coordinator.DefaultCoordinator;
 import org.apache.seata.server.coordinator.DefaultCoordinatorTest;
 import org.apache.seata.server.coordinator.DefaultCore;
@@ -43,15 +44,14 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+
 import org.springframework.context.ApplicationContext;
 
 /**
  * Test events come from Default Core.
  *
  */
-@SpringBootTest
-public class DefaultCoreForEventBusTest {
+public class DefaultCoreForEventBusTest extends BaseSpringBootTest {
 
     private static final boolean DELAY_HANDLE_SESSION = StoreConfig.getSessionMode() != SessionMode.FILE;
 

@@ -22,6 +22,7 @@ import org.apache.seata.common.loader.EnhancedServiceLoader;
 import org.apache.seata.common.loader.EnhancedServiceNotFoundException;
 import org.apache.seata.config.ConfigurationFactory;
 import org.apache.seata.core.store.db.DataSourceProvider;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.lock.LockerManagerFactory;
 import org.apache.seata.server.session.SessionHolder;
 import org.junit.After;
@@ -33,14 +34,13 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.springframework.boot.test.context.SpringBootTest;
+
 import org.springframework.context.ApplicationContext;
 
 /**
  */
-@SpringBootTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class AbstractDataSourceProviderTest {
+public class AbstractDataSourceProviderTest extends BaseSpringBootTest {
 
     private final String dbcpDatasourceType = "dbcp";
 

@@ -31,6 +31,7 @@ import org.apache.seata.common.metadata.Node;
 import org.apache.seata.common.store.SessionMode;
 import org.apache.seata.core.exception.TransactionException;
 import org.apache.seata.core.model.BranchType;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.cluster.raft.snapshot.RaftSnapshot;
 import org.apache.seata.server.cluster.raft.sync.msg.RaftBranchSessionSyncMsg;
 import org.apache.seata.server.cluster.raft.sync.msg.RaftClusterMetadataMsg;
@@ -49,13 +50,12 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+
 import org.springframework.context.ApplicationContext;
 
 /**
  */
-@SpringBootTest
-public class RaftSyncMessageTest {
+public class RaftSyncMessageTest extends BaseSpringBootTest {
 
     @BeforeAll
     public static void setUp(ApplicationContext context){

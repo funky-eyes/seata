@@ -27,6 +27,7 @@ import org.apache.seata.common.loader.EnhancedServiceLoader;
 import org.apache.seata.common.util.BeanUtils;
 import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.core.exception.TransactionException;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.console.entity.param.GlobalSessionParam;
 import org.apache.seata.server.console.entity.vo.GlobalLockVO;
 import org.apache.seata.core.model.GlobalStatus;
@@ -44,16 +45,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.test.context.SpringBootTest;
+
 import org.springframework.context.ApplicationContext;
 import redis.clients.jedis.Jedis;
 
 import static org.apache.seata.server.storage.SessionConverter.convertToGlobalSessionVo;
 /**
  */
-@SpringBootTest
 @EnabledIfSystemProperty(named = "redisCaseEnabled", matches = "true")
-public class RedisTransactionStoreManagerTest {
+public class RedisTransactionStoreManagerTest extends BaseSpringBootTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RedisTransactionStoreManagerTest.class);
 

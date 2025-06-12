@@ -18,6 +18,7 @@ package org.apache.seata.server.ratelimiter;
 
 import org.apache.seata.core.protocol.transaction.GlobalBeginRequest;
 import org.apache.seata.core.rpc.RpcContext;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.limit.ratelimit.RateLimiter;
 import org.apache.seata.server.limit.ratelimit.RateLimiterHandler;
 import org.apache.seata.server.limit.ratelimit.TokenBucketLimiter;
@@ -26,13 +27,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.test.context.SpringBootTest;
+
 
 /**
  * RateLimiterHandlerTest
  */
-@SpringBootTest
-public class RateLimiterHandlerTest {
+public class RateLimiterHandlerTest extends BaseSpringBootTest {
 
     /**
      * Logger for TokenBucketLimiterTest

@@ -20,6 +20,7 @@ import org.apache.seata.common.ConfigurationKeys;
 import org.apache.seata.common.XID;
 import org.apache.seata.config.ConfigurationCache;
 import org.apache.seata.config.ConfigurationFactory;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.cluster.raft.RaftServerManager;
 import org.apache.seata.server.lock.LockerManagerFactory;
 import org.apache.seata.server.session.SessionHolder;
@@ -28,7 +29,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+
 import org.springframework.context.ApplicationContext;
 
 
@@ -37,10 +38,8 @@ import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_SSL_ENABLED;
 import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_SSL_KMF_ALGORITHM;
 import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_SSL_SERVER_KEYSTORE_PATH;
 import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_SSL_TMF_ALGORITHM;
-import static org.apache.seata.spring.boot.autoconfigure.StarterConstants.SERVER_RAFT_SSL_PREFIX;
 
-@SpringBootTest
-public class RaftServerTest {
+public class RaftServerTest extends BaseSpringBootTest {
 
     @BeforeAll
     public static void setUp(ApplicationContext context) {

@@ -25,6 +25,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.protocol.HTTP;
 import org.apache.seata.common.holder.ObjectHolder;
 import org.apache.seata.common.util.HttpClientUtil;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.cluster.listener.ClusterChangeEvent;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -33,7 +34,7 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.springframework.boot.test.context.SpringBootTest;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.env.Environment;
@@ -43,11 +44,9 @@ import org.springframework.test.context.TestPropertySource;
 import static org.apache.seata.common.ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL;
 import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_APPLICATION_CONTEXT;
 
-@SpringBootTest
 @TestPropertySource(locations = "classpath:test-cluster-controller.properties")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-class ClusterControllerTest {
+class ClusterControllerTest extends BaseSpringBootTest {
 
 
     private static Environment environment;
@@ -55,12 +54,6 @@ class ClusterControllerTest {
     @BeforeAll
     public static void setUp(ApplicationContext context) {
         environment = context.getEnvironment();
-    }
-
-
-    @AfterEach
-    public void tearDown() {
-        System.clearProperty(SERVER_SERVICE_PORT_CAMEL);
     }
 
     @Test

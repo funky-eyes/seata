@@ -30,6 +30,7 @@ import org.apache.seata.core.model.BranchStatus;
 import org.apache.seata.core.model.BranchType;
 import org.apache.seata.core.model.GlobalStatus;
 import org.apache.seata.common.util.UUIDGenerator;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.session.BranchSession;
 import org.apache.seata.server.session.GlobalSession;
 import org.apache.seata.server.session.SessionCondition;
@@ -42,7 +43,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+
 import org.springframework.context.ApplicationContext;
 
 import static org.apache.seata.common.DefaultValues.DEFAULT_TX_GROUP;
@@ -51,8 +52,7 @@ import static org.apache.seata.common.DefaultValues.DEFAULT_TX_GROUP;
  * The type Data base session manager test.
  *
  */
-@SpringBootTest
-public class DataBaseSessionManagerTest {
+public class DataBaseSessionManagerTest extends BaseSpringBootTest {
 
     static SessionManager sessionManager = null;
 

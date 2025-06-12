@@ -25,6 +25,7 @@ import org.apache.seata.core.model.BranchStatus;
 import org.apache.seata.core.model.BranchType;
 import org.apache.seata.core.model.GlobalStatus;
 import org.apache.seata.core.rpc.RemotingServer;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.session.BranchSession;
 import org.apache.seata.server.session.GlobalSession;
 import org.apache.seata.server.session.SessionHelper;
@@ -37,7 +38,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.boot.test.context.SpringBootTest;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
@@ -49,10 +50,8 @@ import static org.apache.seata.common.ConfigurationKeys.SERVER_SERVICE_PORT_CAME
  * The type Default core test.
  *
  */
-@SpringBootTest
 @TestPropertySource(properties = { "server.servicePort=18093"})
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public class DefaultCoreTest {
+public class DefaultCoreTest extends BaseSpringBootTest {
 
     private static DefaultCore core;
     private static RemotingServer remotingServer;
@@ -87,11 +86,6 @@ public class DefaultCoreTest {
         SessionHolder.init(SessionMode.FILE);
         remotingServer = new DefaultCoordinatorTest.MockServerMessageSender();
         core = new DefaultCore(remotingServer);
-    }
-
-    @AfterEach
-    public void tearDown() {
-        System.clearProperty(SERVER_SERVICE_PORT_CAMEL);
     }
 
     /**

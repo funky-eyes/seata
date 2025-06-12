@@ -26,14 +26,13 @@ import org.apache.seata.server.storage.redis.lock.RedisLuaLocker;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
-import org.springframework.boot.test.context.SpringBootTest;
+
 import org.springframework.context.ApplicationContext;
 
 /**
  * RedisLocker use lua script
  *
  */
-@SpringBootTest
 @EnabledIfSystemProperty(named = "redisCaseEnabled", matches = "true")
 public class RedisLuaLockManagerTest extends RedisLockManagerTest {
 

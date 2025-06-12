@@ -27,6 +27,7 @@ import org.apache.seata.config.ConfigurationCache;
 import org.apache.seata.core.exception.TransactionException;
 import org.apache.seata.core.model.BranchStatus;
 import org.apache.seata.core.model.BranchType;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.cluster.raft.execute.branch.AddBranchSessionExecute;
 import org.apache.seata.server.cluster.raft.execute.branch.RemoveBranchSessionExecute;
 import org.apache.seata.server.cluster.raft.execute.branch.UpdateBranchSessionExecute;
@@ -41,7 +42,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+
 import org.springframework.context.ApplicationContext;
 
 import static org.apache.seata.common.DefaultValues.DEFAULT_TX_GROUP;
@@ -49,8 +50,7 @@ import static org.apache.seata.common.DefaultValues.DEFAULT_TX_GROUP;
 
 /**
  */
-@SpringBootTest
-class BranchSessionExecuteTest {
+class BranchSessionExecuteTest extends BaseSpringBootTest {
 
     private static GlobalSession GLOBAL_SESSION;
 

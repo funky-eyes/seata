@@ -28,6 +28,7 @@ import org.apache.seata.core.model.BranchStatus;
 import org.apache.seata.core.model.BranchType;
 import org.apache.seata.core.model.GlobalStatus;
 import org.apache.seata.common.util.UUIDGenerator;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.session.BranchSession;
 import org.apache.seata.server.session.GlobalSession;
 import org.apache.seata.server.session.SessionCondition;
@@ -40,7 +41,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.test.context.SpringBootTest;
+
 import org.springframework.context.ApplicationContext;
 
 
@@ -48,9 +49,8 @@ import static org.apache.seata.common.DefaultValues.DEFAULT_TX_GROUP;
 
 /**
  */
-@SpringBootTest
 @EnabledIfSystemProperty(named = "redisCaseEnabled", matches = "true")
-public class RedisSessionManagerTest {
+public class RedisSessionManagerTest extends BaseSpringBootTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RedisSessionManagerTest.class);
     private static SessionManager sessionManager = null;

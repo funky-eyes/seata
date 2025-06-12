@@ -14,27 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.seata.server.controller;
+package org.apache.seata.server;
 
-import org.apache.seata.server.BaseSpringBootTest;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.jupiter.api.AfterEach;
+
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 
 
+import static org.apache.seata.common.ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL;
 
-@Disabled
-class VGroupMappingControllerTest extends BaseSpringBootTest {
-    @Autowired
-    private VGroupMappingController vGroupMappingController;
+@SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+public abstract class BaseSpringBootTest {
 
-    @Test
-    void addVGroup() {
-        vGroupMappingController.addVGroup("group1","unit1");
+    @AfterEach
+    public void tearDown() {
+        System.clearProperty(SERVER_SERVICE_PORT_CAMEL);
     }
 
-    @Test
-    void removeVGroup() {
-        vGroupMappingController.removeVGroup("group1");
-    }
 }
+

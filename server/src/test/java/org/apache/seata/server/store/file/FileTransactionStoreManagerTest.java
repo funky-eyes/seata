@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.seata.common.store.SessionMode;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.session.SessionHolder;
 import org.assertj.core.util.Files;
 import org.junit.jupiter.api.AfterEach;
@@ -31,7 +32,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
+
 
 import org.apache.seata.common.util.BufferUtils;
 import org.apache.seata.common.util.UUIDGenerator;
@@ -47,8 +48,7 @@ import org.springframework.context.ApplicationContext;
 
 /**
  */
-@SpringBootTest
-public class FileTransactionStoreManagerTest {
+public class FileTransactionStoreManagerTest extends BaseSpringBootTest {
 
     @BeforeEach
     public void setUp(){

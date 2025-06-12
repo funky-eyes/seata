@@ -43,6 +43,7 @@ import org.apache.seata.core.protocol.transaction.BranchRollbackRequest;
 import org.apache.seata.core.protocol.transaction.BranchRollbackResponse;
 import org.apache.seata.core.rpc.RemotingServer;
 import org.apache.seata.core.rpc.processor.RemotingProcessor;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.metrics.MetricsManager;
 import org.apache.seata.server.session.GlobalSession;
 import org.apache.seata.server.session.SessionHolder;
@@ -59,9 +60,7 @@ import org.junit.jupiter.api.condition.JRE;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 
 
@@ -71,10 +70,8 @@ import static org.apache.seata.common.ConfigurationKeys.SERVER_SERVICE_PORT_CAME
  * The type DefaultCoordinator test.
  *
  */
-@SpringBootTest
 @TestPropertySource(properties = {"server.servicePort=18092"})
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public class DefaultCoordinatorTest {
+public class DefaultCoordinatorTest extends BaseSpringBootTest {
     private static DefaultCoordinator defaultCoordinator;
 
     private static final String applicationId = "demo-child-app";

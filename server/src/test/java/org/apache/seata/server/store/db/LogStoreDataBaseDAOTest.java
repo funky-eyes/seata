@@ -26,6 +26,7 @@ import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.common.util.IOUtil;
 import org.apache.seata.core.store.BranchTransactionDO;
 import org.apache.seata.core.store.GlobalTransactionDO;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.storage.db.store.LogStoreDataBaseDAO;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.h2.store.fs.FileUtils;
@@ -33,14 +34,13 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+
 import org.springframework.context.ApplicationContext;
 
 
 /**
  */
-@SpringBootTest
-public class LogStoreDataBaseDAOTest {
+public class LogStoreDataBaseDAOTest extends BaseSpringBootTest {
 
     static LogStoreDataBaseDAO logStoreDataBaseDAO  = null;
 

@@ -16,13 +16,14 @@
  */
 package org.apache.seata.server.store;
 
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.cluster.raft.sync.msg.RaftGlobalSessionSyncMsg;
 import org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType;
 import org.apache.seata.server.cluster.raft.sync.msg.dto.GlobalTransactionDTO;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+
 import org.springframework.context.ApplicationContext;
 
 import org.apache.seata.server.cluster.raft.sync.RaftSyncMessageSerializer;
@@ -32,8 +33,7 @@ import org.apache.seata.server.storage.SessionConverter;
 
 /**
  */
-@SpringBootTest
-public class RaftSyncMessageSerializerTest {
+public class RaftSyncMessageSerializerTest extends BaseSpringBootTest {
     @BeforeAll
     public static void setUp(ApplicationContext context) {
 
