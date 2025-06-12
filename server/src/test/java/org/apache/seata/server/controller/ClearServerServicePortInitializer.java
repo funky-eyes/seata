@@ -16,6 +16,8 @@
  */
 package org.apache.seata.server.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
 import org.springframework.boot.context.logging.LoggingApplicationListener;
 import org.springframework.context.ApplicationEvent;
@@ -28,6 +30,8 @@ import org.springframework.core.ResolvableType;
 import static org.apache.seata.common.ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL;
 
 public class ClearServerServicePortInitializer implements GenericApplicationListener, Ordered {
+
+    private final Logger log = LoggerFactory.getLogger(ClearServerServicePortInitializer.class);
 
     @Override
     public boolean supportsEventType(ResolvableType eventType) {
@@ -45,6 +49,7 @@ public class ClearServerServicePortInitializer implements GenericApplicationList
         if (event instanceof ApplicationEnvironmentPreparedEvent ||
             event instanceof ContextRefreshedEvent ||
             event instanceof ContextClosedEvent) {
+            log.info("Clear Server Service Port");
             System.clearProperty(SERVER_SERVICE_PORT_CAMEL);
         }
     }
