@@ -88,11 +88,11 @@ public class ServerRunner implements CommandLineRunner, DisposableBean,
             LOGGER.debug("destoryAll starting");
         }
 
-        System.clearProperty(SERVER_SERVICE_PORT_CAMEL);
-
         for (Disposable disposable : DISPOSABLE_LIST) {
             disposable.destroy();
         }
+
+        System.clearProperty(SERVER_SERVICE_PORT_CAMEL);
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("destoryAll finish");
