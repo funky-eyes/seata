@@ -42,6 +42,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 
+
+import static org.apache.seata.common.ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL;
+
 /**
  * The type Default core test.
  *
@@ -84,6 +87,11 @@ public class DefaultCoreTest {
         SessionHolder.init(SessionMode.FILE);
         remotingServer = new DefaultCoordinatorTest.MockServerMessageSender();
         core = new DefaultCore(remotingServer);
+    }
+
+    @AfterEach
+    public void tearDown() {
+        System.clearProperty(SERVER_SERVICE_PORT_CAMEL);
     }
 
     /**
