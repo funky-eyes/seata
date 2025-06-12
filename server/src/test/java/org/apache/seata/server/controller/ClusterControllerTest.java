@@ -26,7 +26,9 @@ import org.apache.http.protocol.HTTP;
 import org.apache.seata.common.holder.ObjectHolder;
 import org.apache.seata.common.util.HttpClientUtil;
 import org.apache.seata.server.cluster.listener.ClusterChangeEvent;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -47,21 +49,17 @@ import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_APPLICATION_CO
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ClusterControllerTest {
 
-    {
-        System.clearProperty(SERVER_SERVICE_PORT_CAMEL);
-    }
 
+    private static Environment environment;
 
-    private Environment environment;
-
-    @BeforeEach
-    public void setUp(ApplicationContext context) {
+    @BeforeAll
+    public static void setUp(ApplicationContext context) {
         environment = context.getEnvironment();
     }
 
 
-    @AfterEach
-    public void afterEachTest() {
+    @AfterAll
+    public static void afterEachTest() {
         System.clearProperty(SERVER_SERVICE_PORT_CAMEL);
     }
 
@@ -73,7 +71,7 @@ class ClusterControllerTest {
         header.put(HTTP.CONN_KEEP_ALIVE, "close");
         Map<String, String> param = new HashMap<>();
         param.put("default-test", "1");
-        int port = Integer.parseInt(environment.getProperty("seata.server.service-port","8091"));
+        int port = Integer.parseInt(environment.getProperty(SERVER_SERVICE_PORT_CAMEL,"8091"));
         try (CloseableHttpResponse response =
             HttpClientUtil.doPost("http://127.0.0.1:"+port+"/metadata/v1/watch?timeout=3000", param, header, 5000)) {
             if (response != null) {
@@ -104,7 +102,7 @@ class ClusterControllerTest {
             }
         });
         thread.start();
-        int port = Integer.parseInt(environment.getProperty("seata.server.service-port","8091"));
+        int port = Integer.parseInt(environment.getProperty(SERVER_SERVICE_PORT_CAMEL,"8091"));
         try (CloseableHttpResponse response =
             HttpClientUtil.doPost("http://127.0.0.1:"+port+"/metadata/v1/watch", param, header, 30000)) {
             if (response != null) {
