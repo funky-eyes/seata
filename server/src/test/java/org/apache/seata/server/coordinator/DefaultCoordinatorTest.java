@@ -61,12 +61,17 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
+import org.springframework.test.context.TestPropertySource;
+
+
+import static org.apache.seata.common.ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL;
 
 /**
  * The type DefaultCoordinator test.
  *
  */
 @SpringBootTest
+@TestPropertySource(properties = {"server.servicePort=18092"})
 public class DefaultCoordinatorTest {
     private static DefaultCoordinator defaultCoordinator;
 
@@ -105,6 +110,11 @@ public class DefaultCoordinatorTest {
     @BeforeEach
     public void tearUp() throws IOException {
         deleteAndCreateDataFile();
+    }
+    
+    @AfterEach
+    public void down() {
+        System.clearProperty(SERVER_SERVICE_PORT_CAMEL);
     }
 
     @Test
