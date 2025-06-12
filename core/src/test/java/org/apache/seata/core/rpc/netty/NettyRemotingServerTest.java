@@ -21,6 +21,7 @@ import org.apache.seata.common.XID;
 import org.apache.seata.common.loader.EnhancedServiceLoader;
 import org.apache.seata.core.rpc.RegisterCheckAuthHandler;
 import org.apache.seata.discovery.registry.MultiRegistryFactory;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -75,9 +76,12 @@ public class NettyRemotingServerTest {
 		Mockito.verify(channel).close();
 	}
 
-	@Test
+
+
+	@AfterEach
 	public void destory() {
 		nettyRemotingServer.destroy();
-		Assertions.assertTrue(nettyRemotingServer != null);
+		Assertions.assertNotNull(nettyRemotingServer);
 	}
+
 }
