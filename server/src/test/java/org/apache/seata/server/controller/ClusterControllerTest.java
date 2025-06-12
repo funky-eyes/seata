@@ -71,7 +71,7 @@ class ClusterControllerTest {
         header.put(HTTP.CONN_KEEP_ALIVE, "close");
         Map<String, String> param = new HashMap<>();
         param.put("default-test", "1");
-        int port = Integer.parseInt(environment.getProperty(SERVER_SERVICE_PORT_CAMEL,"8091"));
+        int port = Integer.parseInt(environment.getProperty(SERVER_SERVICE_PORT_CAMEL,"18091"));
         try (CloseableHttpResponse response =
             HttpClientUtil.doPost("http://127.0.0.1:"+port+"/metadata/v1/watch?timeout=3000", param, header, 5000)) {
             if (response != null) {
@@ -102,7 +102,7 @@ class ClusterControllerTest {
             }
         });
         thread.start();
-        int port = Integer.parseInt(environment.getProperty(SERVER_SERVICE_PORT_CAMEL,"8091"));
+        int port = Integer.parseInt(environment.getProperty(SERVER_SERVICE_PORT_CAMEL,"18091"));
         try (CloseableHttpResponse response =
             HttpClientUtil.doPost("http://127.0.0.1:"+port+"/metadata/v1/watch", param, header, 30000)) {
             if (response != null) {
