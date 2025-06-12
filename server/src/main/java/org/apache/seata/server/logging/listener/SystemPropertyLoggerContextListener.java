@@ -41,6 +41,7 @@ public class SystemPropertyLoggerContextListener extends ContextAwareBase implem
         context.putProperty("RPC_PORT", System.getProperty(ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL));
 
         started = true;
+        System.clearProperty(ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL);
     }
 
     @Override
