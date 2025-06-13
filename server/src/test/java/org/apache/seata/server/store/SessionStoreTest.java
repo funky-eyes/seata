@@ -36,8 +36,11 @@ import org.apache.seata.server.session.SessionHolder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.context.ApplicationContext;
 
 import static org.apache.seata.common.DefaultValues.DEFAULT_SESSION_STORE_FILE_DIR;
@@ -47,19 +50,21 @@ import static org.apache.seata.common.DefaultValues.DEFAULT_TX_GROUP;
 /**
  * The type Session store test.
  */
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class SessionStoreTest extends BaseSpringBootTest {
+
+
+    private static Configuration CONFIG ;
 
     @BeforeAll
     public static void setUp(ApplicationContext context) {
-
+        CONFIG = ConfigurationFactory.getInstance();
     }
 
     /**
      * The constant RESOURCE_ID.
      */
     public static final String RESOURCE_ID = "mysql:xxx";
-
-    private static Configuration CONFIG = ConfigurationFactory.getInstance();
 
     /**
      * Clean.
@@ -89,6 +94,7 @@ public class SessionStoreTest extends BaseSpringBootTest {
      * @throws Exception the exception
      */
     @Test
+    @Order(1)
     public void testRestoredFromFile() throws Exception {
         try {
             SessionHolder.init(SessionMode.FILE);
@@ -168,6 +174,7 @@ public class SessionStoreTest extends BaseSpringBootTest {
      * @throws Exception the exception
      */
     @Test
+    @Order(2)
     public void testRestoredFromFileAsyncCommitting() throws Exception {
         try {
             SessionHolder.init(SessionMode.FILE);
@@ -221,6 +228,7 @@ public class SessionStoreTest extends BaseSpringBootTest {
      * @throws Exception the exception
      */
     @Test
+    @Order(3)
     public void testRestoredFromFileCommitRetry() throws Exception {
         try {
             SessionHolder.init(SessionMode.FILE);
@@ -279,6 +287,7 @@ public class SessionStoreTest extends BaseSpringBootTest {
      * @throws Exception the exception
      */
     @Test
+    @Order(4)
     public void testRestoredFromFileRollbackRetry() throws Exception {
         try {
             SessionHolder.init(SessionMode.FILE);
@@ -338,6 +347,7 @@ public class SessionStoreTest extends BaseSpringBootTest {
      * @throws Exception the exception
      */
     @Test
+    @Order(5)
     public void testRestoredFromFileRollbackFailed() throws Exception {
         try {
             SessionHolder.init(SessionMode.FILE);
