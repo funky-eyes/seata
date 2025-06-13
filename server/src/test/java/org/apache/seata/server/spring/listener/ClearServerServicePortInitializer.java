@@ -18,6 +18,7 @@ package org.apache.seata.server.spring.listener;
 
 import org.apache.seata.config.Configuration;
 import org.apache.seata.config.ConfigurationCache;
+import org.apache.seata.config.ConfigurationFactory;
 import org.apache.seata.core.constants.ConfigurationKeys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +54,7 @@ public class ClearServerServicePortInitializer implements GenericApplicationList
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
         ConfigurationCache.clear();
+        ConfigurationFactory.reload();
         // Clear the property for any of the supported events
         System.clearProperty(ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL);
         log.info("Cleared system property: " + ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL);
