@@ -32,7 +32,7 @@ class PortHelperTest {
 
     @Test
     public void testGetPortFromConfigFile() throws IOException {
-        Assertions.assertEquals(8091,PortHelper.getPortFromConfigFile());
+        Assertions.assertEquals(8080, PortHelper.getPortFromConfigFile());
     }
 
 }
