@@ -27,7 +27,6 @@ import org.apache.seata.common.holder.ObjectHolder;
 import org.apache.seata.common.util.HttpClientUtil;
 import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.cluster.listener.ClusterChangeEvent;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;

@@ -54,7 +54,6 @@ public class ClearServerServicePortInitializer implements GenericApplicationList
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
         ConfigurationCache.clear();
-        ConfigurationFactory.reload();
         // Clear the property for any of the supported events
         System.clearProperty(ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL);
         log.info("Cleared system property: " + ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL);
