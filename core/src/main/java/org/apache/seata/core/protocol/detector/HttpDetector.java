@@ -23,6 +23,7 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import org.apache.seata.core.rpc.netty.http.HttpDispatchHandler;
 
 public class HttpDetector implements ProtocolDetector {
+
     private static final String[] HTTP_METHODS = {"GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH"};
 
     @Override

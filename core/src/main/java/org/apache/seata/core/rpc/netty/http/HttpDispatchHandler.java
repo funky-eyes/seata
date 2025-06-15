@@ -55,23 +55,10 @@ public class HttpDispatchHandler extends SimpleChannelInboundHandler<HttpRequest
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpDispatchHandler.class);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
     /**
      * HTTP request processing thread pool, independent of Netty IO threads, to avoid blocking network processing.
      */
-    private static final ExecutorService HTTP_HANDLER_THREADS = new ThreadPoolExecutor(
-            NettyServerConfig.getMinHttpPoolSize(),
-            NettyServerConfig.getMaxHttpPoolSize(),
-            NettyServerConfig.getHttpKeepAliveTime(),
-            TimeUnit.SECONDS,
-            new LinkedBlockingQueue<>(NettyServerConfig.getMaxHttpTaskQueueSize()),
-            new NamedThreadFactory("HTTPHandlerThread", NettyServerConfig.getMaxHttpPoolSize()),
-            new ThreadPoolExecutor.AbortPolicy()
-    );
-
-    static {
-        Runtime.getRuntime().addShutdownHook(new Thread(HTTP_HANDLER_THREADS::shutdown));
-    }
+    private static final ExecutorService HTTP_HANDLER_THREADS = HttpThreadPoolFactory.getHttpHandlerThreads();
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpRequest httpRequest) {

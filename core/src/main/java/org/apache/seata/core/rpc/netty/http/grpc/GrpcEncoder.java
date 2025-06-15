@@ -14,13 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.seata.core.rpc.netty.grpc;
+package org.apache.seata.core.rpc.netty.http.grpc;
 
 import com.google.protobuf.ByteString;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
@@ -57,7 +58,7 @@ public class GrpcEncoder extends ChannelOutboundHandlerAdapter {
             Http2Headers headers = new DefaultHttp2Headers();
             headers.add(GrpcHeaderEnum.HTTP2_STATUS.header, String.valueOf(200));
             headers.add(GrpcHeaderEnum.GRPC_STATUS.header, String.valueOf(0));
-            headers.add(GrpcHeaderEnum.GRPC_CONTENT_TYPE.header, "application/grpc");
+            headers.add(HttpHeaderNames.CONTENT_TYPE, GrpcHeaderEnum.GRPC_CONTENT_TYPE.header);
             ctx.writeAndFlush(new DefaultHttp2HeadersFrame(headers));
         }
 

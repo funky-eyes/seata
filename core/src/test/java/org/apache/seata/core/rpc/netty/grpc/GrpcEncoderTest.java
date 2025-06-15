@@ -23,6 +23,7 @@ import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import org.apache.seata.core.protocol.HeartbeatMessage;
 import org.apache.seata.core.protocol.ProtocolConstants;
 import org.apache.seata.core.protocol.RpcMessage;
+import org.apache.seata.core.rpc.netty.http.grpc.GrpcEncoder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;

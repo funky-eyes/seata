@@ -19,9 +19,9 @@ package org.apache.seata.common.rpc.http;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpRequest;
 
-public class HttpContext {
+public class HttpContext<T> {
 
-    HttpRequest request;
+    T request;
 
     ChannelHandlerContext context;
 
@@ -29,7 +29,9 @@ public class HttpContext {
 
     boolean async = false;
 
-    public HttpContext(HttpRequest request, ChannelHandlerContext context, boolean keepAlive) {
+    String version;
+
+    public HttpContext(T request, ChannelHandlerContext context, boolean keepAlive) {
         this.request = request;
         this.context = context;
         this.keepAlive = keepAlive;
@@ -43,11 +45,11 @@ public class HttpContext {
         this.async = async;
     }
 
-    public HttpRequest getRequest() {
+    public T getRequest() {
         return request;
     }
 
-    public void setRequest(HttpRequest request) {
+    public void setRequest(T request) {
         this.request = request;
     }
 

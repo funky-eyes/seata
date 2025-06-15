@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.seata.core.rpc.netty.grpc;
+package org.apache.seata.core.rpc.netty.http.grpc;
 
 public enum GrpcHeaderEnum {
 
@@ -29,7 +29,7 @@ public enum GrpcHeaderEnum {
     /**
      * content-type
      */
-    GRPC_CONTENT_TYPE("content-type"),
+    GRPC_CONTENT_TYPE("application/grpc"),
 
     /**
      * codec-type
@@ -46,4 +46,5 @@ public enum GrpcHeaderEnum {
     GrpcHeaderEnum(String header) {
         this.header = header;
     }
+
 }

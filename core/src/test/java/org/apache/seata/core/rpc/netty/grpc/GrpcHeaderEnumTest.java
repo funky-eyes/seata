@@ -16,6 +16,7 @@
  */
 package org.apache.seata.core.rpc.netty.grpc;
 
+import org.apache.seata.core.rpc.netty.http.grpc.GrpcHeaderEnum;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -26,7 +27,7 @@ public class GrpcHeaderEnumTest {
     public void testHeaderValues() {
         assertEquals("grpc-status", GrpcHeaderEnum.GRPC_STATUS.header);
         assertEquals(":status", GrpcHeaderEnum.HTTP2_STATUS.header);
-        assertEquals("content-type", GrpcHeaderEnum.GRPC_CONTENT_TYPE.header);
+        assertEquals("application/grpc", GrpcHeaderEnum.GRPC_CONTENT_TYPE.header);
         assertEquals("codec-type", GrpcHeaderEnum.CODEC_TYPE.header);
         assertEquals("compress-type", GrpcHeaderEnum.COMPRESS_TYPE.header);
     }

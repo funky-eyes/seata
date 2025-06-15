@@ -25,6 +25,7 @@ import javax.annotation.Resource;
 import com.alipay.sofa.jraft.RouteTable;
 import com.alipay.sofa.jraft.conf.Configuration;
 import com.alipay.sofa.jraft.entity.PeerId;
+import io.netty.handler.codec.http.HttpRequest;
 import org.apache.seata.common.ConfigurationKeys;
 import org.apache.seata.common.metadata.MetadataResponse;
 import org.apache.seata.common.metadata.Node;
@@ -108,11 +109,11 @@ public class ClusterController {
     }
 
     @PostMapping("/watch")
-    public void watch(HttpContext context, @RequestBody Map<String, Object> groupTerms,
-        @RequestParam(defaultValue = "28000") Integer timeout) {
+    public void watch(HttpContext<HttpRequest> context, @RequestBody Map<String, Object> groupTerms,
+                      @RequestParam(defaultValue = "28000") Integer timeout) {
         context.setAsync(true);
         groupTerms.forEach((group, term) -> {
-            Watcher<HttpContext> watcher =
+            Watcher<HttpContext<HttpRequest>> watcher =
                 new Watcher<>(group, context, timeout, Long.parseLong(String.valueOf(term)));
             clusterWatcherManager.registryWatcher(watcher);
         });
