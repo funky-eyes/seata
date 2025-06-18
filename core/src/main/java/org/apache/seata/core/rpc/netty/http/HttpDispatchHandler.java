@@ -86,7 +86,7 @@ public class HttpDispatchHandler extends SimpleChannelInboundHandler<HttpRequest
                 return;
             }
 
-            HttpContext httpContext = new HttpContext(httpRequest, ctx, keepAlive);
+            HttpContext<HttpRequest> httpContext = new HttpContext<>(httpRequest, ctx, keepAlive,HttpContext.HTTP_1_1);
             ObjectNode requestDataNode = OBJECT_MAPPER.createObjectNode();
             requestDataNode.putIfAbsent("param", ParameterParser.convertParamMap(queryStringDecoder.parameters()));
 

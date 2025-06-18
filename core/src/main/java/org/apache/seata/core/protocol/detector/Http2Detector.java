@@ -28,8 +28,8 @@ import org.apache.seata.core.rpc.netty.grpc.GrpcDecoder;
 import org.apache.seata.core.rpc.netty.grpc.GrpcEncoder;
 
 public class Http2Detector implements ProtocolDetector {
-    private static final byte[] HTTP2_PREFIX_BYTES = "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n".getBytes(CharsetUtil.UTF_8);
-    private ChannelHandler[] serverHandlers;
+    private static final byte[]           HTTP2_PREFIX_BYTES = "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n".getBytes(CharsetUtil.UTF_8);
+    private final        ChannelHandler[] serverHandlers;
 
     public Http2Detector(ChannelHandler[] serverHandlers) {
         this.serverHandlers = serverHandlers;
@@ -56,9 +56,24 @@ public class Http2Detector implements ProtocolDetector {
                 @Override
                 protected void initChannel(Http2StreamChannel ch) {
                     final ChannelPipeline p = ch.pipeline();
-                    p.addLast(new GrpcDecoder());
-                    p.addLast(new GrpcEncoder());
-                    p.addLast(serverHandlers);
+                    p.addLast(new io.netty.channel.ChannelInboundHandlerAdapter() {
+                        @Override
+                        public void channelRead(io.netty.channel.ChannelHandlerContext ctx, Object msg) throws Exception {
+                            if (msg instanceof io.netty.handler.codec.http2.Http2HeadersFrame) {
+                                io.netty.handler.codec.http2.Http2HeadersFrame headersFrame = (io.netty.handler.codec.http2.Http2HeadersFrame) msg;
+                                CharSequence contentType = headersFrame.headers().get("content-type");
+                                if (contentType != null && contentType.toString().contains("grpc")) {
+                                    p.addLast(new GrpcDecoder());
+                                    p.addLast(new GrpcEncoder());
+                                    p.addLast(serverHandlers);
+                                } else {
+                                    p.addLast(new org.apache.seata.core.rpc.netty.http.Http2HttpHandler());
+                                }
+                                p.remove(this);
+                            }
+                            ctx.fireChannelRead(msg);
+                        }
+                    });
                 }
             })
         };

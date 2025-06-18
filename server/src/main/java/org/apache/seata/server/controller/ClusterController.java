@@ -108,7 +108,7 @@ public class ClusterController {
     }
 
     @PostMapping("/watch")
-    public void watch(HttpContext context, @RequestBody Map<String, Object> groupTerms,
+    public void watch(HttpContext<?> context, @RequestBody Map<String, Object> groupTerms,
         @RequestParam(defaultValue = "28000") Integer timeout) {
         context.setAsync(true);
         groupTerms.forEach((group, term) -> {

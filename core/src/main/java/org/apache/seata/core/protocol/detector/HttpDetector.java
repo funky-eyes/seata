@@ -18,11 +18,26 @@ package org.apache.seata.core.protocol.detector;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.HttpServerUpgradeHandler;
+import io.netty.handler.codec.http2.Http2CodecUtil;
+import io.netty.handler.codec.http2.Http2FrameCodecBuilder;
+import io.netty.handler.codec.http2.Http2MultiplexHandler;
+import io.netty.handler.codec.http2.Http2ServerUpgradeCodec;
+import io.netty.handler.codec.http2.Http2StreamChannel;
+import io.netty.util.AsciiString;
+import org.apache.seata.core.rpc.netty.http.Http2HttpHandler;
 import org.apache.seata.core.rpc.netty.http.HttpDispatchHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HttpDetector implements ProtocolDetector {
+    private static final Logger LOGGER = LoggerFactory.getLogger(HttpDetector.class);
     private static final String[] HTTP_METHODS = {"GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH"};
 
     @Override
@@ -52,10 +67,70 @@ public class HttpDetector implements ProtocolDetector {
 
     @Override
     public ChannelHandler[] getHandlers() {
-        return new ChannelHandler[]{
-            new HttpServerCodec(),
-            new HttpObjectAggregator(1048576),
-            new HttpDispatchHandler()
+        HttpServerCodec sourceCodec = new HttpServerCodec();
+        HttpServerUpgradeHandler upgradeHandler = getHttpServerUpgradeHandler(sourceCodec);
+
+        ChannelInboundHandlerAdapter upgradeCleanupHandler = new ChannelInboundHandlerAdapter() {
+            @Override
+            public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+                if (evt instanceof HttpServerUpgradeHandler.UpgradeEvent) {
+                    ChannelPipeline p = ctx.pipeline();
+                    // 不再 remove aggregator，因为我们根本不加 aggregator
+                    p.remove(HttpDispatchHandler.class);
+                }
+                super.userEventTriggered(ctx, evt);
+            }
         };
+
+        ChannelInboundHandlerAdapter finalExceptionHandler = new ChannelInboundHandlerAdapter() {
+            @Override
+            public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+                if (cause instanceof java.io.IOException) {
+                    LOGGER.trace("Connection closed by client: {}", cause.getMessage());
+                } else {
+                    LOGGER.error("Exception caught in HTTP pipeline: ", cause);
+                }
+                ctx.close();
+            }
+        };
+
+        // 只在非 upgrade 场景下动态添加 aggregator 和 dispatch handler
+        return new ChannelHandler[]{
+            sourceCodec,
+            upgradeHandler,
+            upgradeCleanupHandler,
+            new ChannelInboundHandlerAdapter() {
+                @Override
+                public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+                    // 检查是否已经 upgrade，如果还没 upgrade，说明是普通 HTTP/1.1
+                    if (ctx.pipeline().get(HttpObjectAggregator.class) == null &&
+                        ctx.pipeline().get(HttpDispatchHandler.class) == null) {
+                        ctx.pipeline().addAfter(ctx.name(), "aggregator", new HttpObjectAggregator(1048576));
+                        ctx.pipeline().addAfter("aggregator", "dispatch", new HttpDispatchHandler());
+                    }
+                    ctx.fireChannelRead(msg);
+                }
+            },
+            finalExceptionHandler
+        };
+    }
+
+    private static HttpServerUpgradeHandler getHttpServerUpgradeHandler(HttpServerCodec sourceCodec) {
+        HttpServerUpgradeHandler.UpgradeCodecFactory upgradeCodecFactory = protocol -> {
+            if (AsciiString.contentEquals(Http2CodecUtil.HTTP_UPGRADE_PROTOCOL_NAME, protocol)) {
+                return new Http2ServerUpgradeCodec(
+                    Http2FrameCodecBuilder.forServer().build(),
+                    new Http2MultiplexHandler(new ChannelInitializer<Http2StreamChannel>() {
+                        @Override
+                        protected void initChannel(Http2StreamChannel ch) {
+                            ch.pipeline().addLast(new Http2HttpHandler());
+                        }
+                    }));
+            } else {
+                return null;
+            }
+        };
+
+        return new HttpServerUpgradeHandler(sourceCodec, upgradeCodecFactory,1048576);
     }
 }
