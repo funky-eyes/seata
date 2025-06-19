@@ -16,17 +16,6 @@
  */
 package org.apache.seata.namingserver.manager;
 
-import org.apache.seata.namingserver.listener.ClusterChangeEvent;
-import org.apache.seata.namingserver.listener.ClusterChangeListener;
-import org.apache.seata.namingserver.listener.Watcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.event.EventListener;
-import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
-import org.springframework.stereotype.Component;
-
 import javax.annotation.PostConstruct;
 import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletResponse;
@@ -42,6 +31,16 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.seata.namingserver.listener.ClusterChangeEvent;
+import org.apache.seata.namingserver.listener.ClusterChangeListener;
+import org.apache.seata.namingserver.listener.Watcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.event.EventListener;
+import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ClusterWatcherManager implements ClusterChangeListener {
@@ -61,15 +60,15 @@ public class ClusterWatcherManager implements ClusterChangeListener {
         scheduledThreadPoolExecutor.scheduleAtFixedRate(() -> {
             for (String group : WATCHERS.keySet()) {
                 Optional.ofNullable(WATCHERS.remove(group))
-                        .ifPresent(watchers -> watchers.parallelStream().forEach(watcher -> {
-                            if (System.currentTimeMillis() >= watcher.getTimeout()) {
-                                notify(watcher, HttpStatus.NOT_MODIFIED.value());
-                            }
-                            if (!watcher.isDone()) {
-                                // Re-register
-                                registryWatcher(watcher);
-                            }
-                        }));
+                    .ifPresent(watchers -> watchers.parallelStream().forEach(watcher -> {
+                        if (System.currentTimeMillis() >= watcher.getTimeout()) {
+                            notify(watcher, HttpStatus.NOT_MODIFIED.value());
+                        }
+                        if (!watcher.isDone()) {
+                            // Re-register
+                            registryWatcher(watcher);
+                        }
+                    }));
             }
         }, 1, 1, TimeUnit.SECONDS);
     }
@@ -83,7 +82,7 @@ public class ClusterWatcherManager implements ClusterChangeListener {
             // Notifications are made of changes in cluster information
 
             Optional.ofNullable(WATCHERS.remove(event.getGroup()))
-                    .ifPresent(watchers -> watchers.parallelStream().forEach(this::notify));
+                .ifPresent(watchers -> watchers.parallelStream().forEach(this::notify));
         }
     }
 
@@ -92,8 +91,8 @@ public class ClusterWatcherManager implements ClusterChangeListener {
     }
 
     private void notify(Watcher<?> watcher, int statusCode) {
-        AsyncContext asyncContext = (AsyncContext) watcher.getAsyncContext();
-        HttpServletResponse httpServletResponse = (HttpServletResponse) asyncContext.getResponse();
+        AsyncContext asyncContext = (AsyncContext)watcher.getAsyncContext();
+        HttpServletResponse httpServletResponse = (HttpServletResponse)asyncContext.getResponse();
         watcher.setDone(true);
         if (logger.isDebugEnabled()) {
             logger.debug("notify cluster change event to: {}", asyncContext.getRequest().getRemoteAddr());

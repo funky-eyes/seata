@@ -17,7 +17,6 @@
 package org.apache.seata.core.rpc.netty.http;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -44,10 +43,9 @@ import java.util.concurrent.RejectedExecutionException;
 /**
  * A Netty HTTP request handler that dispatches incoming requests to corresponding controller methods
  */
-public class HttpDispatchHandler extends SeataHttpChannelHandler<HttpRequest> {
+public class HttpDispatchHandler extends BaseHttpChannelHandler<HttpRequest> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpDispatchHandler.class);
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpRequest httpRequest) {
@@ -64,7 +62,7 @@ public class HttpDispatchHandler extends SeataHttpChannelHandler<HttpRequest> {
 
             HttpContext<HttpRequest> httpContext = new HttpContext<>(httpRequest, ctx, keepAlive,HttpContext.HTTP_1_1);
             ObjectNode requestDataNode = OBJECT_MAPPER.createObjectNode();
-            requestDataNode.putIfAbsent("param", ParameterParser.convertParamMap(queryStringDecoder.parameters()));
+            requestDataNode.put("param", ParameterParser.convertParamMap(queryStringDecoder.parameters()));
 
             if (httpRequest.method() == HttpMethod.POST) {
                 HttpPostRequestDecoder httpPostRequestDecoder = null;

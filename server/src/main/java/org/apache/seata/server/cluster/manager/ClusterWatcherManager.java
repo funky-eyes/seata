@@ -32,7 +32,6 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
-import org.apache.http.HttpRequest;
 import org.apache.seata.common.rpc.http.HttpContext;
 import org.apache.seata.common.thread.NamedThreadFactory;
 import org.apache.seata.server.cluster.listener.ClusterChangeEvent;
@@ -116,8 +115,6 @@ public class ClusterWatcherManager implements ClusterChangeListener {
                 logger.warn("Netty channel is not active for watcher on group {}, cannot send response.",
                         watcher.getGroup());
             }
-        } else {
-
         }
     }
 

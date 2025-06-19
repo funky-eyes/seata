@@ -16,7 +16,6 @@
  */
 package org.apache.seata.core.rpc.netty.http;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -42,9 +41,8 @@ import java.nio.charset.StandardCharsets;
 /**
  * The http2 http handler.
  */
-public class Http2HttpHandler extends SeataHttpChannelHandler<Http2StreamFrame> {
+public class Http2HttpHandler extends BaseHttpChannelHandler<Http2StreamFrame> {
     private static final Logger LOGGER = LoggerFactory.getLogger(Http2HttpHandler.class);
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private Http2Headers http2Headers;
     private ByteBuf bodyBuffer;
     private boolean headersEndStream = false;
@@ -80,7 +78,7 @@ public class Http2HttpHandler extends SeataHttpChannelHandler<Http2StreamFrame> 
 
     private void handleRequest(ChannelHandlerContext ctx) {
         try {
-            if (http2Headers == null) {
+            if (http2Headers == null || http2Headers.method() == null || http2Headers.path() == null) {
                 sendErrorResponse(ctx, HttpResponseStatus.BAD_REQUEST);
                 return;
             }
@@ -100,12 +98,12 @@ public class Http2HttpHandler extends SeataHttpChannelHandler<Http2StreamFrame> 
             }
             HttpContext<SimpleHttp2Request> httpContext = new HttpContext<>(request, ctx, keepAlive, HttpContext.HTTP_2_0);
             ObjectNode requestDataNode = OBJECT_MAPPER.createObjectNode();
-            requestDataNode.putIfAbsent("param", ParameterParser.convertParamMap(queryStringDecoder.parameters()));
+            requestDataNode.put("param", ParameterParser.convertParamMap(queryStringDecoder.parameters()));
             if (request.getMethod() == HttpMethod.POST && request.getBody() != null && !request.getBody().isEmpty()) {
                 // assume body is json
                 try {
                     ObjectNode bodyDataNode = (ObjectNode) OBJECT_MAPPER.readTree(request.getBody());
-                    requestDataNode.putIfAbsent("body", bodyDataNode);
+                    requestDataNode.put("body", bodyDataNode);
                 } catch (Exception e) {
                     LOGGER.warn("Failed to parse http2 body as json: {}", e.getMessage());
                 }
@@ -117,7 +115,7 @@ public class Http2HttpHandler extends SeataHttpChannelHandler<Http2StreamFrame> 
                 Object result = null;
                 try {
                     result = handleMethod.invoke(httpController, args);
-                    if (httpContext.isAsync()) {
+                    if (!httpContext.isAsync()) {
                         sendResponse(ctx, result);
                     }
                 } catch (IllegalAccessException e) {
