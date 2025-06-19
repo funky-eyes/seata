@@ -21,6 +21,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.HttpServerUpgradeHandler;
 import org.apache.seata.core.rpc.netty.http.HttpDispatchHandler;
 import org.junit.jupiter.api.Test;
 
@@ -55,10 +56,11 @@ class HttpDetectorTest {
     @Test
     void testGetHandlers() {
         ChannelHandler[] handlers = httpDetector.getHandlers();
-        assertEquals(3, handlers.length);
+        assertEquals(6, handlers.length);
         assertInstanceOf(HttpServerCodec.class, handlers[0]);
-        assertInstanceOf(HttpObjectAggregator.class, handlers[1]);
-        assertInstanceOf(HttpDispatchHandler.class, handlers[2]);
+        assertInstanceOf(HttpServerUpgradeHandler.class, handlers[1]);
+        assertInstanceOf(HttpObjectAggregator.class, handlers[3]);
+        assertInstanceOf(HttpDispatchHandler.class, handlers[4]);
 
         // Verify aggregator size
         HttpObjectAggregator aggregator = (HttpObjectAggregator) handlers[1];

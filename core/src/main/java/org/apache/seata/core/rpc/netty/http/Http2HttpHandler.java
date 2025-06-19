@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -38,47 +37,48 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 
 /**
  * The http2 http handler.
  */
-public class Http2HttpHandler extends SimpleChannelInboundHandler<Http2StreamFrame> {
+public class Http2HttpHandler extends SeataHttpChannelHandler<Http2StreamFrame> {
     private static final Logger LOGGER = LoggerFactory.getLogger(Http2HttpHandler.class);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private Http2Headers http2Headers;
-    private final StringBuilder bodyBuilder = new StringBuilder();
-    private boolean requestHandled = false;
-    private boolean headersReceived = false;
+    private ByteBuf bodyBuffer;
     private boolean headersEndStream = false;
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Http2StreamFrame msg) throws Exception {
-        if (requestHandled) {
-            return;
+        if (bodyBuffer == null) {
+            bodyBuffer = ctx.alloc().buffer();
         }
-        if (msg instanceof Http2HeadersFrame) {
-            Http2HeadersFrame headersFrame = (Http2HeadersFrame) msg;
-            this.http2Headers = headersFrame.headers();
-            headersReceived = true;
-            headersEndStream = headersFrame.isEndStream();
-            // 如果 header 已经 endStream，且没有 data，则直接处理
-            if (headersEndStream) {
-                handleRequest(ctx);
+        try {
+            if (msg instanceof Http2HeadersFrame) {
+                Http2HeadersFrame headersFrame = (Http2HeadersFrame) msg;
+                this.http2Headers = headersFrame.headers();
+                headersEndStream = headersFrame.isEndStream();
+                if (headersEndStream) {
+                    handleRequest(ctx);
+                }
+            } else if (msg instanceof Http2DataFrame) {
+                Http2DataFrame dataFrame = (Http2DataFrame) msg;
+                bodyBuffer.writeBytes(dataFrame.content());
+                if (dataFrame.isEndStream()) {
+                    handleRequest(ctx);
+                }
             }
-        } else if (msg instanceof Http2DataFrame) {
-            Http2DataFrame dataFrame = (Http2DataFrame) msg;
-            bodyBuilder.append(dataFrame.content().toString(io.netty.util.CharsetUtil.UTF_8));
-            if (dataFrame.isEndStream()) {
-                handleRequest(ctx);
+        } catch (Exception e) {
+            if (bodyBuffer != null) {
+                bodyBuffer.release();
+                bodyBuffer = null;
             }
+            throw e;
         }
     }
 
     private void handleRequest(ChannelHandlerContext ctx) {
-        if (requestHandled) {
-            return;
-        }
-        requestHandled = true;
         try {
             if (http2Headers == null) {
                 sendErrorResponse(ctx, HttpResponseStatus.BAD_REQUEST);
@@ -86,7 +86,7 @@ public class Http2HttpHandler extends SimpleChannelInboundHandler<Http2StreamFra
             }
             HttpMethod method = HttpMethod.valueOf(http2Headers.method().toString());
             String path = http2Headers.path().toString();
-            String body = bodyBuilder.toString();
+            String body = bodyBuffer != null ? bodyBuffer.toString(StandardCharsets.UTF_8) : "";
             SimpleHttp2Request request = new SimpleHttp2Request(method, path, http2Headers, body);
 
             // reuse HttpDispatchHandler logic
@@ -113,16 +113,30 @@ public class Http2HttpHandler extends SimpleChannelInboundHandler<Http2StreamFra
             Object httpController = httpInvocation.getController();
             Method handleMethod = httpInvocation.getMethod();
             Object[] args = ParameterParser.getArgValues(httpInvocation.getParamMetaData(), handleMethod, requestDataNode, httpContext);
-            Object result = handleMethod.invoke(httpController, args);
-            sendResponse(ctx, result);
+            HTTP_HANDLER_THREADS.execute(() -> {
+                Object result = null;
+                try {
+                    result = handleMethod.invoke(httpController, args);
+                    if (httpContext.isAsync()) {
+                        sendResponse(ctx, result);
+                    }
+                } catch (IllegalAccessException e) {
+                    LOGGER.error("Illegal argument exception: {}", e.getMessage(), e);
+                    sendErrorResponse(ctx, HttpResponseStatus.BAD_REQUEST);
+                } catch (Exception e) {
+                    LOGGER.error("Exception occurred while processing HTTP2 request: {}", e.getMessage(), e);
+                    sendErrorResponse(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+                }
+            });
         } catch (Exception e) {
             LOGGER.error("Exception occurred while processing HTTP2 request: {}", e.getMessage(), e);
             sendErrorResponse(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR);
         } finally {
-            bodyBuilder.setLength(0);
+            if (bodyBuffer != null) {
+                bodyBuffer.release();
+                bodyBuffer = null;
+            }
             http2Headers = null;
-            requestHandled = false;
-            headersReceived = false;
             headersEndStream = false;
         }
     }

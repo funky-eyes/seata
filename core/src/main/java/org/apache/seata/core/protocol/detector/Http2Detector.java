@@ -27,6 +27,7 @@ import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.util.CharsetUtil;
 import org.apache.seata.core.rpc.netty.grpc.GrpcDecoder;
 import org.apache.seata.core.rpc.netty.grpc.GrpcEncoder;
+import org.apache.seata.core.rpc.netty.http.Http2HttpHandler;
 
 public class Http2Detector implements ProtocolDetector {
     private static final byte[]           HTTP2_PREFIX_BYTES = "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n".getBytes(CharsetUtil.UTF_8);
@@ -68,7 +69,7 @@ public class Http2Detector implements ProtocolDetector {
                                     p.addLast(new GrpcEncoder());
                                     p.addLast(serverHandlers);
                                 } else {
-                                    p.addLast(new org.apache.seata.core.rpc.netty.http.Http2HttpHandler());
+                                    p.addLast(new Http2HttpHandler());
                                 }
                                 p.remove(this);
                             }

@@ -22,7 +22,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -35,43 +34,20 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.multipart.Attribute;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
-import org.apache.seata.common.thread.NamedThreadFactory;
-import org.apache.seata.core.rpc.netty.NettyServerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.seata.common.rpc.http.HttpContext;
 
 import java.lang.reflect.Method;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A Netty HTTP request handler that dispatches incoming requests to corresponding controller methods
  */
-public class HttpDispatchHandler extends SimpleChannelInboundHandler<HttpRequest> {
+public class HttpDispatchHandler extends SeataHttpChannelHandler<HttpRequest> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpDispatchHandler.class);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
-    /**
-     * HTTP request processing thread pool, independent of Netty IO threads, to avoid blocking network processing.
-     */
-    private static final ExecutorService HTTP_HANDLER_THREADS = new ThreadPoolExecutor(
-            NettyServerConfig.getMinHttpPoolSize(),
-            NettyServerConfig.getMaxHttpPoolSize(),
-            NettyServerConfig.getHttpKeepAliveTime(),
-            TimeUnit.SECONDS,
-            new LinkedBlockingQueue<>(NettyServerConfig.getMaxHttpTaskQueueSize()),
-            new NamedThreadFactory("HTTPHandlerThread", NettyServerConfig.getMaxHttpPoolSize()),
-            new ThreadPoolExecutor.AbortPolicy()
-    );
-
-    static {
-        Runtime.getRuntime().addShutdownHook(new Thread(HTTP_HANDLER_THREADS::shutdown));
-    }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpRequest httpRequest) {
