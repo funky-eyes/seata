@@ -100,10 +100,10 @@ public class ClusterWatcherManager implements ClusterChangeListener {
             return;
         }
         ChannelHandlerContext ctx = context.getContext();
-        if(!context.isHttp2()) {
+        if (!context.isHttp2()) {
             if (ctx.channel().isActive()) {
-                HttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, nettyStatus,
-                        Unpooled.EMPTY_BUFFER);
+                HttpResponse response =
+                    new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, nettyStatus, Unpooled.EMPTY_BUFFER);
                 response.headers().set(HttpHeaderNames.CONTENT_LENGTH, 0);
 
                 if (!context.isKeepAlive()) {
@@ -113,7 +113,7 @@ public class ClusterWatcherManager implements ClusterChangeListener {
                 }
             } else {
                 logger.warn("Netty channel is not active for watcher on group {}, cannot send response.",
-                        watcher.getGroup());
+                    watcher.getGroup());
             }
         }
     }
