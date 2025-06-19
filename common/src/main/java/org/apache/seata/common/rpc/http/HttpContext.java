@@ -40,6 +40,13 @@ public class HttpContext<T> {
         this.httpVersion = httpVersion;
     }
 
+    public HttpContext(T request, ChannelHandlerContext context, boolean keepAlive) {
+        this.request = request;
+        this.context = context;
+        this.keepAlive = keepAlive;
+        this.httpVersion = HTTP_1_1;
+    }
+
     public boolean isHttp2() {
         return HTTP_2_0.equals(httpVersion);
     }
