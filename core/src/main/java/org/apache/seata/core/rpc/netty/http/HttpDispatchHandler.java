@@ -62,7 +62,7 @@ public class HttpDispatchHandler extends BaseHttpChannelHandler<HttpRequest> {
 
             HttpContext<HttpRequest> httpContext = new HttpContext<>(httpRequest, ctx, keepAlive,HttpContext.HTTP_1_1);
             ObjectNode requestDataNode = OBJECT_MAPPER.createObjectNode();
-            requestDataNode.put("param", ParameterParser.convertParamMap(queryStringDecoder.parameters()));
+            requestDataNode.set("param", ParameterParser.convertParamMap(queryStringDecoder.parameters()));
 
             if (httpRequest.method() == HttpMethod.POST) {
                 HttpPostRequestDecoder httpPostRequestDecoder = null;

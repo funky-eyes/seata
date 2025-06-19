@@ -42,7 +42,7 @@ class Http2HttpHandlerTest {
     private TestController testController = new TestController();
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    class TestController {
+    static class TestController {
         public String handleRequest(String param) {
             return "Processed: " + param;
         }
@@ -52,7 +52,6 @@ class Http2HttpHandlerTest {
     void setUp() throws Exception {
         handler = new Http2HttpHandler();
         channel = new EmbeddedChannel(handler);
-        // 注册controller
         Method method = TestController.class.getMethod("handleRequest", String.class);
         ParamMetaData paramMetaData = new ParamMetaData();
         paramMetaData.setParamConvertType(ParamMetaData.ParamConvertType.REQUEST_PARAM);

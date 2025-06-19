@@ -98,12 +98,12 @@ public class Http2HttpHandler extends BaseHttpChannelHandler<Http2StreamFrame> {
             }
             HttpContext<SimpleHttp2Request> httpContext = new HttpContext<>(request, ctx, keepAlive, HttpContext.HTTP_2_0);
             ObjectNode requestDataNode = OBJECT_MAPPER.createObjectNode();
-            requestDataNode.put("param", ParameterParser.convertParamMap(queryStringDecoder.parameters()));
+            requestDataNode.set("param", ParameterParser.convertParamMap(queryStringDecoder.parameters()));
             if (request.getMethod() == HttpMethod.POST && request.getBody() != null && !request.getBody().isEmpty()) {
                 // assume body is json
                 try {
                     ObjectNode bodyDataNode = (ObjectNode) OBJECT_MAPPER.readTree(request.getBody());
-                    requestDataNode.put("body", bodyDataNode);
+                    requestDataNode.set("body", bodyDataNode);
                 } catch (Exception e) {
                     LOGGER.warn("Failed to parse http2 body as json: {}", e.getMessage());
                 }
@@ -111,21 +111,7 @@ public class Http2HttpHandler extends BaseHttpChannelHandler<Http2StreamFrame> {
             Object httpController = httpInvocation.getController();
             Method handleMethod = httpInvocation.getMethod();
             Object[] args = ParameterParser.getArgValues(httpInvocation.getParamMetaData(), handleMethod, requestDataNode, httpContext);
-            HTTP_HANDLER_THREADS.execute(() -> {
-                Object result = null;
-                try {
-                    result = handleMethod.invoke(httpController, args);
-                    if (!httpContext.isAsync()) {
-                        sendResponse(ctx, result);
-                    }
-                } catch (IllegalAccessException e) {
-                    LOGGER.error("Illegal argument exception: {}", e.getMessage(), e);
-                    sendErrorResponse(ctx, HttpResponseStatus.BAD_REQUEST);
-                } catch (Exception e) {
-                    LOGGER.error("Exception occurred while processing HTTP2 request: {}", e.getMessage(), e);
-                    sendErrorResponse(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR);
-                }
-            });
+            handle(httpController, handleMethod, args, ctx, httpContext);
         } catch (Exception e) {
             LOGGER.error("Exception occurred while processing HTTP2 request: {}", e.getMessage(), e);
             sendErrorResponse(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR);
@@ -137,6 +123,24 @@ public class Http2HttpHandler extends BaseHttpChannelHandler<Http2StreamFrame> {
             http2Headers = null;
             headersEndStream = false;
         }
+    }
+
+    private void handle(Object httpController,Method handleMethod, Object[] args, ChannelHandlerContext ctx, HttpContext<SimpleHttp2Request> httpContext) {
+        HTTP_HANDLER_THREADS.execute(() -> {
+            Object result;
+            try {
+                result = handleMethod.invoke(httpController, args);
+                if (!httpContext.isAsync()) {
+                    sendResponse(ctx, result);
+                }
+            } catch (IllegalAccessException e) {
+                LOGGER.error("Illegal argument exception: {}", e.getMessage(), e);
+                sendErrorResponse(ctx, HttpResponseStatus.BAD_REQUEST);
+            } catch (Exception e) {
+                LOGGER.error("Exception occurred while processing HTTP2 request: {}", e.getMessage(), e);
+                sendErrorResponse(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+            }
+        });
     }
 
     private void sendResponse(ChannelHandlerContext ctx, Object result) throws Exception {
