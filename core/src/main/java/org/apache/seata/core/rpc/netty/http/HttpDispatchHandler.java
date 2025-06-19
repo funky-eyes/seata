@@ -82,7 +82,7 @@ public class HttpDispatchHandler extends SimpleChannelInboundHandler<HttpRequest
             HttpInvocation httpInvocation = ControllerManager.getHttpInvocation(path);
 
             if (httpInvocation == null) {
-                sendErrorResponse(ctx, HttpResponseStatus.NOT_FOUND, keepAlive);
+                sendErrorResponse(ctx, HttpResponseStatus.NOT_FOUND, false);
                 return;
             }
 

@@ -75,7 +75,8 @@ public class HttpDetector implements ProtocolDetector {
             public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
                 if (evt instanceof HttpServerUpgradeHandler.UpgradeEvent) {
                     ChannelPipeline p = ctx.pipeline();
-                    // 不再 remove aggregator，因为我们根本不加 aggregator
+                    // HTTP/2 升级时直接 remove，无需先 get
+                    p.remove(HttpObjectAggregator.class);
                     p.remove(HttpDispatchHandler.class);
                 }
                 super.userEventTriggered(ctx, evt);
@@ -94,23 +95,13 @@ public class HttpDetector implements ProtocolDetector {
             }
         };
 
-        // 只在非 upgrade 场景下动态添加 aggregator 和 dispatch handler
+        // 直接初始化时就添加 aggregator 和 dispatch handler，保证 HTTP/1.1 能被处理
         return new ChannelHandler[]{
             sourceCodec,
             upgradeHandler,
             upgradeCleanupHandler,
-            new ChannelInboundHandlerAdapter() {
-                @Override
-                public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                    // 检查是否已经 upgrade，如果还没 upgrade，说明是普通 HTTP/1.1
-                    if (ctx.pipeline().get(HttpObjectAggregator.class) == null &&
-                        ctx.pipeline().get(HttpDispatchHandler.class) == null) {
-                        ctx.pipeline().addAfter(ctx.name(), "aggregator", new HttpObjectAggregator(1048576));
-                        ctx.pipeline().addAfter("aggregator", "dispatch", new HttpDispatchHandler());
-                    }
-                    ctx.fireChannelRead(msg);
-                }
-            },
+            new HttpObjectAggregator(1048576),
+            new HttpDispatchHandler(),
             finalExceptionHandler
         };
     }
