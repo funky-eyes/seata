@@ -20,14 +20,13 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class Http2DetectorTest {
+public class Http2DetectorTest {
     @Test
     void testDetectWithHttp2Prefix() {
         byte[] http2Prefix = "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n".getBytes(StandardCharsets.UTF_8);
