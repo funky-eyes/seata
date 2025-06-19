@@ -20,6 +20,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http2.Http2FrameCodecBuilder;
 import io.netty.handler.codec.http2.Http2MultiplexHandler;
 import io.netty.handler.codec.http2.Http2StreamChannel;
@@ -61,7 +62,7 @@ public class Http2Detector implements ProtocolDetector {
                         public void channelRead(io.netty.channel.ChannelHandlerContext ctx, Object msg) throws Exception {
                             if (msg instanceof io.netty.handler.codec.http2.Http2HeadersFrame) {
                                 io.netty.handler.codec.http2.Http2HeadersFrame headersFrame = (io.netty.handler.codec.http2.Http2HeadersFrame) msg;
-                                CharSequence contentType = headersFrame.headers().get("content-type");
+                                CharSequence contentType = headersFrame.headers().get(HttpHeaderNames.CONTENT_TYPE);
                                 if (contentType != null && contentType.toString().contains("grpc")) {
                                     p.addLast(new GrpcDecoder());
                                     p.addLast(new GrpcEncoder());
