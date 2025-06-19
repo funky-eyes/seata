@@ -85,14 +85,12 @@ class Http2HttpHandlerTest {
 
     @Test
     void testHttp2GetRequestWithParameters() throws Exception {
-        // 构造 GET 请求
         Http2Headers headers = new DefaultHttp2Headers();
         headers.method("GET");
         headers.path("/test?param=testValue");
         Http2HeadersFrame headersFrame = new DefaultHttp2HeadersFrame(headers, true);
         channel.writeInbound(headersFrame);
 
-        // 使用等待方法获取响应
         Http2StreamFrame responseHeadersFrame = waitForHttp2Response(5000);
         assertNotNull(responseHeadersFrame);
         assertTrue(responseHeadersFrame instanceof DefaultHttp2HeadersFrame);
@@ -123,11 +121,9 @@ class Http2HttpHandlerTest {
 
     @Test
     void testHttp2PostRequestWithJsonBody() throws Exception {
-        // 构造 POST 请求
         String json = OBJECT_MAPPER.writeValueAsString(new HashMap<String, Object>() {{
             put("foo", "bar");
         }});
-        // 注意：param 应该放在 path 上，body 里用其它字段
         Http2Headers headers = new DefaultHttp2Headers();
         headers.method("POST");
         headers.path("/test?param=jsonValue");
@@ -136,7 +132,6 @@ class Http2HttpHandlerTest {
         DefaultHttp2DataFrame dataFrame = new DefaultHttp2DataFrame(Unpooled.copiedBuffer(json, StandardCharsets.UTF_8), true);
         channel.writeInbound(dataFrame);
 
-        // 读取响应（兼容顺序问题，支持异步等待）
         Http2StreamFrame frame1 = null, frame2 = null;
         long deadline = System.currentTimeMillis() + 5000; // 最多等5秒
         while ((frame1 == null || frame2 == null) && System.currentTimeMillis() < deadline) {
@@ -162,7 +157,6 @@ class Http2HttpHandlerTest {
 
     @Test
     void testHttp2BadRequest() {
-        // 不带 method/path
         Http2Headers headers = new DefaultHttp2Headers();
         Http2HeadersFrame headersFrame = new DefaultHttp2HeadersFrame(headers, true);
         channel.writeInbound(headersFrame);
