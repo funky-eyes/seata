@@ -168,7 +168,7 @@ class Http2HttpHandlerTest {
 
     @org.junit.jupiter.api.AfterEach
     void tearDown() throws Exception {
-        // ��理ControllerManager
+        // Clean up ControllerManager
         Field field = ControllerManager.class.getDeclaredField("HTTP_CONTROLLER_MAP");
         field.setAccessible(true);
         Map<String, HttpInvocation> map = (Map<String, HttpInvocation>) field.get(null);
