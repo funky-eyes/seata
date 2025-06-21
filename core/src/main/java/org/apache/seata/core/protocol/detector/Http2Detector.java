@@ -54,7 +54,8 @@ public class Http2Detector implements ProtocolDetector {
 
     @Override
     public ChannelHandler[] getHandlers() {
-        return new ChannelHandler[] {Http2FrameCodecBuilder.forServer().build(),
+        return new ChannelHandler[] {
+            Http2FrameCodecBuilder.forServer().build(),
             new Http2MultiplexHandler(new ChannelInitializer<Http2StreamChannel>() {
                 @Override
                 protected void initChannel(Http2StreamChannel ch) {
@@ -62,11 +63,13 @@ public class Http2Detector implements ProtocolDetector {
                     p.addLast(new ChannelInboundHandlerAdapter() {
                         @Override
                         public void channelRead(io.netty.channel.ChannelHandlerContext ctx, Object msg)
-                            throws Exception {
+                                throws Exception {
                             if (msg instanceof Http2HeadersFrame) {
-                                Http2HeadersFrame headersFrame = (Http2HeadersFrame)msg;
-                                CharSequence contentType = headersFrame.headers().get(HttpHeaderNames.CONTENT_TYPE);
-                                if (contentType != null && contentType.toString().endsWith("grpc")) {
+                                Http2HeadersFrame headersFrame = (Http2HeadersFrame) msg;
+                                CharSequence contentType =
+                                        headersFrame.headers().get(HttpHeaderNames.CONTENT_TYPE);
+                                if (contentType != null
+                                        && contentType.toString().endsWith("grpc")) {
                                     p.addLast(new GrpcDecoder());
                                     p.addLast(new GrpcEncoder());
                                     p.addLast(serverHandlers);
@@ -79,6 +82,7 @@ public class Http2Detector implements ProtocolDetector {
                         }
                     });
                 }
-            })};
+            })
+        };
     }
 }

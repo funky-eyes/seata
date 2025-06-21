@@ -84,7 +84,8 @@ class HttpDetectorTest {
     void testStartsWithNegativeBranch() {
         ByteBuf buf = Unpooled.copiedBuffer("GE", StandardCharsets.UTF_8);
         try {
-            java.lang.reflect.Method m = HttpDetector.class.getDeclaredMethod("startsWith", ByteBuf.class, String.class);
+            java.lang.reflect.Method m =
+                    HttpDetector.class.getDeclaredMethod("startsWith", ByteBuf.class, String.class);
             m.setAccessible(true);
             boolean result = (boolean) m.invoke(httpDetector, buf, "GET");
             assertFalse(result);
@@ -97,7 +98,8 @@ class HttpDetectorTest {
     @Test
     void testUpgradeHandlerNonHttp2() {
         try {
-            java.lang.reflect.Method m = HttpDetector.class.getDeclaredMethod("getHttpServerUpgradeHandler", io.netty.handler.codec.http.HttpServerCodec.class);
+            java.lang.reflect.Method m = HttpDetector.class.getDeclaredMethod(
+                    "getHttpServerUpgradeHandler", io.netty.handler.codec.http.HttpServerCodec.class);
             m.setAccessible(true);
             io.netty.handler.codec.http.HttpServerCodec codec = new io.netty.handler.codec.http.HttpServerCodec();
             Object handler = m.invoke(null, codec);

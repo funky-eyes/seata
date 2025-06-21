@@ -96,10 +96,13 @@ public class Http2HttpHandler extends BaseHttpChannelHandler<Http2StreamFrame> {
                 sendErrorResponse(ctx, HttpResponseStatus.NOT_FOUND);
                 return;
             }
-            HttpContext<SimpleHttp2Request> httpContext = new HttpContext<>(request, ctx, keepAlive, HttpContext.HTTP_2_0);
+            HttpContext<SimpleHttp2Request> httpContext =
+                    new HttpContext<>(request, ctx, keepAlive, HttpContext.HTTP_2_0);
             ObjectNode requestDataNode = OBJECT_MAPPER.createObjectNode();
             requestDataNode.set("param", ParameterParser.convertParamMap(queryStringDecoder.parameters()));
-            if (request.getMethod() == HttpMethod.POST && request.getBody() != null && !request.getBody().isEmpty()) {
+            if (request.getMethod() == HttpMethod.POST
+                    && request.getBody() != null
+                    && !request.getBody().isEmpty()) {
                 // assume body is json
                 try {
                     ObjectNode bodyDataNode = (ObjectNode) OBJECT_MAPPER.readTree(request.getBody());
@@ -110,7 +113,8 @@ public class Http2HttpHandler extends BaseHttpChannelHandler<Http2StreamFrame> {
             }
             Object httpController = httpInvocation.getController();
             Method handleMethod = httpInvocation.getMethod();
-            Object[] args = ParameterParser.getArgValues(httpInvocation.getParamMetaData(), handleMethod, requestDataNode, httpContext);
+            Object[] args = ParameterParser.getArgValues(
+                    httpInvocation.getParamMetaData(), handleMethod, requestDataNode, httpContext);
             handle(httpController, handleMethod, args, ctx, httpContext);
         } catch (Exception e) {
             LOGGER.error("Exception occurred while processing HTTP2 request: {}", e.getMessage(), e);
@@ -125,7 +129,12 @@ public class Http2HttpHandler extends BaseHttpChannelHandler<Http2StreamFrame> {
         }
     }
 
-    private void handle(Object httpController,Method handleMethod, Object[] args, ChannelHandlerContext ctx, HttpContext<SimpleHttp2Request> httpContext) {
+    private void handle(
+            Object httpController,
+            Method handleMethod,
+            Object[] args,
+            ChannelHandlerContext ctx,
+            HttpContext<SimpleHttp2Request> httpContext) {
         HTTP_HANDLER_THREADS.execute(() -> {
             Object result;
             try {

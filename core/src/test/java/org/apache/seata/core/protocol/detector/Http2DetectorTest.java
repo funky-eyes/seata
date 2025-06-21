@@ -31,7 +31,7 @@ class Http2DetectorTest {
     void testDetectWithHttp2Prefix() {
         byte[] http2Prefix = "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n".getBytes(StandardCharsets.UTF_8);
         ByteBuf buf = Unpooled.copiedBuffer(http2Prefix);
-        Http2Detector detector = new Http2Detector(new ChannelHandler[]{});
+        Http2Detector detector = new Http2Detector(new ChannelHandler[] {});
         assertTrue(detector.detect(buf));
         buf.release();
     }
@@ -39,7 +39,7 @@ class Http2DetectorTest {
     @Test
     void testDetectWithNonHttp2() {
         ByteBuf buf = Unpooled.copiedBuffer("NOTHTTP2", StandardCharsets.UTF_8);
-        Http2Detector detector = new Http2Detector(new ChannelHandler[]{});
+        Http2Detector detector = new Http2Detector(new ChannelHandler[] {});
         assertFalse(detector.detect(buf));
         buf.release();
     }
@@ -47,7 +47,7 @@ class Http2DetectorTest {
     @Test
     void testDetectWithShortBuffer() {
         ByteBuf buf = Unpooled.copiedBuffer("PRI * HTTP/2.0", StandardCharsets.UTF_8);
-        Http2Detector detector = new Http2Detector(new ChannelHandler[]{});
+        Http2Detector detector = new Http2Detector(new ChannelHandler[] {});
         assertFalse(detector.detect(buf));
         buf.release();
     }
@@ -55,7 +55,7 @@ class Http2DetectorTest {
     @Test
     void testGetHandlersNotNull() {
         ChannelHandler mockHandler = mock(ChannelHandler.class);
-        Http2Detector detector = new Http2Detector(new ChannelHandler[]{mockHandler});
+        Http2Detector detector = new Http2Detector(new ChannelHandler[] {mockHandler});
         ChannelHandler[] handlers = detector.getHandlers();
         assertNotNull(handlers);
         assertEquals(2, handlers.length);
@@ -63,4 +63,3 @@ class Http2DetectorTest {
         assertNotNull(handlers[1]);
     }
 }
-

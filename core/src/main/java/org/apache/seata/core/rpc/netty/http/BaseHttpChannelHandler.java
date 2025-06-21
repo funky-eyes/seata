@@ -16,14 +16,15 @@
  */
 package org.apache.seata.core.rpc.netty.http;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.apache.seata.common.thread.NamedThreadFactory;
 import org.apache.seata.core.rpc.netty.NettyServerConfig;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public abstract class BaseHttpChannelHandler<T> extends SimpleChannelInboundHandler<T> {
 
@@ -31,9 +32,11 @@ public abstract class BaseHttpChannelHandler<T> extends SimpleChannelInboundHand
     /**
      * HTTP request processing thread pool, independent of Netty IO threads, to avoid blocking network processing.
      */
-    protected static final ExecutorService HTTP_HANDLER_THREADS =
-        new ThreadPoolExecutor(NettyServerConfig.getMinHttpPoolSize(), NettyServerConfig.getMaxHttpPoolSize(),
-            NettyServerConfig.getHttpKeepAliveTime(), TimeUnit.SECONDS,
+    protected static final ExecutorService HTTP_HANDLER_THREADS = new ThreadPoolExecutor(
+            NettyServerConfig.getMinHttpPoolSize(),
+            NettyServerConfig.getMaxHttpPoolSize(),
+            NettyServerConfig.getHttpKeepAliveTime(),
+            TimeUnit.SECONDS,
             new LinkedBlockingQueue<>(NettyServerConfig.getMaxHttpTaskQueueSize()),
             new NamedThreadFactory("HTTPHandlerThread", NettyServerConfig.getMaxHttpPoolSize()),
             new ThreadPoolExecutor.AbortPolicy());
@@ -41,5 +44,4 @@ public abstract class BaseHttpChannelHandler<T> extends SimpleChannelInboundHand
     static {
         Runtime.getRuntime().addShutdownHook(new Thread(HTTP_HANDLER_THREADS::shutdown));
     }
-
 }

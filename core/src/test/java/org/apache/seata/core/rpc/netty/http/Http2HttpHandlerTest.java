@@ -56,7 +56,7 @@ class Http2HttpHandlerTest {
         ParamMetaData paramMetaData = new ParamMetaData();
         paramMetaData.setParamConvertType(ParamMetaData.ParamConvertType.REQUEST_PARAM);
         paramMetaData.setParamName("param");
-        ParamMetaData[] paramMetaDatas = new ParamMetaData[]{paramMetaData};
+        ParamMetaData[] paramMetaDatas = new ParamMetaData[] {paramMetaData};
         HttpInvocation invocation = new HttpInvocation();
         invocation.setController(testController);
         invocation.setMethod(method);
@@ -120,15 +120,18 @@ class Http2HttpHandlerTest {
 
     @Test
     void testHttp2PostRequestWithJsonBody() throws Exception {
-        String json = OBJECT_MAPPER.writeValueAsString(new HashMap<String, Object>() {{
-            put("foo", "bar");
-        }});
+        String json = OBJECT_MAPPER.writeValueAsString(new HashMap<String, Object>() {
+            {
+                put("foo", "bar");
+            }
+        });
         Http2Headers headers = new DefaultHttp2Headers();
         headers.method("POST");
         headers.path("/test?param=jsonValue");
         Http2HeadersFrame headersFrame = new DefaultHttp2HeadersFrame(headers, false);
         channel.writeInbound(headersFrame);
-        DefaultHttp2DataFrame dataFrame = new DefaultHttp2DataFrame(Unpooled.copiedBuffer(json, StandardCharsets.UTF_8), true);
+        DefaultHttp2DataFrame dataFrame =
+                new DefaultHttp2DataFrame(Unpooled.copiedBuffer(json, StandardCharsets.UTF_8), true);
         channel.writeInbound(dataFrame);
 
         Http2StreamFrame frame1 = null, frame2 = null;

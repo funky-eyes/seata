@@ -90,5 +90,4 @@ public class HttpContext<T> {
     public void setHttpVersion(String httpVersion) {
         this.httpVersion = httpVersion;
     }
-
 }

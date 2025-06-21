@@ -94,7 +94,7 @@ public class HttpDetector implements ProtocolDetector {
             }
         };
 
-        return new ChannelHandler[]{
+        return new ChannelHandler[] {
             sourceCodec,
             upgradeHandler,
             upgradeCleanupHandler,
@@ -108,18 +108,18 @@ public class HttpDetector implements ProtocolDetector {
         HttpServerUpgradeHandler.UpgradeCodecFactory upgradeCodecFactory = protocol -> {
             if (AsciiString.contentEquals(Http2CodecUtil.HTTP_UPGRADE_PROTOCOL_NAME, protocol)) {
                 return new Http2ServerUpgradeCodec(
-                    Http2FrameCodecBuilder.forServer().build(),
-                    new Http2MultiplexHandler(new ChannelInitializer<Http2StreamChannel>() {
-                        @Override
-                        protected void initChannel(Http2StreamChannel ch) {
-                            ch.pipeline().addLast(new Http2HttpHandler());
-                        }
-                    }));
+                        Http2FrameCodecBuilder.forServer().build(),
+                        new Http2MultiplexHandler(new ChannelInitializer<Http2StreamChannel>() {
+                            @Override
+                            protected void initChannel(Http2StreamChannel ch) {
+                                ch.pipeline().addLast(new Http2HttpHandler());
+                            }
+                        }));
             } else {
                 return null;
             }
         };
 
-        return new HttpServerUpgradeHandler(sourceCodec, upgradeCodecFactory,1048576);
+        return new HttpServerUpgradeHandler(sourceCodec, upgradeCodecFactory, 1048576);
     }
 }
