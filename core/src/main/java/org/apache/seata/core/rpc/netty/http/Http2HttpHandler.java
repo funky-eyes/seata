@@ -184,4 +184,16 @@ public class Http2HttpHandler extends BaseHttpChannelHandler<Http2StreamFrame> {
         }
         ctx.close();
     }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        try {
+            if (bodyBuffer != null) {
+                bodyBuffer.release();
+                bodyBuffer = null;
+            }
+        } finally {
+            super.channelInactive(ctx);
+        }
+    }
 }
