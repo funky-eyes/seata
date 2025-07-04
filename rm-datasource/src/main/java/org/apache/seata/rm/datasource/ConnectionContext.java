@@ -67,7 +67,7 @@ public class ConnectionContext {
     private Savepoint currentSavepoint = DEFAULT_SAVEPOINT;
     private boolean autoCommitChanged;
     private final Map<String, Object> applicationData = new HashMap<>(2, 1.0001f);
-
+    private Integer transactionIsolation;
     /**
      * the lock keys buffer
      */
@@ -407,6 +407,14 @@ public class ConnectionContext {
         }
 
         return true;
+    }
+
+    public Integer getTransactionIsolation() {
+        return transactionIsolation;
+    }
+
+    public void setTransactionIsolation(Integer transactionIsolation) {
+        this.transactionIsolation = transactionIsolation;
     }
 
     @Override

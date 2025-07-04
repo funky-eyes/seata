@@ -300,6 +300,23 @@ public class ConnectionProxy extends AbstractConnectionProxy {
     }
 
     @Override
+    public int getTransactionIsolation() throws SQLException {
+        Integer transactionIsolation = context.getTransactionIsolation();
+        if (transactionIsolation != null) {
+            return transactionIsolation;
+        }
+        transactionIsolation = targetConnection.getTransactionIsolation();
+        context.setTransactionIsolation(transactionIsolation);
+        return transactionIsolation;
+    }
+
+    @Override
+    public void setTransactionIsolation(int level) throws SQLException {
+        targetConnection.setTransactionIsolation(level);
+        context.setTransactionIsolation(level);
+    }
+
+    @Override
     public void setAutoCommit(boolean autoCommit) throws SQLException {
         if ((context.inGlobalTransaction() || context.isGlobalLockRequire()) && autoCommit && !getAutoCommit()) {
             // change autocommit from false to true, we should commit() first according to JDBC spec.

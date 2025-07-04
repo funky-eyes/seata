@@ -29,6 +29,7 @@ import org.apache.seata.sqlparser.SQLRecognizer;
 import org.apache.seata.sqlparser.SQLUpdateRecognizer;
 import org.apache.seata.sqlparser.struct.TableMeta;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -105,7 +106,9 @@ public class UpdateExecutor<T, S extends Statement> extends AbstractDMLBaseExecu
         ResultSet rs = null;
         SQLUpdateRecognizer recognizer = (SQLUpdateRecognizer) sqlRecognizer;
         List<String> whereColumns = recognizer.getWhereColumns();
-        boolean contain = tmeta.containsPK(whereColumns);
+        boolean contain =
+                statementProxy.getConnection().getTransactionIsolation() == Connection.TRANSACTION_REPEATABLE_READ
+                        || tmeta.containsPK(whereColumns);
         if (contain) {
             String selectSQL = buildAfterImageSQL(tmeta, beforeImage);
             try {
