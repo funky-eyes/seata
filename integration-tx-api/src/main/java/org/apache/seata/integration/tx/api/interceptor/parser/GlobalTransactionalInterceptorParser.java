@@ -16,19 +16,20 @@
  */
 package org.apache.seata.integration.tx.api.interceptor.parser;
 
-import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.Set;
 import org.apache.seata.common.ConfigurationKeys;
 import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.common.util.ReflectionUtil;
-import org.apache.seata.config.ConfigurationCache;
-import org.apache.seata.config.ConfigurationChangeListener;
+import org.apache.seata.config.CachedConfigurationChangeListener;
+import org.apache.seata.config.ConfigurationFactory;
 import org.apache.seata.integration.tx.api.interceptor.handler.GlobalTransactionalInterceptorHandler;
 import org.apache.seata.integration.tx.api.interceptor.handler.ProxyInvocationHandler;
 import org.apache.seata.spring.annotation.GlobalLock;
 import org.apache.seata.spring.annotation.GlobalTransactional;
 import org.apache.seata.tm.api.FailureHandlerHolder;
+
+import java.lang.reflect.Method;
+import java.util.HashSet;
+import java.util.Set;
 
 public class GlobalTransactionalInterceptorParser implements InterfaceParser {
 
@@ -50,7 +51,9 @@ public class GlobalTransactionalInterceptorParser implements InterfaceParser {
 
         if (existsAnnotation(serviceInterface) || existsAnnotation(interfacesIfJdk)) {
             ProxyInvocationHandler proxyInvocationHandler = createProxyInvocationHandler();
-            ConfigurationCache.addConfigListener(ConfigurationKeys.DISABLE_GLOBAL_TRANSACTION, (ConfigurationChangeListener) proxyInvocationHandler);
+            ConfigurationFactory.getInstance()
+                    .addConfigListener(ConfigurationKeys.DISABLE_GLOBAL_TRANSACTION, (CachedConfigurationChangeListener)
+                            proxyInvocationHandler);
             return proxyInvocationHandler;
         }
 

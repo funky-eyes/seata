@@ -24,6 +24,7 @@ import java.util.Map;
  * Process Context
  *
  */
+@Deprecated
 public interface ProcessContext extends org.apache.seata.saga.proctrl.ProcessContext {
 
     String VAR_NAME_PROCESS_TYPE = "_ProcessType_";

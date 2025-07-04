@@ -20,8 +20,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>org.apache</groupId>
+        <artifactId>apache</artifactId>
+        <version>19</version>
+        <relativePath/>
+    </parent>
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>org.apache.seata</groupId>
     <artifactId>seata-build</artifactId>
     <packaging>pom</packaging>
@@ -66,7 +71,7 @@
 
     <properties>
         <!-- seata version -->
-        <revision>2.1.0-SNAPSHOT</revision>
+        <revision>2.5.0-SNAPSHOT</revision>
 
         <!-- Compiler settings properties -->
         <java.version>1.8</java.version>
@@ -76,13 +81,14 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- The version of spring-boot for 'spring-boot-dependencies' and 'spring-boot-maven-plugin' -->
-        <spring-boot.version>2.5.15</spring-boot.version>
-        <spring-framework.version>5.3.27</spring-framework.version>
+        <spring-boot.version>2.7.18</spring-boot.version>
+        <spring-framework.version>5.3.39</spring-framework.version>
 
         <!--  server side dependency-->
         <kafka-appender.version>0.2.0-RC2</kafka-appender.version>
         <kafka-clients.version>3.6.1</kafka-clients.version>
         <snakeyaml.version>2.0</snakeyaml.version>
+        <bucket4j.version>8.1.0</bucket4j.version>
 
         <!-- For test -->
         <junit-jupiter.version>5.8.2</junit-jupiter.version>
@@ -103,7 +109,10 @@
         <license-maven-plugin.version>4.0</license-maven-plugin.version>
         <mojo-license-maven-plugin.version>1.20</mojo-license-maven-plugin.version>
         <maven-checkstyle-plugin.version>3.1.1</maven-checkstyle-plugin.version>
+        <spotless-maven-plugin.version>2.44.3</spotless-maven-plugin.version>
+        <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
         <maven-enforcer-plugin.version>3.0.0-M3</maven-enforcer-plugin.version>
+        <dependency-check-maven.version>12.1.0</dependency-check-maven.version>
         <!-- Test -->
         <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
         <jacoco-maven-plugin.version>0.8.7</jacoco-maven-plugin.version>
@@ -114,7 +123,7 @@
         <maven-shade-plugin.version>2.4.3</maven-shade-plugin.version>
         <maven-dependency-plugin.version>3.0.2</maven-dependency-plugin.version>
         <maven-assembly-plugin.version>3.0.0</maven-assembly-plugin.version>
-        <jib-maven-plugin.version>3.2.0</jib-maven-plugin.version>
+        <jib-maven-plugin.version>3.3.0</jib-maven-plugin.version>
         <git-commit-id-plugin.version>4.9.10</git-commit-id-plugin.version>
         <frontend-maven-plugin.version>1.15.0</frontend-maven-plugin.version>
         <!-- Deploy && GPG -->
@@ -130,12 +139,10 @@
         <license.skip>true</license.skip>
         <pmd.skip>true</pmd.skip>
         <maven.test.skip>false</maven.test.skip>
-        <maven.git-commit-id.skip>false</maven.git-commit-id.skip>
+        <maven.git-commit-id.skip>true</maven.git-commit-id.skip>
+
         <maven.surefire.argLine></maven.surefire.argLine>
         <maven.surefire.excludes></maven.surefire.excludes>
-        <gpg.keyname>37F181C60AACE24BD5C1D3925583F79497E8E293</gpg.keyname>
-        <gpg.arg1/>
-        <gpg.arg2/>
 
         <!-- For docker image-->
         <image.publish.skip>true</image.publish.skip>
@@ -143,6 +150,7 @@
         <image.tags>latest</image.tags>
 
         <dependencies.copy.skip>true</dependencies.copy.skip>
+        <mysql.copy.skip>true</mysql.copy.skip>
     </properties>
 
     <build>
@@ -167,6 +175,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
                     <version>${maven-checkstyle-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.diffplug.spotless</groupId>
+                    <artifactId>spotless-maven-plugin</artifactId>
+                    <version>${spotless-maven-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -352,6 +365,9 @@
         <!-- profile: release -->
         <profile>
             <id>release</id>
+            <properties>
+                <maven.git-commit-id.skip>false</maven.git-commit-id.skip>
+            </properties>
             <build>
                 <plugins>
                     <!-- Javadoc -->
@@ -372,18 +388,6 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <!-- Staging -->
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>${nexus-staging-maven-plugin.version}</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <serverId>oss_seata</serverId>
-                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <autoReleaseAfterClose>false</autoReleaseAfterClose>
-                        </configuration>
-                    </plugin>
                     <!-- GPG -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -396,29 +400,11 @@
                                 <goals>
                                     <goal>sign</goal>
                                 </goals>
-                                <configuration>
-                                    <keyname>${gpg.keyname}</keyname>
-                                    <gpgArguments>
-                                        <arg>${gpg.arg1}</arg>
-                                        <arg>${gpg.arg2}</arg>
-                                    </gpgArguments>
-                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
                 </plugins>
             </build>
-            <!-- distribution management -->
-            <distributionManagement>
-                <repository>
-                    <id>oss_seata</id>
-                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-                </repository>
-                <snapshotRepository>
-                    <id>oss_seata</id>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-                </snapshotRepository>
-            </distributionManagement>
         </profile>
 
         <!-- profile: release-by-github-actions -->
@@ -427,6 +413,7 @@
             <properties>
                 <gpg.arg1>--pinentry-mode</gpg.arg1>
                 <gpg.arg2>loopback</gpg.arg2>
+                <maven.git-commit-id.skip>false</maven.git-commit-id.skip>
             </properties>
         </profile>
 

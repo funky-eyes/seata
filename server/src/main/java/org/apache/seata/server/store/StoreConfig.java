@@ -16,6 +16,9 @@
  */
 package org.apache.seata.server.store;
 
+import org.apache.seata.common.store.LockMode;
+import org.apache.seata.common.store.SessionMode;
+import org.apache.seata.common.store.StoreMode;
 import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.config.Configuration;
 import org.apache.seata.config.ConfigurationFactory;
@@ -91,31 +94,31 @@ public class StoreConfig {
      * @return
      */
     private static StoreMode getStoreMode() {
-        //startup
+        // startup
         if (null != storeMode) {
             return storeMode;
         }
-        //env
+        // env
         String storeModeEnv = ContainerHelper.getStoreMode();
         if (StringUtils.isNotBlank(storeModeEnv)) {
             return StoreMode.get(storeModeEnv);
         }
-        //config
+        // config
         String storeModeConfig = CONFIGURATION.getConfig(ConfigurationKeys.STORE_MODE, SERVER_DEFAULT_STORE_MODE);
         return StoreMode.get(storeModeConfig);
     }
 
     public static SessionMode getSessionMode() {
-        //startup
+        // startup
         if (null != sessionMode) {
             return sessionMode;
         }
-        //env
+        // env
         String sessionModeEnv = ContainerHelper.getSessionStoreMode();
         if (StringUtils.isNotBlank(sessionModeEnv)) {
             return SessionMode.get(sessionModeEnv);
         }
-        //config
+        // config
         String sessionModeConfig = CONFIGURATION.getConfig(ConfigurationKeys.STORE_SESSION_MODE);
         if (StringUtils.isNotBlank(sessionModeConfig)) {
             return SessionMode.get(sessionModeConfig);
@@ -125,16 +128,16 @@ public class StoreConfig {
     }
 
     public static LockMode getLockMode() {
-        //startup
+        // startup
         if (null != lockMode) {
             return lockMode;
         }
-        //env
+        // env
         String lockModeEnv = ContainerHelper.getLockStoreMode();
         if (StringUtils.isNotBlank(lockModeEnv)) {
             return LockMode.get(lockModeEnv);
         }
-        //config
+        // config
         String lockModeConfig = CONFIGURATION.getConfig(ConfigurationKeys.STORE_LOCK_MODE);
         if (StringUtils.isNotBlank(lockModeConfig)) {
             return LockMode.get(lockModeConfig);
@@ -142,119 +145,4 @@ public class StoreConfig {
         // complication old config
         return LockMode.get(getStoreMode().name());
     }
-
-    public enum StoreMode {
-        /**
-         * The File store mode.
-         */
-        FILE("file"),
-        /**
-         * The Db store mode.
-         */
-        DB("db"),
-        /**
-         * The Redis store mode.
-         */
-        REDIS("redis"),
-        /**
-         * The Raft store mode.
-         */
-        RAFT("raft");
-
-        private String name;
-
-        StoreMode(String name) {
-            this.name = name;
-        }
-
-        public static StoreMode get(String name) {
-            for (StoreMode mode : StoreMode.values()) {
-                if (mode.getName().equalsIgnoreCase(name)) {
-                    return mode;
-                }
-            }
-            throw new IllegalArgumentException("unknown store mode:" + name);
-        }
-
-        public String getName() {
-            return name;
-        }
-    }
-
-    public enum SessionMode {
-        /**
-         * The File store mode.
-         */
-        FILE("file"),
-        /**
-         * The Db store mode.
-         */
-        DB("db"),
-        /**
-         * The Redis store mode.
-         */
-        REDIS("redis"),
-        /**
-         * raft store
-         */
-        RAFT("raft");
-
-        private String name;
-
-        SessionMode(String name) {
-            this.name = name;
-        }
-
-        public static SessionMode get(String name) {
-            for (SessionMode mode : SessionMode.values()) {
-                if (mode.getName().equalsIgnoreCase(name)) {
-                    return mode;
-                }
-            }
-            throw new IllegalArgumentException("unknown session mode:" + name);
-        }
-
-        public String getName() {
-            return name;
-        }
-    }
-
-    public enum LockMode {
-        /**
-         * The File store mode.
-         */
-        FILE("file"),
-        /**
-         * The Db store mode.
-         */
-        DB("db"),
-        /**
-         * The Redis store mode.
-         */
-        REDIS("redis"),
-        /**
-         * raft store
-         */
-        RAFT("raft");
-
-        private String name;
-
-        LockMode(String name) {
-            this.name = name;
-        }
-
-        public static LockMode get(String name) {
-            for (LockMode mode : LockMode.values()) {
-                if (mode.getName().equalsIgnoreCase(name)) {
-                    return mode;
-                }
-            }
-            throw new IllegalArgumentException("unknown lock mode:" + name);
-        }
-
-        public String getName() {
-            return name;
-        }
-    }
-
 }

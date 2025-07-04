@@ -19,5 +19,5 @@ package io.seata.tm.api;
 /**
  * Template of executing business logic with a global transaction.
  */
-public class TransactionalTemplate extends org.apache.seata.tm.api.TransactionalTemplate {
-}
+@Deprecated
+public class TransactionalTemplate extends org.apache.seata.tm.api.TransactionalTemplate {}

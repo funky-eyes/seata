@@ -16,11 +16,11 @@
  */
 package org.apache.seata.saga.statelang.domain.impl;
 
+import org.apache.seata.saga.statelang.domain.ChoiceState;
+import org.apache.seata.saga.statelang.domain.StateType;
+
 import java.util.List;
 import java.util.Map;
-
-import org.apache.seata.saga.statelang.domain.ChoiceState;
-import org.apache.seata.saga.statelang.domain.DomainConstants;
 
 /**
  * Single selection status
@@ -36,7 +36,7 @@ public class ChoiceStateImpl extends BaseState implements ChoiceState {
     private Map<Object, String> choiceEvaluators;
 
     public ChoiceStateImpl() {
-        setType(DomainConstants.STATE_TYPE_CHOICE);
+        setType(StateType.CHOICE);
     }
 
     @Override

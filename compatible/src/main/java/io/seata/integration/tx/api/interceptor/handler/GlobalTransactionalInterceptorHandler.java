@@ -31,14 +31,18 @@ import java.util.Set;
  * The type Global transactional interceptor handler.
  */
 @Deprecated
-public class GlobalTransactionalInterceptorHandler extends org.apache.seata.integration.tx.api.interceptor.handler.GlobalTransactionalInterceptorHandler {
+public class GlobalTransactionalInterceptorHandler
+        extends org.apache.seata.integration.tx.api.interceptor.handler.GlobalTransactionalInterceptorHandler {
 
-    public GlobalTransactionalInterceptorHandler(org.apache.seata.tm.api.FailureHandler failureHandler, Set<String> methodsToProxy) {
+    public GlobalTransactionalInterceptorHandler(
+            org.apache.seata.tm.api.FailureHandler failureHandler, Set<String> methodsToProxy) {
         super(failureHandler, methodsToProxy);
     }
 
-    public GlobalTransactionalInterceptorHandler(org.apache.seata.tm.api.FailureHandler failureHandler, Set<String> methodsToProxy,
-        AspectTransactional aspectTransactional) {
+    public GlobalTransactionalInterceptorHandler(
+            org.apache.seata.tm.api.FailureHandler failureHandler,
+            Set<String> methodsToProxy,
+            AspectTransactional aspectTransactional) {
         super(failureHandler, methodsToProxy, aspectTransactional);
     }
 
@@ -58,17 +62,23 @@ public class GlobalTransactionalInterceptorHandler extends org.apache.seata.inte
     @Override
     public AspectTransactional getAspectTransactional(Method method, Class<?> targetClass) {
         final GlobalTransactional globalTransactionalAnnotation =
-            getAnnotation(method, targetClass, GlobalTransactional.class);
-        return globalTransactionalAnnotation != null ? new AspectTransactional(
-            globalTransactionalAnnotation.timeoutMills(), globalTransactionalAnnotation.name(),
-            globalTransactionalAnnotation.rollbackFor(), globalTransactionalAnnotation.rollbackForClassName(),
-            globalTransactionalAnnotation.noRollbackFor(), globalTransactionalAnnotation.noRollbackForClassName(),
-            propagation2ApacheSeataPropagation(globalTransactionalAnnotation.propagation()),
-            globalTransactionalAnnotation.lockRetryInterval(), globalTransactionalAnnotation.lockRetryTimes(),
-            lockStrategyMode2ApacheSeataLockStrategyMode(globalTransactionalAnnotation.lockStrategyMode())) : null;
+                getAnnotation(method, targetClass, GlobalTransactional.class);
+        return globalTransactionalAnnotation != null
+                ? new AspectTransactional(
+                        globalTransactionalAnnotation.timeoutMills(),
+                        globalTransactionalAnnotation.name(),
+                        globalTransactionalAnnotation.rollbackFor(),
+                        globalTransactionalAnnotation.rollbackForClassName(),
+                        globalTransactionalAnnotation.noRollbackFor(),
+                        globalTransactionalAnnotation.noRollbackForClassName(),
+                        propagation2ApacheSeataPropagation(globalTransactionalAnnotation.propagation()),
+                        globalTransactionalAnnotation.lockRetryInterval(),
+                        globalTransactionalAnnotation.lockRetryTimes(),
+                        lockStrategyMode2ApacheSeataLockStrategyMode(globalTransactionalAnnotation.lockStrategyMode()))
+                : null;
     }
 
-    private Propagation propagation2ApacheSeataPropagation(io.seata.tm.api.transaction.Propagation propagation){
+    private Propagation propagation2ApacheSeataPropagation(io.seata.tm.api.transaction.Propagation propagation) {
         switch (propagation) {
             case NEVER:
                 return Propagation.NEVER;
@@ -85,11 +95,11 @@ public class GlobalTransactionalInterceptorHandler extends org.apache.seata.inte
         }
     }
 
-    private LockStrategyMode lockStrategyMode2ApacheSeataLockStrategyMode(io.seata.common.LockStrategyMode lockStrategyMode){
-	    if (Objects.requireNonNull(lockStrategyMode) == io.seata.common.LockStrategyMode.OPTIMISTIC) {
-		    return LockStrategyMode.OPTIMISTIC;
-	    }
-	    return LockStrategyMode.PESSIMISTIC;
+    private LockStrategyMode lockStrategyMode2ApacheSeataLockStrategyMode(
+            io.seata.common.LockStrategyMode lockStrategyMode) {
+        if (Objects.requireNonNull(lockStrategyMode) == io.seata.common.LockStrategyMode.OPTIMISTIC) {
+            return LockStrategyMode.OPTIMISTIC;
+        }
+        return LockStrategyMode.PESSIMISTIC;
     }
-
 }

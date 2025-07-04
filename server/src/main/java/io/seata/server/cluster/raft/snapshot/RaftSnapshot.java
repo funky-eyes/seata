@@ -16,32 +16,31 @@
  */
 package io.seata.server.cluster.raft.snapshot;
 
-import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_COMPRESSOR;
-import static org.apache.seata.common.DefaultValues.DEFAULT_RAFT_COMPRESSOR;
-import static org.apache.seata.common.DefaultValues.DEFAULT_RAFT_SERIALIZATION;
-
-
-import java.io.Serializable;
-
 import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.config.ConfigurationFactory;
 import org.apache.seata.core.compressor.CompressorType;
 import org.apache.seata.core.protocol.Version;
 import org.apache.seata.core.serializer.SerializerType;
 
+import java.io.Serializable;
+
+import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_COMPRESSOR;
+import static org.apache.seata.common.DefaultValues.DEFAULT_RAFT_COMPRESSOR;
+import static org.apache.seata.common.DefaultValues.DEFAULT_RAFT_SERIALIZATION;
+
 @Deprecated
 public class RaftSnapshot implements Serializable {
 
     private byte codec = SerializerType.getByName(DEFAULT_RAFT_SERIALIZATION).getCode();
 
-    private byte compressor = CompressorType
-        .getByName(ConfigurationFactory.getInstance().getConfig(SERVER_RAFT_COMPRESSOR, DEFAULT_RAFT_COMPRESSOR))
-        .getCode();
+    private byte compressor = CompressorType.getByName(
+                    ConfigurationFactory.getInstance().getConfig(SERVER_RAFT_COMPRESSOR, DEFAULT_RAFT_COMPRESSOR))
+            .getCode();
 
     private Object body;
-    
+
     private String version = Version.getCurrent();
-    
+
     private SnapshotType type;
 
     /**
@@ -139,7 +138,5 @@ public class RaftSnapshot implements Serializable {
         SnapshotType(String type) {
             this.type = type;
         }
-
     }
-    
 }

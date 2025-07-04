@@ -16,6 +16,8 @@
  */
 package org.apache.seata.discovery.registry;
 
+import org.apache.seata.common.exception.NotSupportYetException;
+
 /**
  * The enum Registry type.
  *
@@ -60,7 +62,11 @@ public enum RegistryType {
     /**
      * Custom registry type
      */
-    Custom;
+    Custom,
+    /**
+     * Seata namingServer registry type
+     */
+    Seata;
 
     /**
      * Gets type.
@@ -74,6 +80,6 @@ public enum RegistryType {
                 return registryType;
             }
         }
-        throw new IllegalArgumentException("not support registry type: " + name);
+        throw new NotSupportYetException("not support registry type: " + name);
     }
 }

@@ -16,7 +16,6 @@
  */
 package org.apache.seata.sqlparser.util;
 
-
 public interface JdbcConstants {
 
     String ORACLE = "oracle";
@@ -84,4 +83,6 @@ public interface JdbcConstants {
     String POLARDB = "polardb";
 
     String POLARDBX = "polardb-x";
+
+    String OSCAR = "oscar";
 }

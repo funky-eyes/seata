@@ -16,7 +16,9 @@
  */
 package io.seata.integration.grpc.interceptor.client;
 
+/**
+ * The type Client transaction interceptor.
+ */
+@Deprecated
 public class ClientTransactionInterceptor
-    extends org.apache.seata.integration.grpc.interceptor.client.ClientTransactionInterceptor {
-
-}
+        extends org.apache.seata.integration.grpc.interceptor.client.ClientTransactionInterceptor {}

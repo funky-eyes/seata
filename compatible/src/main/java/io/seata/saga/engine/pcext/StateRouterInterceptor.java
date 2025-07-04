@@ -16,7 +16,6 @@
  */
 package io.seata.saga.engine.pcext;
 
-
 import org.apache.seata.saga.engine.pcext.StateRouter;
 
 /**
@@ -24,5 +23,5 @@ import org.apache.seata.saga.engine.pcext.StateRouter;
  *
  * @see StateRouter
  */
-public interface StateRouterInterceptor extends org.apache.seata.saga.engine.pcext.StateRouterInterceptor {
-}
+@Deprecated
+public interface StateRouterInterceptor extends org.apache.seata.saga.engine.pcext.StateRouterInterceptor {}

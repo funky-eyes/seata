@@ -16,9 +16,6 @@
  */
 package org.apache.seata.sqlparser.druid.sqlserver;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.alibaba.druid.sql.ast.SQLCommentHint;
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.SQLHint;
@@ -26,11 +23,16 @@ import com.alibaba.druid.sql.ast.SQLStatement;
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 import com.alibaba.druid.sql.ast.statement.SQLExprHint;
 import com.alibaba.druid.sql.ast.statement.SQLSelectStatement;
+import com.alibaba.druid.sql.ast.statement.SQLSubqueryTableSource;
+import com.alibaba.druid.sql.ast.statement.SQLTableSource;
 import org.apache.seata.common.loader.LoadLevel;
 import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.sqlparser.SQLRecognizer;
 import org.apache.seata.sqlparser.druid.SQLOperateRecognizerHolder;
 import org.apache.seata.sqlparser.util.JdbcConstants;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * The Type SqlServerOperateRecognizerHolder
@@ -55,10 +57,16 @@ public class SqlServerOperateRecognizerHolder implements SQLOperateRecognizerHol
 
     @Override
     public SQLRecognizer getSelectForUpdateRecognizer(String sql, SQLStatement ast) {
-        List<SQLHint> hints = ((SQLSelectStatement) ast).getSelect().getQueryBlock().getFrom().getHints();
+        SQLTableSource tableSource =
+                ((SQLSelectStatement) ast).getSelect().getFirstQueryBlock().getFrom();
+
+        if (tableSource instanceof SQLSubqueryTableSource) {
+            return new SqlServerSelectForUpdateRecognizer(sql, ast);
+        }
+
+        List<SQLHint> hints = tableSource.getHints();
         if (CollectionUtils.isNotEmpty(hints)) {
-            List<String> hintsTexts = hints
-                    .stream()
+            List<String> hintsTexts = hints.stream()
                     .map(hint -> {
                         if (hint instanceof SQLExprHint) {
                             SQLExpr expr = ((SQLExprHint) hint).getExpr();
@@ -67,11 +75,13 @@ public class SqlServerOperateRecognizerHolder implements SQLOperateRecognizerHol
                             return ((SQLCommentHint) hint).getText();
                         }
                         return "";
-                    }).collect(Collectors.toList());
+                    })
+                    .collect(Collectors.toList());
             if (hintsTexts.contains("UPDLOCK")) {
                 return new SqlServerSelectForUpdateRecognizer(sql, ast);
             }
         }
+
         return null;
     }
 }

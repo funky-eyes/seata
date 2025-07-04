@@ -102,6 +102,11 @@ public interface Constants {
     String TX_ACTION_CONTEXT = "actionContext";
 
     /**
+     * isolation
+     */
+    String TX_ISOLATION = "isolation";
+
+    /**
      * default charset name
      */
     String DEFAULT_CHARSET_NAME = "UTF-8";
@@ -161,6 +166,25 @@ public interface Constants {
     String UNDOLOG_DELETE = "UndologDelete";
 
     /**
+     * The constant SYNC_PROCESSING
+     */
+    String SYNC_PROCESSING = "SyncProcessing";
+
+    /**
+     * The constant Committing
+     */
+    String COMMITTING = "Committing";
+
+    /**
+     * The constant Rollbacking
+     */
+    String ROLLBACKING = "Rollbacking";
+
+    /**
+     * The constant END
+     */
+    String END = "END";
+    /**
      * The constant AUTO_COMMIT
      */
     String AUTO_COMMIT = "autoCommit";
@@ -174,7 +198,7 @@ public interface Constants {
      * The constant REGISTRY_TYPE_SPLIT_CHAR.
      */
     String REGISTRY_TYPE_SPLIT_CHAR = ",";
-    
+
     /**
      * phase two compensation method name
      */
@@ -204,4 +228,19 @@ public interface Constants {
      * The constant JACKSON_JSON_TEXT_PREFIX
      */
     String JACKSON_JSON_TEXT_PREFIX = "{\"@class\":";
+
+    /**
+     * The constant DEAD_LOCK_SQL_STATE
+     */
+    String DEAD_LOCK_SQL_STATE = "40001";
+
+    /**
+     * The constant DEAD_LOCK_ERROR_CODE
+     */
+    int DEAD_LOCK_ERROR_CODE = 1213;
+
+    /**
+     * The constant RAFT_GROUP_HEADER
+     */
+    String RAFT_GROUP_HEADER = "X-SEATA-RAFT-GROUP";
 }

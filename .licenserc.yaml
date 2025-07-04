@@ -36,51 +36,26 @@ header:
       limitations under the License.
 
   paths-ignore:
-    - '.gitignore'
-    - '.gitattributes'
-    - '.travis.yml'
-    - 'codecov.yml'
-    - 'CONTRIBUTING.md'
-    - 'CONTRIBUTING_CN.md'
-    - 'CODE_OF_CONDUCT.md'
-    - 'README.md'
     - 'LICENSE'
     - 'NOTICE'
     - 'DISCLAIMER'
-    - '**/*.md'
-    - '.github/**'
-    #SPI、spring.factories、spring-configuration-metadata.json、additional-spring-configuration-metadata.json
-    - '**/src/test/resources/META-INF/**'
-    - '**/src/main/resources/META-INF/**'
-    - '**/target/**'
-    - '**/*.iml'
-    - 'mvnw'
-    - 'mvnw.cmd'
-    - '*.sh'
-    - 'changes/**'
-    - 'style/**'
-    - 'script/**'
-    - 'seata-plugins/**'
-    - '.mvn/**'
-    - 'sessionStore/**'
-    - 'distribution/LICENSE-BIN'
-    - 'distribution/NOTICE-BIN'
-    - 'test/src/test/resources/**'
-    - 'serializer/seata-serializer-protobuf/src/main/resources/protobuf/org/apache/seata/protocol/transcation/*.proto'
-    - 'saga/seata-saga-statemachine-designer/node_modules/**'
-    - 'node_modules/**'
-    - 'saga/seata-saga-statemachine-designer/**'
-    - '**/src/test/resources/statelang/**'
-    - 'console/src/main/resources/static/console-fe/**'
     - '**/org/apache/seata/sqlparser/antlr/**/*.g4'
-    - '**/org/apache/seata/sqlparser/antlr/mysql/parser/*'
-    - '**/integration/**/*.proto'
-    - 'console/src/main/resources/static/**'
-    - 'ext/apm-seata-skywalking-plugin/config/agent.config'
-    - 'server/src/main/resources/lua/redislocker/redislock.lua'
-    - 'server/src/main/resources/banner.txt'
-
-
+    - 'distribution/licenses/**'
+    - 'distribution/LICENSE'
+    - 'distribution/LICENSE-*'
+    - 'distribution/NOTICE'
+    - 'distribution/NOTICE-*'
+    - '**/*.txt'  #txt files not support comments
+    - '**/*.json' #json files not support comments
+    - '**/*.png'
+    - '**/*.jpg'
+    - '**/*.jpeg'
+    - '**/*.ico'
+    - '**/*.tokens'
+    - '**/*.interp'
+    - '**/.babelrc' #json format
+    - '**/.eslintrc' #json format
+    - '**/.prettierrc' #json format
   comment: on-failure
 dependency:
   files:

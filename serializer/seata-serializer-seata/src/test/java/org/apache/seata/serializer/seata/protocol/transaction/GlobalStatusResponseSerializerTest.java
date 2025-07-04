@@ -16,11 +16,12 @@
  */
 package org.apache.seata.serializer.seata.protocol.transaction;
 
-import org.apache.seata.serializer.seata.SeataSerializer;
 import org.apache.seata.core.exception.TransactionExceptionCode;
 import org.apache.seata.core.model.GlobalStatus;
+import org.apache.seata.core.protocol.ProtocolConstants;
 import org.apache.seata.core.protocol.ResultCode;
 import org.apache.seata.core.protocol.transaction.GlobalStatusResponse;
+import org.apache.seata.serializer.seata.SeataSerializer;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,13 +34,13 @@ public class GlobalStatusResponseSerializerTest {
     /**
      * The Seata codec.
      */
-    SeataSerializer seataSerializer = new SeataSerializer();
+    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
 
     /**
      * Test codec.
      */
     @Test
-    public void test_codec(){
+    public void test_codec() {
         GlobalStatusResponse globalStatusResponse = new GlobalStatusResponse();
         globalStatusResponse.setGlobalStatus(GlobalStatus.CommitRetrying);
         globalStatusResponse.setMsg("aaaa");
@@ -51,7 +52,8 @@ public class GlobalStatusResponseSerializerTest {
         GlobalStatusResponse globalStatusResponse2 = seataSerializer.deserialize(bytes);
         assertThat(globalStatusResponse2.getGlobalStatus()).isEqualTo(globalStatusResponse.getGlobalStatus());
         assertThat(globalStatusResponse2.getMsg()).isEqualTo(globalStatusResponse.getMsg());
-        assertThat(globalStatusResponse2.getTransactionExceptionCode()).isEqualTo(globalStatusResponse.getTransactionExceptionCode());
+        assertThat(globalStatusResponse2.getTransactionExceptionCode())
+                .isEqualTo(globalStatusResponse.getTransactionExceptionCode());
         assertThat(globalStatusResponse2.getResultCode()).isEqualTo(globalStatusResponse.getResultCode());
     }
 }

@@ -23,6 +23,15 @@ package org.apache.seata.core.protocol;
 public interface MessageType {
 
     /**
+     * The constant VERSION_NOT_SUPPORT.
+     */
+    short VERSION_NOT_SUPPORT = -1;
+    /**
+     * The constant TYPE_NOT_EXIST.
+     */
+    short TYPE_NOT_EXIST = 0;
+
+    /**
      * The constant TYPE_GLOBAL_BEGIN.
      */
     short TYPE_GLOBAL_BEGIN = 1;
@@ -143,5 +152,4 @@ public interface MessageType {
      * the constant TYPE_BATCH_RESULT_MSG
      */
     short TYPE_BATCH_RESULT_MSG = 121;
-
 }

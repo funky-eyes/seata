@@ -21,7 +21,6 @@ import java.util.Enumeration;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
-
 public class IdWorker {
 
     /**
@@ -166,10 +165,10 @@ public class IdWorker {
             NetworkInterface networkInterface = all.nextElement();
             boolean isLoopback = networkInterface.isLoopback();
             boolean isVirtual = networkInterface.isVirtual();
-            if (isLoopback || isVirtual) {
+            byte[] mac = networkInterface.getHardwareAddress();
+            if (isLoopback || isVirtual || mac == null) {
                 continue;
             }
-            byte[] mac = networkInterface.getHardwareAddress();
             return ((mac[4] & 0B11) << 8) | (mac[5] & 0xFF);
         }
         throw new RuntimeException("no available mac found");

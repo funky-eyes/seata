@@ -16,13 +16,7 @@
  */
 package org.apache.seata.rm.datasource;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
-import javax.sql.DataSource;
-
+import org.apache.commons.lang.StringUtils;
 import org.apache.seata.common.ConfigurationKeys;
 import org.apache.seata.common.Constants;
 import org.apache.seata.common.loader.EnhancedServiceNotFoundException;
@@ -36,9 +30,16 @@ import org.apache.seata.rm.datasource.undo.UndoLogManager;
 import org.apache.seata.rm.datasource.undo.UndoLogManagerFactory;
 import org.apache.seata.rm.datasource.util.JdbcUtils;
 import org.apache.seata.sqlparser.util.JdbcConstants;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.apache.seata.common.DefaultValues.DEFAULT_TRANSACTION_UNDO_LOG_TABLE;
 
@@ -66,12 +67,14 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
 
     private String productVersion;
 
+    private final Map<String, String> variables = new HashMap<>();
+
     /**
      * POLARDB-X 1.X -> TDDL
      * POLARDB-X 2.X & MySQL 5.6 -> PXC
      * POLARDB-X 2.X & MySQL 5.7 -> AliSQL-X
      */
-    private static final String[] POLARDB_X_PRODUCT_KEYWORD = {"TDDL","AliSQL-X","PXC"};
+    private static final String[] POLARDB_X_PRODUCT_KEYWORD = {"TDDL", "AliSQL-X", "PXC"};
 
     /**
      * Instantiates a new Data source proxy.
@@ -90,7 +93,9 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
      */
     public DataSourceProxy(DataSource targetDataSource, String resourceGroupId) {
         if (targetDataSource instanceof SeataDataSourceProxy) {
-            LOGGER.info("Unwrap the target data source, because the type is: {}", targetDataSource.getClass().getName());
+            LOGGER.info(
+                    "Unwrap the target data source, because the type is: {}",
+                    targetDataSource.getClass().getName());
             targetDataSource = ((SeataDataSourceProxy) targetDataSource).getTargetDataSource();
         }
         this.targetDataSource = targetDataSource;
@@ -114,13 +119,13 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
             throw new IllegalStateException("can not init dataSource", e);
         }
         if (JdbcConstants.SQLSERVER.equals(dbType)) {
-            LOGGER.info("SQLServer support in AT mode is currently an experimental function, " +
-                    "if you have any problems in use, please feedback to us");
+            LOGGER.info("SQLServer support in AT mode is currently an experimental function, "
+                    + "if you have any problems in use, please feedback to us");
         }
         initResourceId();
         DefaultResourceManager.get().registerResource(this);
         TableMetaCacheFactory.registerTableMeta(this);
-        //Set the default branch type to 'AT' in the RootContext.
+        // Set the default branch type to 'AT' in the RootContext.
         RootContext.setDefaultBranchType(this.getBranchType());
     }
 
@@ -164,7 +169,7 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
         try {
             undoLogManager = UndoLogManagerFactory.getUndoLogManager(dbType);
         } catch (EnhancedServiceNotFoundException e) {
-            String errMsg = String.format("AT mode don't support the the dbtype: %s", dbType);
+            String errMsg = String.format("AT mode don't support the dbtype: %s", dbType);
             throw new IllegalStateException(errMsg, e);
         }
 
@@ -239,6 +244,8 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
             initSqlServerResourceId();
         } else if (JdbcConstants.DM.equals(dbType)) {
             initDMResourceId();
+        } else if (JdbcConstants.OSCAR.equals(dbType)) {
+            initOscarResourceId();
         } else {
             initDefaultResourceId();
         }
@@ -314,6 +321,18 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
             resourceId = jdbcUrlBuilder.toString();
         } else {
             resourceId = jdbcUrl;
+        }
+    }
+
+    /**
+     * init the oscar resource id
+     * jdbc:oscar://192.168.x.xx:2003/OSRDB
+     */
+    private void initOscarResourceId() {
+        if (jdbcUrl.contains("?")) {
+            resourceId = jdbcUrl.substring(0, jdbcUrl.indexOf('?')) + "/" + userName;
+        } else {
+            resourceId = jdbcUrl + "/" + userName;
         }
     }
 
@@ -399,26 +418,35 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
         return kernelVersion;
     }
 
+    public String getVariableValue(String name) {
+        return variables.get(name);
+    }
+
     private void validMySQLVersion(Connection connection) {
         if (!JdbcConstants.MYSQL.equals(dbType)) {
             return;
         }
-        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT VERSION()");
-             ResultSet versionResult = preparedStatement.executeQuery()) {
-            if (versionResult.next()) {
-                String version = versionResult.getString("VERSION()");
-                if (StringUtils.isBlank(version)) {
-                    return;
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SHOW VARIABLES");
+                ResultSet rs = preparedStatement.executeQuery()) {
+            while (rs.next()) {
+                String name = rs.getString(1);
+                String value = rs.getString(2);
+                if (StringUtils.isNotBlank(name)) {
+                    variables.put(name.toLowerCase(), value);
                 }
-                int dashIdx = version.indexOf('-');
-                // in mysql: 5.6.45, in polardb-x: 5.6.45-TDDL-xxx
-                if (dashIdx > 0) {
-                    kernelVersion = version.substring(0, dashIdx);
-                    productVersion = version.substring(dashIdx + 1);
-                } else {
-                    kernelVersion = version;
-                    productVersion = version;
-                }
+            }
+            String version = variables.get("version");
+            if (StringUtils.isBlank(version)) {
+                return;
+            }
+            int dashIdx = version.indexOf('-');
+            // in mysql: 5.6.45, in polardb-x: 5.6.45-TDDL-xxx
+            if (dashIdx > 0) {
+                kernelVersion = version.substring(0, dashIdx);
+                productVersion = version.substring(dashIdx + 1);
+            } else {
+                kernelVersion = version;
+                productVersion = version;
             }
         } catch (Exception e) {
             LOGGER.error("check mysql version fail error: {}", e.getMessage());

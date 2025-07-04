@@ -16,29 +16,32 @@
  */
 package org.apache.seata.tm.api;
 
-
+import org.apache.seata.common.XID;
+import org.apache.seata.common.util.UUIDGenerator;
 import org.apache.seata.core.context.RootContext;
 import org.apache.seata.core.exception.TransactionException;
 import org.apache.seata.core.model.GlobalStatus;
 import org.apache.seata.core.model.TransactionManager;
 import org.apache.seata.tm.TransactionManagerHolder;
 import org.apache.seata.tm.api.transaction.MyRuntimeException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-
 class DefaultGlobalTransactionTest {
-    private static final String DEFAULT_XID = "1234567890";
 
-    @BeforeAll
-    public static void init() {
+    private TransactionManager backTransactionManager;
+
+    @BeforeEach
+    public void init() {
+        backTransactionManager = TransactionManagerHolder.get();
 
         TransactionManagerHolder.set(new TransactionManager() {
             @Override
             public String begin(String applicationId, String transactionServiceGroup, String name, int timeout)
                     throws TransactionException {
-                return DEFAULT_XID;
+                return XID.generateXID(UUIDGenerator.generateUUID());
             }
 
             @Override
@@ -53,7 +56,7 @@ class DefaultGlobalTransactionTest {
 
             @Override
             public GlobalStatus getStatus(String xid) throws TransactionException {
-              throw new MyRuntimeException("");
+                throw new MyRuntimeException("");
             }
 
             @Override
@@ -61,12 +64,11 @@ class DefaultGlobalTransactionTest {
                 return globalStatus;
             }
         });
+        RootContext.unbind();
     }
-
 
     @Test
     public void commitRetryExceptionTest() throws TransactionException {
-        RootContext.unbind();
         GlobalTransaction tx = GlobalTransactionContext.getCurrentOrCreate();
         tx.begin();
         Assertions.assertThrows(TransactionException.class, tx::commit);
@@ -74,15 +76,12 @@ class DefaultGlobalTransactionTest {
 
     @Test
     public void commitNoXIDExceptionTest() throws TransactionException {
-        RootContext.unbind();
         GlobalTransaction tx = GlobalTransactionContext.getCurrentOrCreate();
         Assertions.assertThrows(IllegalStateException.class, tx::commit);
     }
 
-
     @Test
     public void rollBackRetryExceptionTest() throws TransactionException {
-        RootContext.unbind();
         GlobalTransaction tx = GlobalTransactionContext.getCurrentOrCreate();
         tx.begin();
         Assertions.assertThrows(TransactionException.class, tx::rollback);
@@ -90,10 +89,13 @@ class DefaultGlobalTransactionTest {
 
     @Test
     public void rollBackNoXIDExceptionTest() throws TransactionException {
-        RootContext.unbind();
         GlobalTransaction tx = GlobalTransactionContext.getCurrentOrCreate();
         tx.begin();
         Assertions.assertThrows(TransactionException.class, tx::rollback);
     }
 
+    @AfterEach
+    public void afterEach() {
+        TransactionManagerHolder.set(backTransactionManager);
+    }
 }

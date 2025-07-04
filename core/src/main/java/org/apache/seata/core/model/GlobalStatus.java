@@ -128,7 +128,25 @@ public enum GlobalStatus {
      * The rollback retry Timeout .
      */
     // Finally: failed to rollback since retry timeout
-    RollbackRetryTimeout(17, "global transaction still failed after commit failure and retries for some time");
+    RollbackRetryTimeout(17, "global transaction still failed after commit failure and retries for some time"),
+
+    /**
+     * Deleting .
+     */
+    // Deleting global transaction
+    Deleting(18, "global transaction is deleting"),
+
+    /**
+     * Stop commit or commit retry .
+     */
+    // stop commit or commit retry
+    StopCommitOrCommitRetry(19, "global transaction is commit or retry commit but stop now"),
+
+    /**
+     * Stop rollback or rollback retry .
+     */
+    // stop rollback or rollback retry
+    StopRollbackOrRollbackRetry(20, "global transaction is rollback or retry rollback but stop now");
 
     private final int code;
     private final String desc;
@@ -154,7 +172,7 @@ public enum GlobalStatus {
      * @return the global status
      */
     public static GlobalStatus get(byte code) {
-        return get((int)code);
+        return get((int) code);
     }
 
     /**
@@ -180,7 +198,10 @@ public enum GlobalStatus {
      * @return the boolean
      */
     public static boolean isOnePhaseTimeout(GlobalStatus status) {
-        if (status == TimeoutRollbacking || status == TimeoutRollbackRetrying || status == TimeoutRollbacked || status == TimeoutRollbackFailed) {
+        if (status == TimeoutRollbacking
+                || status == TimeoutRollbackRetrying
+                || status == TimeoutRollbacked
+                || status == TimeoutRollbackFailed) {
             return true;
         }
         return false;
@@ -193,8 +214,10 @@ public enum GlobalStatus {
      * @return the boolean
      */
     public static boolean isTwoPhaseSuccess(GlobalStatus status) {
-        if (status == GlobalStatus.Committed || status == GlobalStatus.Rollbacked
-            || status == GlobalStatus.TimeoutRollbacked) {
+        if (status == GlobalStatus.Committed
+                || status == GlobalStatus.Rollbacked
+                || status == GlobalStatus.TimeoutRollbacked
+                || status == GlobalStatus.Deleting) {
             return true;
         }
         return false;

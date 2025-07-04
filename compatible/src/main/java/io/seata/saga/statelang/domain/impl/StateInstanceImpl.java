@@ -19,13 +19,14 @@ package io.seata.saga.statelang.domain.impl;
 import io.seata.saga.statelang.domain.ExecutionStatus;
 import io.seata.saga.statelang.domain.StateInstance;
 import io.seata.saga.statelang.domain.StateMachineInstance;
+import io.seata.saga.statelang.domain.StateType;
 
 import java.util.Date;
 
 /**
  * state execution instance
- *
  */
+@Deprecated
 public class StateInstanceImpl implements StateInstance {
 
     private final org.apache.seata.saga.statelang.domain.StateInstance actual;
@@ -67,13 +68,17 @@ public class StateInstanceImpl implements StateInstance {
     }
 
     @Override
-    public String getType() {
-        return actual.getType();
+    public StateType getType() {
+        return StateType.wrap(actual.getType());
     }
 
     @Override
-    public void setType(String type) {
-        actual.setType(type);
+    public void setType(StateType type) {
+        if (type == null) {
+            actual.setType(null);
+        } else {
+            actual.setType(type.unwrap());
+        }
     }
 
     @Override
@@ -153,7 +158,7 @@ public class StateInstanceImpl implements StateInstance {
 
     @Override
     public void setForUpdate(boolean forUpdate) {
-        setForUpdate(forUpdate);
+        actual.setForUpdate(forUpdate);
     }
 
     @Override
@@ -213,7 +218,11 @@ public class StateInstanceImpl implements StateInstance {
 
     @Override
     public void setStatus(ExecutionStatus status) {
-        actual.setStatus(status.unwrap());
+        if (status == null) {
+            actual.setStatus(null);
+        } else {
+            actual.setStatus(status.unwrap());
+        }
     }
 
     @Override

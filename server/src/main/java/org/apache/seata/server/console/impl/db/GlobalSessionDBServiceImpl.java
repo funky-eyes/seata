@@ -16,6 +16,28 @@
  */
 package org.apache.seata.server.console.impl.db;
 
+import org.apache.seata.common.ConfigurationKeys;
+import org.apache.seata.common.exception.StoreException;
+import org.apache.seata.common.loader.EnhancedServiceLoader;
+import org.apache.seata.common.result.PageResult;
+import org.apache.seata.common.util.IOUtil;
+import org.apache.seata.common.util.PageUtil;
+import org.apache.seata.common.util.StringUtils;
+import org.apache.seata.config.Configuration;
+import org.apache.seata.config.ConfigurationFactory;
+import org.apache.seata.core.store.db.DataSourceProvider;
+import org.apache.seata.core.store.db.sql.log.LogStoreSqlsFactory;
+import org.apache.seata.server.console.entity.param.GlobalSessionParam;
+import org.apache.seata.server.console.entity.vo.BranchSessionVO;
+import org.apache.seata.server.console.entity.vo.GlobalSessionVO;
+import org.apache.seata.server.console.impl.AbstractGlobalService;
+import org.apache.seata.server.console.service.BranchSessionService;
+import org.apache.seata.server.console.service.GlobalSessionService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -23,28 +45,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-
-import javax.annotation.Resource;
-import javax.sql.DataSource;
-
-import org.apache.seata.common.ConfigurationKeys;
-import org.apache.seata.common.exception.StoreException;
-import org.apache.seata.common.loader.EnhancedServiceLoader;
-import org.apache.seata.common.util.IOUtil;
-import org.apache.seata.common.util.PageUtil;
-import org.apache.seata.common.util.StringUtils;
-import org.apache.seata.config.Configuration;
-import org.apache.seata.config.ConfigurationFactory;
-import org.apache.seata.console.result.PageResult;
-import org.apache.seata.core.store.db.DataSourceProvider;
-import org.apache.seata.core.store.db.sql.log.LogStoreSqlsFactory;
-import org.apache.seata.server.console.param.GlobalSessionParam;
-import org.apache.seata.server.console.service.BranchSessionService;
-import org.apache.seata.server.console.service.GlobalSessionService;
-import org.apache.seata.server.console.vo.BranchSessionVO;
-import org.apache.seata.server.console.vo.GlobalSessionVO;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.stereotype.Component;
 
 import static org.apache.seata.common.DefaultValues.DEFAULT_STORE_DB_GLOBAL_TABLE;
 
@@ -55,7 +55,7 @@ import static org.apache.seata.common.DefaultValues.DEFAULT_STORE_DB_GLOBAL_TABL
 @Component
 @org.springframework.context.annotation.Configuration
 @ConditionalOnExpression("#{'db'.equals('${sessionMode}')}")
-public class GlobalSessionDBServiceImpl implements GlobalSessionService {
+public class GlobalSessionDBServiceImpl extends AbstractGlobalService implements GlobalSessionService {
 
     private String globalTable;
 
@@ -77,7 +77,8 @@ public class GlobalSessionDBServiceImpl implements GlobalSessionService {
         if (StringUtils.isBlank(dbDataSource)) {
             throw new IllegalArgumentException(ConfigurationKeys.STORE_DB_DATASOURCE_TYPE + " should not be blank");
         }
-        dataSource = EnhancedServiceLoader.load(DataSourceProvider.class, dbDataSource).provide();
+        dataSource = EnhancedServiceLoader.load(DataSourceProvider.class, dbDataSource)
+                .provide();
     }
 
     @Override
@@ -87,13 +88,13 @@ public class GlobalSessionDBServiceImpl implements GlobalSessionService {
         List<Object> sqlParamList = new ArrayList<>();
         String whereCondition = getWhereConditionByParam(param, sqlParamList);
 
-        String sourceSql = LogStoreSqlsFactory.getLogStoreSqls(dbType).getAllGlobalSessionSql(globalTable, whereCondition);
+        String sourceSql =
+                LogStoreSqlsFactory.getLogStoreSqls(dbType).getAllGlobalSessionSql(globalTable, whereCondition);
         String querySessionSql = PageUtil.pageSql(sourceSql, dbType, param.getPageNum(), param.getPageSize());
         String sessionCountSql = PageUtil.countSql(sourceSql, dbType);
 
         List<GlobalSessionVO> list = new ArrayList<>();
         int count = 0;
-
 
         Connection conn = null;
         PreparedStatement ps = null;
@@ -158,5 +159,4 @@ public class GlobalSessionDBServiceImpl implements GlobalSessionService {
         String whereCondition = whereConditionBuilder.toString();
         return whereCondition.replaceFirst("and", "where");
     }
-
 }

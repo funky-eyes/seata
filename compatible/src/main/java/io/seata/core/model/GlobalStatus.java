@@ -20,6 +20,7 @@ package io.seata.core.model;
  * Status of global transaction.
  *
  */
+@Deprecated
 public enum GlobalStatus {
 
     /**
@@ -154,7 +155,7 @@ public enum GlobalStatus {
      * @return the global status
      */
     public static GlobalStatus get(byte code) {
-        return get((int)code);
+        return get((int) code);
     }
 
     /**
@@ -180,7 +181,10 @@ public enum GlobalStatus {
      * @return the boolean
      */
     public static boolean isOnePhaseTimeout(GlobalStatus status) {
-        if (status == TimeoutRollbacking || status == TimeoutRollbackRetrying || status == TimeoutRollbacked || status == TimeoutRollbackFailed) {
+        if (status == TimeoutRollbacking
+                || status == TimeoutRollbackRetrying
+                || status == TimeoutRollbacked
+                || status == TimeoutRollbackFailed) {
             return true;
         }
         return false;
@@ -193,8 +197,9 @@ public enum GlobalStatus {
      * @return the boolean
      */
     public static boolean isTwoPhaseSuccess(GlobalStatus status) {
-        if (status == GlobalStatus.Committed || status == GlobalStatus.Rollbacked
-            || status == GlobalStatus.TimeoutRollbacked) {
+        if (status == GlobalStatus.Committed
+                || status == GlobalStatus.Rollbacked
+                || status == GlobalStatus.TimeoutRollbacked) {
             return true;
         }
         return false;
@@ -211,5 +216,9 @@ public enum GlobalStatus {
             return true;
         }
         return false;
+    }
+
+    public org.apache.seata.core.model.GlobalStatus convertGlobalStatus() {
+        return org.apache.seata.core.model.GlobalStatus.get(this.getCode());
     }
 }

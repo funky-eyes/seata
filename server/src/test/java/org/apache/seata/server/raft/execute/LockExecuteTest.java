@@ -16,10 +16,15 @@
  */
 package org.apache.seata.server.raft.execute;
 
+import org.apache.seata.common.store.LockMode;
+import org.apache.seata.common.store.SessionMode;
 import org.apache.seata.common.util.NetUtil;
+import org.apache.seata.common.util.UUIDGenerator;
 import org.apache.seata.config.ConfigurationCache;
 import org.apache.seata.core.exception.TransactionException;
 import org.apache.seata.core.model.BranchType;
+import org.apache.seata.server.DynamicPortTestConfig;
+import org.apache.seata.server.cluster.raft.execute.branch.RemoveBranchSessionExecute;
 import org.apache.seata.server.cluster.raft.execute.lock.BranchReleaseLockExecute;
 import org.apache.seata.server.cluster.raft.execute.lock.GlobalReleaseLockExecute;
 import org.apache.seata.server.cluster.raft.sync.msg.RaftBranchSessionSyncMsg;
@@ -32,7 +37,6 @@ import org.apache.seata.server.session.BranchSession;
 import org.apache.seata.server.session.GlobalSession;
 import org.apache.seata.server.session.SessionHolder;
 import org.apache.seata.server.storage.SessionConverter;
-import org.apache.seata.server.store.StoreConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -41,13 +45,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Import;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.apache.seata.common.DefaultValues.DEFAULT_TX_GROUP;
-
 
 /**
  */
 @SpringBootTest
+@Import(DynamicPortTestConfig.class)
 class LockExecuteTest {
 
     private static GlobalSession GLOBAL_SESSION;
@@ -59,9 +67,9 @@ class LockExecuteTest {
     @BeforeAll
     public static void setUp(ApplicationContext context) throws TransactionException {
         System.setProperty("server.raft.serverAddr", NetUtil.getLocalIp() + ":9091");
-        SessionHolder.init(StoreConfig.SessionMode.RAFT);
+        SessionHolder.init(SessionMode.RAFT);
         LockerManagerFactory.destroy();
-        LockerManagerFactory.init(StoreConfig.LockMode.RAFT);
+        LockerManagerFactory.init(LockMode.RAFT);
     }
 
     @AfterAll
@@ -83,14 +91,31 @@ class LockExecuteTest {
     }
 
     @AfterEach
-    public void removeTestSession() throws TransactionException {
+    public void removeTestSession() throws Throwable {
+        testRemove();
         SessionHolder.getRootSessionManager().removeGlobalSession(GLOBAL_SESSION);
+    }
+
+    public void testRemove() throws Throwable {
+        List<BranchSession> list = new ArrayList<>(GLOBAL_SESSION.getBranchSessions());
+        for (BranchSession branchSession : list) {
+            Assertions.assertNotNull(branchSession);
+
+            RemoveBranchSessionExecute execute = new RemoveBranchSessionExecute();
+            boolean success = execute.execute(convertToBranchSessionMsg(branchSession));
+            Assertions.assertTrue(success);
+
+            branchSession = GLOBAL_SESSION.getBranch(branchSession.getBranchId());
+            Assertions.assertNull(branchSession);
+        }
     }
 
     @Test
     public void testGlobalRelease() throws Throwable {
-        BranchSession branchSession1 = mockBranchSession("test:0");
-        BranchSession branchSession2 = mockBranchSession("test:1");
+        BranchSession branchSession1 =
+                mockBranchSession(GLOBAL_SESSION.getXid(), GLOBAL_SESSION.getTransactionId(), "t1:53");
+        BranchSession branchSession2 =
+                mockBranchSession(GLOBAL_SESSION.getXid(), GLOBAL_SESSION.getTransactionId(), "t1:54");
         GLOBAL_SESSION.add(branchSession1);
         GLOBAL_SESSION.add(branchSession2);
 
@@ -109,7 +134,8 @@ class LockExecuteTest {
 
     @Test
     public void testBranchRelease() throws Throwable {
-        BranchSession branchSession = mockBranchSession("test:0");
+        BranchSession branchSession =
+                mockBranchSession(GLOBAL_SESSION.getXid(), GLOBAL_SESSION.getTransactionId(), "t1:55");
         GLOBAL_SESSION.add(branchSession);
 
         LockManager lockerManager = LockerManagerFactory.getLockManager();
@@ -131,14 +157,14 @@ class LockExecuteTest {
         return session;
     }
 
-    private static BranchSession mockBranchSession(String lockKey) {
+    private static BranchSession mockBranchSession(String xid, long transactionId, String lockKey) {
         BranchSession session = new BranchSession();
-        session.setXid(XID);
-        session.setTransactionId(123);
-        session.setBranchId(BRANCH_ID);
+        session.setXid(xid);
+        session.setTransactionId(transactionId);
+        session.setBranchId(UUIDGenerator.generateUUID());
         session.setClientId("client");
         session.setResourceGroupId(DEFAULT_TX_GROUP);
-        session.setResourceId("db");
+        session.setResourceId("resource");
         session.setLockKey(lockKey);
         session.setBranchType(BranchType.AT);
         session.setApplicationData("hello, world");

@@ -24,6 +24,7 @@ seata:
   enable-auto-data-source-proxy: true
   data-source-proxy-mode: AT
   use-jdk-proxy: false
+  expose-proxy: false
   scan-packages: firstPackage,secondPackage
   excludes-for-scanning: firstBeanNameForExclude,secondBeanNameForExclude
   excludes-for-auto-proxying: firstClassNameForExclude,secondClassNameForExclude
@@ -72,6 +73,7 @@ seata:
       default: 127.0.0.1:8091
     disable-global-transaction: false
   transport:
+    protocol: seata
     shutdown:
       wait: 3
     thread-factory:
@@ -80,7 +82,7 @@ seata:
       server-executor-thread-prefix: NettyServerBizHandler
       share-boss-worker: false
       client-selector-thread-prefix: NettyClientSelector
-      client-selector-thread-size: 1
+      client-selector-thread-size: -1
       client-worker-thread-prefix: NettyClientWorkerThread
       worker-thread-size: default
       boss-thread-size: 1
@@ -93,6 +95,7 @@ seata:
     enable-rm-client-batch-send-request: true
     rpc-rm-request-timeout: 15000
     rpc-tm-request-timeout: 30000
+    enable-client-shared-event-loop-group: false
   config:
     type: file
     consul:
@@ -130,6 +133,17 @@ seata:
       name:
   registry:
     type: file
+    # Supports address translation parameters, currently only supported in raft mode，
+    # if match the preferredNetworks rule return the first, eg: preferredNetworks = "192.168.*"
+    preferredNetworks: ""
+    seata:
+      server-addr: 127.0.0.1:8081
+      namespace: public
+      heartbeat-period: 5000
+      metadata-max-age-ms: 30000
+      username: seata
+      password: seata
+      tokenValidityInMilliseconds: 1740000
     raft:
       server-addr:
       metadata-max-age-ms: 30000

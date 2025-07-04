@@ -83,6 +83,7 @@ CREATE TABLE [lock_table]
     [resource_id]    nvarchar(256) NULL,
     [table_name]     nvarchar(32)  NULL,
     [pk]             nvarchar(36)  NULL,
+    [status]            tinyint       NULL,
     [gmt_create]     datetime2     NULL,
     [gmt_modified]   datetime2     NULL,
     PRIMARY KEY CLUSTERED ([row_key])
@@ -90,8 +91,38 @@ CREATE TABLE [lock_table]
 )
 GO
 
+CREATE NONCLUSTERED INDEX [idx_status]
+    ON [lock_table] (
+                     [status]
+        )
+GO
+
 CREATE NONCLUSTERED INDEX [idx_branch_id]
     ON [lock_table] (
                      [branch_id]
         )
 GO
+
+-- the table to store distributed lock constants
+CREATE TABLE [distributed_lock]
+(
+    [lock_key]   char(20)    not null primary key,
+    [lock_value] varchar(20) not null,
+    [expire]     bigint
+    )
+GO
+
+INSERT INTO [distributed_lock] (lock_key, lock_value, expire) VALUES ('AsyncCommitting', ' ', 0);
+INSERT INTO [distributed_lock] (lock_key, lock_value, expire) VALUES ('RetryCommitting', ' ', 0);
+INSERT INTO [distributed_lock] (lock_key, lock_value, expire) VALUES ('RetryRollbacking', ' ', 0);
+INSERT INTO [distributed_lock] (lock_key, lock_value, expire) VALUES ('TxTimeoutCheck', ' ', 0);
+INSERT INTO [distributed_lock] (lock_key, lock_value, expire) VALUES ('UndologDelete', ' ', 0);
+
+CREATE TABLE [vgroup_table]
+(
+    [vGroup]    nvarchar(255) NOT NULL,
+    [namespace] nvarchar(255) NOT NULL,
+    [cluster]   nvarchar(255) NOT NULL,
+    PRIMARY KEY CLUSTERED ([vGroup])
+        WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+)

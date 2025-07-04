@@ -16,10 +16,13 @@
  */
 package org.apache.seata.server.raft.execute;
 
+import org.apache.seata.common.store.LockMode;
+import org.apache.seata.common.store.SessionMode;
 import org.apache.seata.common.util.NetUtil;
 import org.apache.seata.config.ConfigurationCache;
 import org.apache.seata.core.exception.TransactionException;
 import org.apache.seata.core.model.GlobalStatus;
+import org.apache.seata.server.DynamicPortTestConfig;
 import org.apache.seata.server.cluster.raft.execute.global.AddGlobalSessionExecute;
 import org.apache.seata.server.cluster.raft.execute.global.RemoveGlobalSessionExecute;
 import org.apache.seata.server.cluster.raft.execute.global.UpdateGlobalSessionExecute;
@@ -30,7 +33,6 @@ import org.apache.seata.server.session.GlobalSession;
 import org.apache.seata.server.session.SessionHolder;
 import org.apache.seata.server.session.SessionManager;
 import org.apache.seata.server.storage.SessionConverter;
-import org.apache.seata.server.store.StoreConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -38,22 +40,23 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
-
+import org.springframework.context.annotation.Import;
 
 /**
  */
 @SpringBootTest
+@Import(DynamicPortTestConfig.class)
 class GlobalSessionExecuteTest {
     @BeforeAll
-    public static void setUp(ApplicationContext context){
+    public static void setUp(ApplicationContext context) {
         System.setProperty("server.raft.serverAddr", NetUtil.getLocalIp() + ":9091");
-        SessionHolder.init(StoreConfig.SessionMode.RAFT);
+        SessionHolder.init(SessionMode.RAFT);
         LockerManagerFactory.destroy();
-        LockerManagerFactory.init(StoreConfig.LockMode.RAFT);
+        LockerManagerFactory.init(LockMode.RAFT);
     }
 
     @AfterAll
-    public static void destroy(){
+    public static void destroy() {
         // Clear configuration
         ConfigurationCache.clear();
         System.clearProperty("server.raft.serverAddr");
@@ -147,5 +150,4 @@ class GlobalSessionExecuteTest {
         sessionMsg.setGlobalSession(dto);
         return sessionMsg;
     }
-
 }

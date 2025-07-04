@@ -58,6 +58,8 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
             } else {
                 LOGGER.warn("miss msg id:{}", msgId);
             }
+        } else {
+            LOGGER.warn("msg is not ProtocolRpcMessage");
         }
     }
 
@@ -65,5 +67,4 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
     public void exceptionCaught(ChannelHandlerContext ctx, final Throwable cause) throws Exception {
         LOGGER.warn("", cause);
     }
-
 }

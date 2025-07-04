@@ -16,7 +16,6 @@
  */
 package org.apache.seata.core.model;
 
-
 import org.apache.seata.common.exception.ShouldNeverHappenException;
 
 /**
@@ -101,7 +100,19 @@ public enum BranchStatus {
      * The Phase two rollback failed retryable because of XAException.XAER_NOTA.
      * description:rollback logic is failed because of XAException.XAER_NOTA but retryable.
      */
-    PhaseTwo_RollbackFailed_XAER_NOTA_Retryable(12);
+    PhaseTwo_RollbackFailed_XAER_NOTA_Retryable(12),
+
+    /**
+     * The results of the Phase one are read-only.
+     * Description: After the branch prepare in the Oracle database, only purely read-only query statements were executed.
+     */
+    PhaseOne_RDONLY(13),
+
+    /**
+     * Stop retry
+     * description:user operate to stop retry
+     */
+    STOP_RETRY(14);
 
     private int code;
 
@@ -118,7 +129,6 @@ public enum BranchStatus {
         return code;
     }
 
-
     /**
      * Get branch status.
      *
@@ -126,7 +136,7 @@ public enum BranchStatus {
      * @return the branch status
      */
     public static BranchStatus get(byte code) {
-        return get((int)code);
+        return get((int) code);
     }
 
     /**
@@ -144,5 +154,4 @@ public enum BranchStatus {
         }
         return value;
     }
-
 }

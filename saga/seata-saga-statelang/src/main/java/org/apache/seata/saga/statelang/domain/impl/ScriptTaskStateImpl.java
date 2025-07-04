@@ -16,8 +16,8 @@
  */
 package org.apache.seata.saga.statelang.domain.impl;
 
-import org.apache.seata.saga.statelang.domain.DomainConstants;
 import org.apache.seata.saga.statelang.domain.ScriptTaskState;
+import org.apache.seata.saga.statelang.domain.StateType;
 
 /**
  * A state used to execute script such as groovy
@@ -32,7 +32,7 @@ public class ScriptTaskStateImpl extends AbstractTaskState implements ScriptTask
     private String scriptContent;
 
     public ScriptTaskStateImpl() {
-        setType(DomainConstants.STATE_TYPE_SCRIPT_TASK);
+        setType(StateType.SCRIPT_TASK);
     }
 
     @Override

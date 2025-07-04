@@ -16,8 +16,9 @@
  */
 package org.apache.seata.serializer.seata.protocol;
 
-import org.apache.seata.serializer.seata.SeataSerializer;
+import org.apache.seata.core.protocol.ProtocolConstants;
 import org.apache.seata.core.protocol.RegisterRMRequest;
+import org.apache.seata.serializer.seata.SeataSerializer;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,7 +32,7 @@ public class RegisterRMRequestSerializerTest {
     /**
      * The Seata codec.
      */
-    SeataSerializer seataSerializer = new SeataSerializer();
+    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
 
     /**
      * Test codec.
@@ -52,8 +53,7 @@ public class RegisterRMRequestSerializerTest {
         assertThat(registerRMRequest2.getExtraData()).isEqualTo(registerRMRequest.getExtraData());
         assertThat(registerRMRequest2.getApplicationId()).isEqualTo(registerRMRequest.getApplicationId());
         assertThat(registerRMRequest2.getVersion()).isEqualTo(registerRMRequest.getVersion());
-        assertThat(registerRMRequest2.getTransactionServiceGroup()).isEqualTo(registerRMRequest.getTransactionServiceGroup());
-
+        assertThat(registerRMRequest2.getTransactionServiceGroup())
+                .isEqualTo(registerRMRequest.getTransactionServiceGroup());
     }
-
 }

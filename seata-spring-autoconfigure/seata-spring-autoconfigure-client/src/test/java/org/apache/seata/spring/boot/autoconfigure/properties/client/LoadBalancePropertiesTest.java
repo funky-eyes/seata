@@ -22,6 +22,7 @@ import org.apache.seata.config.ExtConfigurationProvider;
 import org.apache.seata.config.FileConfiguration;
 import org.apache.seata.config.springcloud.SpringApplicationContextProvider;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -56,11 +57,18 @@ public class LoadBalancePropertiesTest {
     public void testLoadBalanceProperties() {
         FileConfiguration configuration = mock(FileConfiguration.class);
         Configuration currentConfiguration =
-            EnhancedServiceLoader.load(ExtConfigurationProvider.class).provide(configuration);
+                EnhancedServiceLoader.load(ExtConfigurationProvider.class).provide(configuration);
         System.setProperty("seata.client.loadBalance.virtualNodes", "30");
         assertEquals(30, currentConfiguration.getInt("client.loadBalance.virtualNodes"));
         System.setProperty("seata.client.loadBalance.type", "test");
         assertEquals("test", currentConfiguration.getConfig("client.loadBalance.type"));
+
+        LoadBalanceProperties loadBalanceProperties = new LoadBalanceProperties();
+        loadBalanceProperties.setType("type");
+        Assertions.assertEquals("type", loadBalanceProperties.getType());
+
+        loadBalanceProperties.setVirtualNodes(1);
+        Assertions.assertEquals(1, loadBalanceProperties.getVirtualNodes());
     }
 
     @AfterAll

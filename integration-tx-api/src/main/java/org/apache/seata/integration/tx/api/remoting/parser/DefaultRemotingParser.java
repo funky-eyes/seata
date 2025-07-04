@@ -16,16 +16,17 @@
  */
 package org.apache.seata.integration.tx.api.remoting.parser;
 
+import org.apache.seata.common.exception.FrameworkException;
+import org.apache.seata.common.loader.EnhancedServiceLoader;
+import org.apache.seata.common.lock.ResourceLock;
+import org.apache.seata.common.util.CollectionUtils;
+import org.apache.seata.integration.tx.api.remoting.RemotingDesc;
+import org.apache.seata.integration.tx.api.remoting.RemotingParser;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.seata.common.exception.FrameworkException;
-import org.apache.seata.common.loader.EnhancedServiceLoader;
-import org.apache.seata.common.util.CollectionUtils;
-import org.apache.seata.integration.tx.api.remoting.RemotingDesc;
-import org.apache.seata.integration.tx.api.remoting.RemotingParser;
 
 /**
  * parsing remoting bean
@@ -42,6 +43,8 @@ public class DefaultRemotingParser {
      * all remoting beans beanName -> RemotingDesc
      */
     protected static Map<Object, RemotingDesc> remotingServiceMap = new ConcurrentHashMap<>();
+
+    private final ResourceLock resourceLock = new ResourceLock();
 
     private static class SingletonHolder {
         private static final DefaultRemotingParser INSTANCE = new DefaultRemotingParser();
@@ -67,7 +70,7 @@ public class DefaultRemotingParser {
      * init parsers
      */
     protected void initRemotingParser() {
-        //init all resource managers
+        // init all resource managers
         List<RemotingParser> remotingParsers = EnhancedServiceLoader.loadAll(RemotingParser.class);
         if (CollectionUtils.isNotEmpty(remotingParsers)) {
             allRemotingParsers.addAll(remotingParsers);
@@ -79,7 +82,7 @@ public class DefaultRemotingParser {
      * @param remotingParser
      */
     public boolean registerRemotingParser(RemotingParser remotingParser) {
-        synchronized (this) {
+        try (ResourceLock ignored = resourceLock.obtain()) {
             return allRemotingParsers.add(remotingParser);
         }
     }
@@ -189,7 +192,7 @@ public class DefaultRemotingParser {
         }
         remotingServiceMap.put(bean, remotingBeanDesc);
         if (remotingParser.isReference(bean, beanName)) {
-            //reference bean, TCC proxy
+            // reference bean, TCC proxy
             remotingBeanDesc.setReference(true);
         }
         return remotingBeanDesc;
@@ -204,5 +207,4 @@ public class DefaultRemotingParser {
     public RemotingDesc getRemotingBeanDesc(Object bean) {
         return remotingServiceMap.get(bean);
     }
-
 }

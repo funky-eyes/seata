@@ -25,8 +25,12 @@ import org.apache.seata.tm.api.FailureHandlerHolder;
 
 import java.lang.reflect.Method;
 
+/**
+ * The type Global transactional interceptor parser.
+ */
 @Deprecated
-public class GlobalTransactionalInterceptorParser extends org.apache.seata.integration.tx.api.interceptor.parser.GlobalTransactionalInterceptorParser {
+public class GlobalTransactionalInterceptorParser
+        extends org.apache.seata.integration.tx.api.interceptor.parser.GlobalTransactionalInterceptorParser {
 
     @Override
     protected boolean existsAnnotation(Class<?>... classes) {
@@ -62,8 +66,7 @@ public class GlobalTransactionalInterceptorParser extends org.apache.seata.integ
     }
 
     @Override
-    public ProxyInvocationHandler createProxyInvocationHandler(){
+    public ProxyInvocationHandler createProxyInvocationHandler() {
         return new GlobalTransactionalInterceptorHandler(FailureHandlerHolder.getFailureHandler(), methodsToProxy);
     }
-
 }

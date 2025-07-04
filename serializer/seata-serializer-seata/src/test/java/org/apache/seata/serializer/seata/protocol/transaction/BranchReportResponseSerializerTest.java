@@ -16,10 +16,11 @@
  */
 package org.apache.seata.serializer.seata.protocol.transaction;
 
-import org.apache.seata.serializer.seata.SeataSerializer;
 import org.apache.seata.core.exception.TransactionExceptionCode;
+import org.apache.seata.core.protocol.ProtocolConstants;
 import org.apache.seata.core.protocol.ResultCode;
 import org.apache.seata.core.protocol.transaction.BranchReportResponse;
+import org.apache.seata.serializer.seata.SeataSerializer;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,13 +34,13 @@ public class BranchReportResponseSerializerTest {
     /**
      * The Seata codec.
      */
-    SeataSerializer seataSerializer = new SeataSerializer();
+    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
 
     /**
      * Test codec.
      */
     @Test
-    public void test_codec(){
+    public void test_codec() {
         BranchReportResponse branchReportResponse = new BranchReportResponse();
         branchReportResponse.setMsg("abac");
         branchReportResponse.setResultCode(ResultCode.Failed);
@@ -51,7 +52,7 @@ public class BranchReportResponseSerializerTest {
 
         assertThat(branchReportResponse2.getMsg()).isEqualTo(branchReportResponse.getMsg());
         assertThat(branchReportResponse2.getResultCode()).isEqualTo(branchReportResponse.getResultCode());
-        assertThat(branchReportResponse2.getTransactionExceptionCode()).isEqualTo(branchReportResponse.getTransactionExceptionCode());
-
+        assertThat(branchReportResponse2.getTransactionExceptionCode())
+                .isEqualTo(branchReportResponse.getTransactionExceptionCode());
     }
 }

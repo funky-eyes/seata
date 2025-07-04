@@ -16,9 +16,10 @@
  */
 package org.apache.seata.serializer.seata.protocol.transaction;
 
-import org.apache.seata.serializer.seata.SeataSerializer;
 import org.apache.seata.core.model.BranchType;
+import org.apache.seata.core.protocol.ProtocolConstants;
 import org.apache.seata.core.protocol.transaction.BranchCommitRequest;
+import org.apache.seata.serializer.seata.SeataSerializer;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,13 +33,13 @@ public class BranchCommitRequestSerializerTest {
     /**
      * The Seata codec.
      */
-    SeataSerializer seataSerializer = new SeataSerializer();
+    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
 
     /**
      * Test codec.
      */
     @Test
-    public void test_codec(){
+    public void test_codec() {
         BranchCommitRequest branchCommitRequest = new BranchCommitRequest();
         branchCommitRequest.setApplicationData("abc");
         branchCommitRequest.setBranchId(123);
@@ -56,5 +57,4 @@ public class BranchCommitRequestSerializerTest {
         assertThat(branchCommitReques2.getResourceId()).isEqualTo(branchCommitRequest.getResourceId());
         assertThat(branchCommitReques2.getXid()).isEqualTo(branchCommitRequest.getXid());
     }
-
 }

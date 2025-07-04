@@ -22,6 +22,7 @@ import org.apache.seata.core.model.GlobalStatus;
 import org.apache.seata.core.model.TransactionManager;
 import org.apache.seata.tm.TransactionManagerHolder;
 import org.apache.seata.tm.api.transaction.TransactionInfo;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -36,11 +37,14 @@ public class APITest {
     private static final String TX_NAME = "test";
     private static final int TIME_OUT = 30000;
 
+    private static TransactionManager backTransactionManager;
+
     /**
      * Init.
      */
     @BeforeAll
     public static void init() {
+        backTransactionManager = TransactionManagerHolder.get();
         TransactionManagerHolder.set(new TransactionManager() {
             @Override
             public String begin(String applicationId, String transactionServiceGroup, String name, int timeout)
@@ -70,6 +74,11 @@ public class APITest {
         });
     }
 
+    @AfterAll
+    public static void afterAll() {
+        TransactionManagerHolder.set(backTransactionManager);
+    }
+
     /**
      * Clean root context.
      */
@@ -89,7 +98,6 @@ public class APITest {
         GlobalTransaction tx = GlobalTransactionContext.getCurrentOrCreate();
         Assertions.assertEquals(tx.getXid(), DEFAULT_XID);
         Assertions.assertEquals(tx.getStatus(), GlobalStatus.Begin);
-
     }
 
     /**
@@ -115,7 +123,6 @@ public class APITest {
         tx.begin();
         Assertions.assertEquals(tx.getStatus(), GlobalStatus.Begin);
         Assertions.assertNotNull(tx.getXid());
-
     }
 
     /**
@@ -204,7 +211,7 @@ public class APITest {
         GlobalTransaction tx = GlobalTransactionContext.getCurrentOrCreate();
         tx.globalReport(tx.getStatus());
 
-        Assertions.assertThrows(IllegalStateException.class, () ->  tx.globalReport(null));
+        Assertions.assertThrows(IllegalStateException.class, () -> tx.globalReport(null));
         Assertions.assertThrows(IllegalStateException.class, () -> {
             RootContext.unbind();
             GlobalTransaction tx2 = GlobalTransactionContext.getCurrentOrCreate();
@@ -213,11 +220,9 @@ public class APITest {
 
         Assertions.assertEquals(tx.getStatus(), GlobalStatus.Begin);
         Assertions.assertNotNull(tx.getXid());
-
     }
 
-
-    private static abstract class AbstractTransactionalExecutor implements TransactionalExecutor {
+    private abstract static class AbstractTransactionalExecutor implements TransactionalExecutor {
 
         @Override
         public TransactionInfo getTransactionInfo() {

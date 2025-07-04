@@ -18,7 +18,7 @@ package io.seata.core.auth;
 
 /**
  * The type AuthSigner
+ * Notes: used for io.seata SPI interface
  */
-public interface AuthSigner extends org.apache.seata.core.auth.AuthSigner {
-
-}
+@Deprecated
+public interface AuthSigner extends org.apache.seata.core.auth.AuthSigner {}

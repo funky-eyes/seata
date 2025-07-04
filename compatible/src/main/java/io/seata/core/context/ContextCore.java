@@ -16,12 +16,9 @@
  */
 package io.seata.core.context;
 
-
 /**
- * 
- *
  * The interface Context core.
- *
+ * Notes: used for io.seata SPI interface
  */
-public interface ContextCore extends org.apache.seata.core.context.ContextCore {
-}
+@Deprecated
+public interface ContextCore extends org.apache.seata.core.context.ContextCore {}

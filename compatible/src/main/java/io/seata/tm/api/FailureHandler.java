@@ -16,5 +16,8 @@
  */
 package io.seata.tm.api;
 
-public interface FailureHandler extends org.apache.seata.tm.api.FailureHandler<GlobalTransaction> {
-}
+/**
+ * The interface Failure handler.
+ */
+@Deprecated
+public interface FailureHandler extends org.apache.seata.tm.api.FailureHandler<GlobalTransaction> {}

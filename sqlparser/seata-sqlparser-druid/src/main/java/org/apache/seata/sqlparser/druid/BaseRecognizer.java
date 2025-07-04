@@ -16,9 +16,6 @@
  */
 package org.apache.seata.sqlparser.druid;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.SQLLimit;
 import com.alibaba.druid.sql.ast.SQLObject;
@@ -33,8 +30,6 @@ import com.alibaba.druid.sql.ast.expr.SQLInSubQueryExpr;
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
 import com.alibaba.druid.sql.ast.statement.SQLInsertStatement;
-import com.alibaba.druid.sql.ast.statement.SQLMergeStatement;
-import com.alibaba.druid.sql.ast.statement.SQLReplaceStatement;
 import com.alibaba.druid.sql.ast.statement.SQLSubqueryTableSource;
 import com.alibaba.druid.sql.visitor.SQLASTVisitor;
 import com.alibaba.druid.sql.visitor.SQLASTVisitorAdapter;
@@ -42,6 +37,10 @@ import org.apache.seata.common.exception.NotSupportYetException;
 import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.sqlparser.SQLParsingException;
 import org.apache.seata.sqlparser.SQLRecognizer;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * The type Base recognizer.
@@ -57,7 +56,6 @@ public abstract class BaseRecognizer implements SQLRecognizer {
         public String toString() {
             return "?";
         }
-
     }
 
     /**
@@ -72,7 +70,6 @@ public abstract class BaseRecognizer implements SQLRecognizer {
      */
     public BaseRecognizer(String originalSQL) {
         this.originalSQL = originalSQL;
-
     }
 
     public void executeVisit(SQLExpr where, SQLASTVisitor visitor) {
@@ -92,15 +89,19 @@ public abstract class BaseRecognizer implements SQLRecognizer {
                 throw new IllegalArgumentException("not support where method: " + whereMethod.getMethodName());
             }
         } else {
-            throw new IllegalArgumentException("unexpected WHERE expr: " + where.getClass().getSimpleName());
+            throw new IllegalArgumentException(
+                    "unexpected WHERE expr: " + where.getClass().getSimpleName());
         }
     }
 
     protected void wrapSQLParsingException(SQLExpr expr) {
         String errorMsg;
         try {
-            errorMsg =
-                new StringBuilder("Unknown SQLExpr: ").append(expr.getClass()).append(" ").append(expr).toString();
+            errorMsg = new StringBuilder("Unknown SQLExpr: ")
+                    .append(expr.getClass())
+                    .append(" ")
+                    .append(expr)
+                    .toString();
         } catch (Exception e) {
             // druid 1.2.6 SQLObjectImpl#toString exist NPE https://github.com/alibaba/druid/issues/4290
             throw new SQLParsingException("Unknown SQLExpr: " + e.getMessage(), e);
@@ -112,7 +113,7 @@ public abstract class BaseRecognizer implements SQLRecognizer {
         visitor.visit(sqlLimit);
     }
 
-    public void executeOrderBy(SQLOrderBy sqlOrderBy,SQLASTVisitor visitor) {
+    public void executeOrderBy(SQLOrderBy sqlOrderBy, SQLASTVisitor visitor) {
         visitor.visit(sqlOrderBy);
     }
 
@@ -128,38 +129,27 @@ public abstract class BaseRecognizer implements SQLRecognizer {
         SQLASTVisitor visitor = new SQLASTVisitorAdapter() {
             @Override
             public boolean visit(SQLInSubQueryExpr x) {
-                //just like: ...where id in (select id from t)
-                throw new NotSupportYetException("not support the sql syntax with InSubQuery:" + x
-                        + "\nplease see the doc about SQL restrictions https://seata.apache.org/zh-cn/docs/user/sqlreference/dml");
+                // just like: ...where id in (select id from t)
+                throw new NotSupportYetException(
+                        "not support the sql syntax with InSubQuery:" + x
+                                + "\nplease see the doc about SQL restrictions https://seata.apache.org/zh-cn/docs/user/sqlreference/dml");
             }
 
             @Override
             public boolean visit(SQLSubqueryTableSource x) {
-                //just like: select * from (select * from t)
-                throw new NotSupportYetException("not support the sql syntax with SubQuery:" + x
-                        + "\nplease see the doc about SQL restrictions https://seata.apache.org/zh-cn/docs/user/sqlreference/dml");
-            }
-
-            @Override
-            public boolean visit(SQLReplaceStatement x) {
-                //just like: replace into t (id,dr) values (1,'2'), (2,'3')
-                throw new NotSupportYetException("not support the sql syntax with ReplaceStatement:" + x
-                        + "\nplease see the doc about SQL restrictions https://seata.apache.org/zh-cn/docs/user/sqlreference/dml");
-            }
-
-            @Override
-            public boolean visit(SQLMergeStatement x) {
-                //just like: merge into ... WHEN MATCHED THEN ...
-                throw new NotSupportYetException("not support the sql syntax with MergeStatement:" + x
-                        + "\nplease see the doc about SQL restrictions https://seata.apache.org/zh-cn/docs/user/sqlreference/dml");
+                // just like: select * from (select * from t)
+                throw new NotSupportYetException(
+                        "not support the sql syntax with SubQuery:" + x
+                                + "\nplease see the doc about SQL restrictions https://seata.apache.org/zh-cn/docs/user/sqlreference/dml");
             }
 
             @Override
             public boolean visit(SQLInsertStatement x) {
                 if (null != x.getQuery()) {
-                    //just like: insert into t select * from t1
-                    throw new NotSupportYetException("not support the sql syntax insert with query:" + x
-                            + "\nplease see the doc about SQL restrictions https://seata.apache.org/zh-cn/docs/user/sqlreference/dml");
+                    // just like: insert into t select * from t1
+                    throw new NotSupportYetException(
+                            "not support the sql syntax insert with query:" + x
+                                    + "\nplease see the doc about SQL restrictions https://seata.apache.org/zh-cn/docs/user/sqlreference/dml");
                 }
                 return true;
             }
@@ -183,7 +173,7 @@ public abstract class BaseRecognizer implements SQLRecognizer {
             List<String> columns = new ArrayList<>(list.size());
             for (SQLObject sqlObject : list) {
                 if (sqlObject instanceof SQLIdentifierExpr) {
-                    columns.add(((SQLIdentifierExpr)sqlObject).getName());
+                    columns.add(((SQLIdentifierExpr) sqlObject).getName());
                 } else {
                     getWhereColumns(sqlObject, columns);
                 }
@@ -195,32 +185,31 @@ public abstract class BaseRecognizer implements SQLRecognizer {
 
     public void getWhereColumns(SQLObject sqlExpr, List<String> list) {
         if (sqlExpr instanceof SQLBinaryOpExpr) {
-            SQLExpr left = ((SQLBinaryOpExpr)sqlExpr).getLeft();
+            SQLExpr left = ((SQLBinaryOpExpr) sqlExpr).getLeft();
             getWhereColumn(left, list);
-            SQLExpr right = ((SQLBinaryOpExpr)sqlExpr).getRight();
+            SQLExpr right = ((SQLBinaryOpExpr) sqlExpr).getRight();
             getWhereColumn(right, list);
         }
     }
 
     public void getWhereColumn(SQLExpr left, List<String> list) {
         if (left instanceof SQLBetweenExpr) {
-            SQLExpr expr = ((SQLBetweenExpr)left).getTestExpr();
+            SQLExpr expr = ((SQLBetweenExpr) left).getTestExpr();
             if (expr instanceof SQLIdentifierExpr) {
-                list.add(((SQLIdentifierExpr)expr).getName());
+                list.add(((SQLIdentifierExpr) expr).getName());
             }
             if (expr instanceof SQLPropertyExpr) {
-                list.add(((SQLPropertyExpr)expr).getName());
+                list.add(((SQLPropertyExpr) expr).getName());
             }
         } else if (left instanceof SQLIdentifierExpr) {
-            list.add(((SQLIdentifierExpr)left).getName());
+            list.add(((SQLIdentifierExpr) left).getName());
         } else if (left instanceof SQLInListExpr) {
-            SQLExpr expr = ((SQLInListExpr)left).getExpr();
+            SQLExpr expr = ((SQLInListExpr) left).getExpr();
             if (expr instanceof SQLIdentifierExpr) {
-                list.add(((SQLIdentifierExpr)expr).getName());
+                list.add(((SQLIdentifierExpr) expr).getName());
             }
         } else if (left instanceof SQLBinaryOpExpr) {
             getWhereColumns(left, list);
         }
     }
-
 }

@@ -16,21 +16,25 @@
  */
 package org.apache.seata.server.session.redis;
 
-import java.io.IOException;
-
 import org.apache.seata.common.loader.EnhancedServiceLoader;
+import org.apache.seata.server.DynamicPortTestConfig;
 import org.apache.seata.server.storage.redis.session.RedisSessionManager;
 import org.apache.seata.server.storage.redis.store.RedisLuaTransactionStoreManager;
-
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Import;
+
+import java.io.IOException;
 
 /**
  * test RedisLuaTransactionStoreManager
  *
  */
 @SpringBootTest
+@EnabledIfSystemProperty(named = "redisCaseEnabled", matches = "true")
+@Import(DynamicPortTestConfig.class)
 public class RedisLuaTransactionStoreManagerTest extends RedisTransactionStoreManagerTest {
 
     /**
@@ -43,12 +47,10 @@ public class RedisLuaTransactionStoreManagerTest extends RedisTransactionStoreMa
      */
     @BeforeAll
     public static void start(ApplicationContext context) throws IOException {
-        MockRedisServer.getInstance();
         EnhancedServiceLoader.unloadAll();
         redisTransactionStoreManager = new RedisLuaTransactionStoreManager();
         RedisSessionManager redisSessionManager = new RedisSessionManager();
         redisSessionManager.setTransactionStoreManager(redisTransactionStoreManager);
         sessionManager = redisSessionManager;
     }
-
 }

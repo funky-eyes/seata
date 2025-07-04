@@ -16,13 +16,15 @@
  */
 package org.apache.seata.serializer.seata.protocol.transaction;
 
-import org.apache.seata.serializer.seata.SeataSerializer;
 import org.apache.seata.core.exception.TransactionExceptionCode;
+import org.apache.seata.core.protocol.ProtocolConstants;
 import org.apache.seata.core.protocol.ResultCode;
 import org.apache.seata.core.protocol.transaction.GlobalBeginResponse;
+import org.apache.seata.serializer.seata.SeataSerializer;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  * The type Global begin response codec test.
  *
@@ -32,13 +34,13 @@ public class GlobalBeginResponseSerializerTest {
     /**
      * The Seata codec.
      */
-    SeataSerializer seataSerializer = new SeataSerializer();
+    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
 
     /**
      * Test codec.
      */
     @Test
-    public void test_codec(){
+    public void test_codec() {
         GlobalBeginResponse globalBeginResponse = new GlobalBeginResponse();
         globalBeginResponse.setTransactionExceptionCode(TransactionExceptionCode.GlobalTransactionNotActive);
         globalBeginResponse.setExtraData("absd");
@@ -50,11 +52,11 @@ public class GlobalBeginResponseSerializerTest {
 
         GlobalBeginResponse globalBeginResponse2 = seataSerializer.deserialize(bytes);
 
-        assertThat(globalBeginResponse2.getTransactionExceptionCode()).isEqualTo(globalBeginResponse.getTransactionExceptionCode());
+        assertThat(globalBeginResponse2.getTransactionExceptionCode())
+                .isEqualTo(globalBeginResponse.getTransactionExceptionCode());
         assertThat(globalBeginResponse2.getResultCode()).isEqualTo(globalBeginResponse.getResultCode());
         assertThat(globalBeginResponse2.getXid()).isEqualTo(globalBeginResponse.getXid());
         assertThat(globalBeginResponse2.getExtraData()).isEqualTo(globalBeginResponse.getExtraData());
         assertThat(globalBeginResponse2.getMsg()).isEqualTo(globalBeginResponse.getMsg());
     }
-
 }

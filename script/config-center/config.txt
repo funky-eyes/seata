@@ -1,5 +1,23 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 #For details about configuration items, see https://seata.apache.org/zh-cn/docs/user/configurations
 #Transport configuration, for client and server
+transport.protocol=seata
 transport.type=TCP
 transport.server=NIO
 transport.heartbeat=true
@@ -9,18 +27,38 @@ transport.enableTcServerBatchSendResponse=false
 transport.rpcRmRequestTimeout=30000
 transport.rpcTmRequestTimeout=30000
 transport.rpcTcRequestTimeout=30000
+transport.enableClientSharedEventLoopGroup=false
 transport.threadFactory.bossThreadPrefix=NettyBoss
 transport.threadFactory.workerThreadPrefix=NettyServerNIOWorker
 transport.threadFactory.serverExecutorThreadPrefix=NettyServerBizHandler
 transport.threadFactory.shareBossWorker=false
 transport.threadFactory.clientSelectorThreadPrefix=NettyClientSelector
-transport.threadFactory.clientSelectorThreadSize=1
+transport.threadFactory.clientSelectorThreadSize=-1
 transport.threadFactory.clientWorkerThreadPrefix=NettyClientWorkerThread
 transport.threadFactory.bossThreadSize=1
 transport.threadFactory.workerThreadSize=default
 transport.shutdown.wait=3
 transport.serialization=seata
 transport.compressor=none
+#HTTP thread pool
+transport.minHttpPoolSize=10
+transport.maxHttpPoolSize=100
+transport.maxHttpTaskQueueSize=1000
+transport.httpPoolKeepAliveTime=500
+
+transport.serverSocketSendBufSize=153600
+transport.serverSocketResvBufSize=153600
+transport.writeBufferHighWaterMark=67108864
+transport.writeBufferLowWaterMark=1048576
+
+transport.soBackLogSize=1024
+transport.serverChannelMaxIdleTimeSeconds=30
+
+transport.minServerPoolSize=50
+transport.maxServerPoolSize=500
+transport.maxTaskQueueSize=20000
+transport.keepAliveTime=500
+
 
 #Transaction routing rules configuration, only for the client
 service.vgroupMapping.default_tx_group=default
@@ -95,9 +133,26 @@ store.db.maxConn=30
 store.db.globalTable=global_table
 store.db.branchTable=branch_table
 store.db.distributedLockTable=distributed_lock
+store.db.vgroupTable=vgroup-table
 store.db.queryLimit=100
 store.db.lockTable=lock_table
 store.db.maxWait=5000
+
+store.db.druid.timeBetweenEvictionRunsMillis=120000
+store.db.druid.minEvictableIdleTimeMillis=300000
+store.db.druid.testWhileIdle=true
+store.db.druid.testOnBorrow=false
+store.db.druid.keepAlive=false
+
+store.db.hikari.idleTimeout=600000
+store.db.hikari.keepaliveTime=120000
+store.db.hikari.maxLifetime=1800000
+store.db.hikari.validationTimeout=5000
+
+store.db.dbcp.timeBetweenEvictionRunsMillis=120000
+store.db.dbcp.minEvictableIdleTimeMillis=300000
+store.db.dbcp.testWhileIdle=true
+store.db.dbcp.testOnBorrow=false
 
 #These configurations are required if the `store mode` is `redis`. If `store.mode,store.lock.mode,store.session.mode` are not equal to `redis`, you can remove the configuration block.
 store.redis.mode=single
@@ -118,15 +173,17 @@ store.redis.queryLimit=100
 server.recovery.committingRetryPeriod=1000
 server.recovery.asynCommittingRetryPeriod=1000
 server.recovery.rollbackingRetryPeriod=1000
+server.recovery.endstatusRetryPeriod=1000
 server.recovery.timeoutRetryPeriod=1000
 server.maxCommitRetryTimeout=-1
 server.maxRollbackRetryTimeout=-1
-server.rollbackRetryTimeoutUnlockEnable=false
+server.rollbackFailedUnlockEnable=false
 server.distributedLockExpireTime=10000
 server.session.branchAsyncQueueSize=5000
 server.session.enableBranchAsyncRemove=false
 server.enableParallelRequestHandle=true
-server.enableParallelHandleBranch=false
+server.enableParallelRequestHandle=true
+server.retryDeadThreshold=70000
 server.applicationDataLimit=64000
 server.applicationDataLimitCheck=false
 
@@ -143,10 +200,13 @@ server.raft.serialization=jackson
 server.raft.compressor=none
 server.raft.sync=true
 
-
+server.ratelimit.enable=false
+server.ratelimit.bucketTokenNumPerSecond = 999999
+server.ratelimit.bucketTokenMaxNum = 999999
+server.ratelimit.bucketTokenInitialNum = 999999
 
 #Metrics configuration, only for the server
-metrics.enabled=false
+metrics.enabled=true
 metrics.registryType=compact
 metrics.exporterList=prometheus
 metrics.exporterPrometheusPort=9898

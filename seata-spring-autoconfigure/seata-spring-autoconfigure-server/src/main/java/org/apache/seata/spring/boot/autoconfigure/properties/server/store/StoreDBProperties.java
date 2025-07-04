@@ -24,7 +24,6 @@ import static org.apache.seata.common.DefaultValues.DEFAULT_DB_MIN_CONN;
 import static org.apache.seata.common.DefaultValues.DEFAULT_QUERY_LIMIT;
 import static org.apache.seata.spring.boot.autoconfigure.StarterConstants.STORE_DB_PREFIX;
 
-
 @Component
 @ConfigurationProperties(prefix = STORE_DB_PREFIX)
 public class StoreDBProperties {
@@ -40,6 +39,7 @@ public class StoreDBProperties {
     private String branchTable = "branch_table";
     private String lockTable = "lock_table";
     private String distributedLockTable = "distributed_lock";
+    private String vgroupTable = "vgroup_table";
     private Integer queryLimit = DEFAULT_QUERY_LIMIT;
     private Long maxWait = 5000L;
 
@@ -165,6 +165,15 @@ public class StoreDBProperties {
 
     public StoreDBProperties setMaxWait(Long maxWait) {
         this.maxWait = maxWait;
+        return this;
+    }
+
+    public String getVgroupTable() {
+        return vgroupTable;
+    }
+
+    public StoreDBProperties setVgroupTable(String vgroupTable) {
+        this.vgroupTable = vgroupTable;
         return this;
     }
 }

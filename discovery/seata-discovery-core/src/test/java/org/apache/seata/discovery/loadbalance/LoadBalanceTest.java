@@ -21,11 +21,14 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
@@ -85,7 +88,7 @@ public class LoadBalanceTest {
         Assertions.assertNotNull(inetSocketAddress);
         // test not found tc channel
         inetSocketAddress = loadBalance.select(addresses, "127.0.0.1:8199:123456");
-        Assertions.assertNotEquals(inetSocketAddress.getPort(),8199);
+        Assertions.assertNotEquals(inetSocketAddress.getPort(), 8199);
     }
 
     /**
@@ -106,6 +109,31 @@ public class LoadBalanceTest {
             }
         }
         Assertions.assertEquals(1, selected, "selected must be equal to 1");
+    }
+
+    /**
+     * Test cached consistent hash load balance select.
+     *
+     * @param addresses the addresses
+     */
+    @ParameterizedTest
+    @MethodSource("addressProvider")
+    public void testCachedConsistentHashLoadBalance_select(List<InetSocketAddress> addresses) throws Exception {
+        ConsistentHashLoadBalance loadBalance = new ConsistentHashLoadBalance();
+
+        List<InetSocketAddress> addresses1 = new ArrayList<>(addresses);
+        loadBalance.select(addresses1, XID);
+        Object o1 = getConsistentHashSelectorByReflect(loadBalance);
+        List<InetSocketAddress> addresses2 = new ArrayList<>(addresses);
+        loadBalance.select(addresses2, XID);
+        Object o2 = getConsistentHashSelectorByReflect(loadBalance);
+        Assertions.assertEquals(o1, o2);
+
+        List<InetSocketAddress> addresses3 = new ArrayList<>(addresses);
+        addresses3.remove(ThreadLocalRandom.current().nextInt(addresses.size()));
+        loadBalance.select(addresses3, XID);
+        Object o3 = getConsistentHashSelectorByReflect(loadBalance);
+        Assertions.assertNotEquals(o1, o3);
     }
 
     /**
@@ -148,8 +176,8 @@ public class LoadBalanceTest {
      * @param loadBalance the load balance
      * @return the selected counter
      */
-    public Map<InetSocketAddress, AtomicLong> getSelectedCounter(int runs, List<InetSocketAddress> addresses,
-                                                                 LoadBalance loadBalance) {
+    public Map<InetSocketAddress, AtomicLong> getSelectedCounter(
+            int runs, List<InetSocketAddress> addresses, LoadBalance loadBalance) {
         Assertions.assertNotNull(loadBalance);
         Map<InetSocketAddress, AtomicLong> counter = new ConcurrentHashMap<>();
         for (InetSocketAddress address : addresses) {
@@ -161,9 +189,25 @@ public class LoadBalanceTest {
                 counter.get(selectAddress).incrementAndGet();
             }
         } catch (Exception e) {
-            //do nothing
+            // do nothing
         }
         return counter;
+    }
+
+    /**
+     * Gets ConsistentHashSelector Instance By Reflect
+     *
+     * @param loadBalance the loadBalance
+     * @return the ConsistentHashSelector
+     */
+    public Object getConsistentHashSelectorByReflect(ConsistentHashLoadBalance loadBalance) throws Exception {
+        Field selectorWrapperField = ConsistentHashLoadBalance.class.getDeclaredField("selectorWrapper");
+        selectorWrapperField.setAccessible(true);
+        Object selectWrapper = selectorWrapperField.get(loadBalance);
+        Assertions.assertNotNull(selectWrapper);
+        Field selectorField = selectWrapper.getClass().getDeclaredField("selector");
+        selectorField.setAccessible(true);
+        return selectorField.get(selectWrapper);
     }
 
     /**
@@ -172,13 +216,12 @@ public class LoadBalanceTest {
      * @return Stream<List < InetSocketAddress>>
      */
     static Stream<List<InetSocketAddress>> addressProvider() {
-        return Stream.of(
-                Arrays.asList(new InetSocketAddress("127.0.0.1", 8091),
-                        new InetSocketAddress("127.0.0.1", 8092),
-                        new InetSocketAddress("127.0.0.1", 8093),
-                        new InetSocketAddress("127.0.0.1", 8094),
-                        new InetSocketAddress("127.0.0.1", 8095),
-                        new InetSocketAddress("2000:0000:0000:0000:0001:2345:6789:abcd", 8092))
-        );
+        return Stream.of(Arrays.asList(
+                new InetSocketAddress("127.0.0.1", 8091),
+                new InetSocketAddress("127.0.0.1", 8092),
+                new InetSocketAddress("127.0.0.1", 8093),
+                new InetSocketAddress("127.0.0.1", 8094),
+                new InetSocketAddress("127.0.0.1", 8095),
+                new InetSocketAddress("2000:0000:0000:0000:0001:2345:6789:abcd", 8092)));
     }
 }

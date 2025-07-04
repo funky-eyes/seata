@@ -27,7 +27,7 @@ public enum BranchType {
      */
     // AT Branch
     AT,
-    
+
     /**
      * The TCC.
      */
@@ -41,7 +41,12 @@ public enum BranchType {
     /**
      * The XA.
      */
-    XA;
+    XA,
+
+    /**
+     * The SAGA_ANNOTATION.
+     */
+    SAGA_ANNOTATION;
 
     /**
      * Get branch type.
@@ -50,7 +55,7 @@ public enum BranchType {
      * @return the branch type
      */
     public static BranchType get(byte ordinal) {
-        return get((int)ordinal);
+        return get((int) ordinal);
     }
 
     /**

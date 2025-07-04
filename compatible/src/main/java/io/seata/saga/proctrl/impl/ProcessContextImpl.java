@@ -26,6 +26,7 @@ import java.util.Map;
  * The default process context implementation
  *
  */
+@Deprecated
 public class ProcessContextImpl implements HierarchicalProcessContext, ProcessContext {
 
     private final org.apache.seata.saga.proctrl.HierarchicalProcessContext actual;

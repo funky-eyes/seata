@@ -45,7 +45,7 @@ class ResultCodeTest {
 
     @Test
     void values() {
-        Assertions.assertArrayEquals(new ResultCode[]{ResultCode.Failed, ResultCode.Success}, ResultCode.values());
+        Assertions.assertArrayEquals(new ResultCode[] {ResultCode.Failed, ResultCode.Success}, ResultCode.values());
     }
 
     @Test

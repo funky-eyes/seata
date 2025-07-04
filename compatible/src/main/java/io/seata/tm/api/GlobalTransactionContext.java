@@ -16,7 +16,6 @@
  */
 package io.seata.tm.api;
 
-
 import io.seata.core.context.RootContext;
 import io.seata.core.exception.TransactionException;
 import io.seata.core.model.GlobalStatus;
@@ -24,10 +23,10 @@ import io.seata.core.model.GlobalStatus;
 /**
  * GlobalTransaction API
  */
+@Deprecated
 public class GlobalTransactionContext {
 
-    private GlobalTransactionContext() {
-    }
+    private GlobalTransactionContext() {}
 
     /**
      * Try to create a new GlobalTransaction.

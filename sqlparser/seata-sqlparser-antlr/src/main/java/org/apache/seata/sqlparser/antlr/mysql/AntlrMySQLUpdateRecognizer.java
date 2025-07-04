@@ -16,8 +16,9 @@
  */
 package org.apache.seata.sqlparser.antlr.mysql;
 
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.seata.common.util.CollectionUtils;
-import org.apache.seata.sqlparser.util.ColumnUtils;
 import org.apache.seata.sqlparser.ParametersHolder;
 import org.apache.seata.sqlparser.SQLType;
 import org.apache.seata.sqlparser.SQLUpdateRecognizer;
@@ -25,9 +26,8 @@ import org.apache.seata.sqlparser.antlr.mysql.listener.UpdateSpecificationSqlLis
 import org.apache.seata.sqlparser.antlr.mysql.parser.MySqlLexer;
 import org.apache.seata.sqlparser.antlr.mysql.parser.MySqlParser;
 import org.apache.seata.sqlparser.antlr.mysql.stream.ANTLRNoCaseStringStream;
+import org.apache.seata.sqlparser.util.ColumnUtils;
 import org.apache.seata.sqlparser.util.JdbcConstants;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -73,7 +73,9 @@ public class AntlrMySQLUpdateRecognizer implements SQLUpdateRecognizer {
             return new ArrayList<>();
         }
 
-        return updateForValues.stream().map(updateValues -> updateValues.getUpdateValue()).collect(Collectors.toList());
+        return updateForValues.stream()
+                .map(updateValues -> updateValues.getUpdateValue())
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -150,5 +152,4 @@ public class AntlrMySQLUpdateRecognizer implements SQLUpdateRecognizer {
         }
         return Collections.emptyList();
     }
-
 }

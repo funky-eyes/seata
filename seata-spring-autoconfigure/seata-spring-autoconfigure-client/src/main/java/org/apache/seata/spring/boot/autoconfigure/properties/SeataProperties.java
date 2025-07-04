@@ -23,7 +23,6 @@ import org.springframework.stereotype.Component;
 
 import static org.apache.seata.spring.boot.autoconfigure.StarterConstants.SEATA_PREFIX;
 
-
 @Component
 @ConfigurationProperties(prefix = SEATA_PREFIX)
 public class SeataProperties {
@@ -51,6 +50,12 @@ public class SeataProperties {
      * Whether use JDK proxy instead of CGLIB proxy
      */
     private boolean useJdkProxy = false;
+    /**
+     * Whether to expose the proxy object through AopContext.
+     * Setting this to true allows AopContext.currentProxy() to be used to obtain the current proxy,
+     * which can be useful for invoking methods annotated with @GlobalTransactional within the same class.
+     */
+    private boolean exposeProxy = false;
     /**
      * The scan packages. If empty, will scan all beans.
      */
@@ -134,6 +139,14 @@ public class SeataProperties {
     public SeataProperties setUseJdkProxy(boolean useJdkProxy) {
         this.useJdkProxy = useJdkProxy;
         return this;
+    }
+
+    public boolean isExposeProxy() {
+        return exposeProxy;
+    }
+
+    public void setExposeProxy(boolean exposeProxy) {
+        this.exposeProxy = exposeProxy;
     }
 
     public String[] getExcludesForAutoProxying() {

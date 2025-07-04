@@ -32,10 +32,9 @@
     <description>server for Seata built with Maven</description>
 
     <properties>
-        <spring-boot-for-server.version>2.7.17</spring-boot-for-server.version>
-        <spring-framework-for-server.version>5.3.30</spring-framework-for-server.version>
+        <spring-boot-for-server.version>2.7.18</spring-boot-for-server.version>
+        <spring-framework-for-server.version>5.3.39</spring-framework-for-server.version>
         <snakeyaml-for-server.version>2.0</snakeyaml-for-server.version>
-        <tomcat-embed.version>9.0.83</tomcat-embed.version>
     </properties>
 
     <dependencyManagement>
@@ -65,6 +64,22 @@
                 <version>${spring-boot-for-server.version}</version>
                 <exclusions>
                     <exclusion>
+                        <groupId>org.apache.kafka</groupId>
+                        <artifactId>kafka-clients</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.tomcat.embed</groupId>
+                        <artifactId>tomcat-embed-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.tomcat.embed</groupId>
+                        <artifactId>tomcat-embed-websocket</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.tomcat.embed</groupId>
+                        <artifactId>tomcat-embed-el</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-framework-bom</artifactId>
                     </exclusion>
@@ -77,33 +92,18 @@
                 <artifactId>snakeyaml</artifactId>
                 <version>${snakeyaml-for-server.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.apache.tomcat.embed</groupId>
-                <artifactId>tomcat-embed-core</artifactId>
-                <version>${tomcat-embed.version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
-        <!-- springboot web -->
+        <!-- springboot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>log4j-to-slf4j</artifactId>
-                    <groupId>org.apache.logging.log4j</groupId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.tomcat.embed</groupId>
-                    <artifactId>tomcat-embed-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.yaml</groupId>
-                    <artifactId>snakeyaml</artifactId>
-                </exclusion>
-            </exclusions>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
         </dependency>
         <dependency>
             <groupId>org.yaml</groupId>
@@ -126,7 +126,10 @@
             <artifactId>seata-spring-autoconfigure-server</artifactId>
             <version>${project.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+        </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>seata-core</artifactId>
@@ -164,6 +167,7 @@
             <artifactId>seata-metrics-all</artifactId>
             <version>${project.version}</version>
         </dependency>
+<!--
 
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -171,6 +175,7 @@
             <version>${project.version}</version>
         </dependency>
 
+-->
         <!-- for database -->
         <dependency>
             <groupId>com.alibaba</groupId>
@@ -187,17 +192,19 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
+            <scope>test</scope>
         </dependency>
        <!--  if you run seata-server in IDE and use mysql8 as session store, please rewrite version to ${mysql8.jdbc.version}-->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
+            <scope>test</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.mariadb.jdbc</groupId>-->
-<!--            <artifactId>mariadb-java-client</artifactId>-->
-<!--            <scope>provided</scope>-->
-<!--        </dependency>-->
+<!--        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <scope>provided</scope>
+        </dependency>-->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
@@ -232,12 +239,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.github.microwww</groupId>
-            <artifactId>redis-server</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
         </dependency>
@@ -259,6 +260,12 @@
         <dependency>
             <groupId>com.github.danielwegener</groupId>
             <artifactId>logback-kafka-appender</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.kafka</groupId>
+                    <artifactId>kafka-clients</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
@@ -283,9 +290,12 @@
             <groupId>org.codehaus.janino</groupId>
             <artifactId>janino</artifactId>
         </dependency>
+
+        <!--rate limit-->
         <dependency>
-            <groupId>org.apache.tomcat.embed</groupId>
-            <artifactId>tomcat-embed-core</artifactId>
+            <groupId>com.bucket4j</groupId>
+            <artifactId>bucket4j_jdk8-core</artifactId>
+            <version>${bucket4j.version}</version>
         </dependency>
     </dependencies>
 
@@ -320,31 +330,31 @@
                             <skip>${dependencies.copy.skip}</skip>
                         </configuration>
                     </execution>
-<!--                    <execution>-->
-<!--                        <id>copy-mysql</id>-->
-<!--                        <phase>package</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>copy</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <artifactItems>-->
-<!--                                <artifactItem>-->
-<!--                                    <groupId>mysql</groupId>-->
-<!--                                    <artifactId>mysql-connector-java</artifactId>-->
-<!--                                    <version>${mysql.jdbc.version}</version>-->
-<!--                                </artifactItem>-->
-<!--                                <artifactItem>-->
-<!--                                    <groupId>mysql</groupId>-->
-<!--                                    <artifactId>mysql-connector-java</artifactId>-->
-<!--                                    <version>${mysql8.jdbc.version}</version>-->
-<!--                                </artifactItem>-->
-<!--                            </artifactItems>-->
-<!--                            <outputDirectory>-->
-<!--                                ${project.build.directory}/lib/jdbc-->
-<!--                            </outputDirectory>-->
-<!--                            <skip>${dependencies.copy.skip}</skip>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
+                    <execution>
+                        <id>copy-mysql</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>mysql</groupId>
+                                    <artifactId>mysql-connector-java</artifactId>
+                                    <version>${mysql.jdbc.version}</version>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>mysql</groupId>
+                                    <artifactId>mysql-connector-java</artifactId>
+                                    <version>${mysql8.jdbc.version}</version>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>
+                                ${project.build.directory}/lib/jdbc
+                            </outputDirectory>
+                            <skip>${mysql.copy.skip}</skip>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>

@@ -16,13 +16,24 @@
  */
 package org.apache.seata.config;
 
+import org.apache.commons.lang.ObjectUtils;
+import org.apache.seata.common.thread.NamedThreadFactory;
+import org.apache.seata.common.util.CollectionUtils;
+import org.apache.seata.common.util.StringUtils;
+import org.apache.seata.config.ConfigFuture.ConfigOperation;
+import org.apache.seata.config.file.FileConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,15 +42,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.seata.common.thread.NamedThreadFactory;
-import org.apache.seata.common.util.CollectionUtils;
-import org.apache.seata.common.util.StringUtils;
-import org.apache.seata.config.ConfigFuture.ConfigOperation;
-import org.apache.seata.config.file.FileConfig;
-import org.apache.commons.lang.ObjectUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The type FileConfiguration.
@@ -63,8 +65,8 @@ public class FileConfiguration extends AbstractConfiguration {
 
     public static final String SYS_FILE_RESOURCE_PREFIX = "file:";
 
-    private final ConcurrentMap<String, Set<ConfigurationChangeListener>> configListenersMap = new ConcurrentHashMap<>(
-            8);
+    private final ConcurrentMap<String, Set<ConfigurationChangeListener>> configListenersMap =
+            new ConcurrentHashMap<>(8);
 
     private final Map<String, String> listenedConfigMap = new HashMap<>(8);
 
@@ -120,8 +122,12 @@ public class FileConfiguration extends AbstractConfiguration {
             }
         }
         this.name = name;
-        configOperateExecutor = new ThreadPoolExecutor(CORE_CONFIG_OPERATE_THREAD, MAX_CONFIG_OPERATE_THREAD,
-                Integer.MAX_VALUE, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(),
+        configOperateExecutor = new ThreadPoolExecutor(
+                CORE_CONFIG_OPERATE_THREAD,
+                MAX_CONFIG_OPERATE_THREAD,
+                Integer.MAX_VALUE,
+                TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>(),
                 new NamedThreadFactory("configOperate", MAX_CONFIG_OPERATE_THREAD));
     }
 
@@ -134,7 +140,6 @@ public class FileConfiguration extends AbstractConfiguration {
             boolean filePathCustom = name.startsWith(SYS_FILE_RESOURCE_PREFIX);
             String filePath = filePathCustom ? name.substring(SYS_FILE_RESOURCE_PREFIX.length()) : name;
             String decodedPath = URLDecoder.decode(filePath, StandardCharsets.UTF_8.name());
-
             File targetFile = getFileFromFileSystem(decodedPath);
             if (targetFile != null) {
                 return targetFile;
@@ -157,21 +162,18 @@ public class FileConfiguration extends AbstractConfiguration {
 
         // run with jar file and not package third lib into jar file, this.getClass().getClassLoader() will be null
         URL resourceUrl = this.getClass().getClassLoader().getResource("");
-        String[] tryPaths = null;
+        // try to get log dir (spring.config.additional-location) after package and run sh or bat in bin dir
+        String configLocation = System.getProperty("spring.config.additional-location");
+        List<String> tryPathsList = new ArrayList<>();
+        tryPathsList.add(decodedPath);
         if (resourceUrl != null) {
-            tryPaths = new String[]{
-                // first: project dir
-                resourceUrl.getPath() + decodedPath,
-                // second: system path
-                decodedPath
-            };
-        } else {
-            tryPaths = new String[]{
-                decodedPath
-            };
+            tryPathsList.add(resourceUrl.getPath() + decodedPath);
+        }
+        if (configLocation != null) {
+            tryPathsList.add(configLocation + decodedPath);
         }
 
-
+        String[] tryPaths = tryPathsList.toArray(new String[0]);
         for (String tryPath : tryPaths) {
             File targetFile = new File(tryPath);
             if (targetFile.exists()) {
@@ -194,7 +196,9 @@ public class FileConfiguration extends AbstractConfiguration {
         URL resource = this.getClass().getClassLoader().getResource(name);
         if (resource == null) {
             for (String s : FileConfigFactory.getSuffixSet()) {
-                resource = this.getClass().getClassLoader().getResource(name + ConfigurationKeys.FILE_CONFIG_SPLIT_CHAR + s);
+                resource = this.getClass()
+                        .getClassLoader()
+                        .getResource(name + ConfigurationKeys.FILE_CONFIG_SPLIT_CHAR + s);
                 if (resource != null) {
                     String path = resource.getPath();
                     path = URLDecoder.decode(path, StandardCharsets.UTF_8.name());
@@ -248,7 +252,8 @@ public class FileConfiguration extends AbstractConfiguration {
         if (StringUtils.isBlank(dataId) || listener == null) {
             return;
         }
-        configListenersMap.computeIfAbsent(dataId, key -> ConcurrentHashMap.newKeySet())
+        configListenersMap
+                .computeIfAbsent(dataId, key -> ConcurrentHashMap.newKeySet())
                 .add(listener);
         listenedConfigMap.put(dataId, ConfigurationFactory.getInstance().getConfig(dataId));
 
@@ -320,20 +325,22 @@ public class FileConfiguration extends AbstractConfiguration {
                         String result = fileConfig.getString(configFuture.getDataId());
                         configFuture.setResult(result);
                     } else if (configFuture.getOperation() == ConfigOperation.PUT) {
-                        //todo
+                        // todo
                         configFuture.setResult(Boolean.TRUE);
                     } else if (configFuture.getOperation() == ConfigOperation.PUTIFABSENT) {
-                        //todo
+                        // todo
                         configFuture.setResult(Boolean.TRUE);
                     } else if (configFuture.getOperation() == ConfigOperation.REMOVE) {
-                        //todo
+                        // todo
                         configFuture.setResult(Boolean.TRUE);
                     }
                 } catch (Exception e) {
                     setFailResult(configFuture);
                     if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("Could not found property {}, try to use default value instead. exception:{}",
-                                configFuture.getDataId(), e.getMessage());
+                        LOGGER.debug(
+                                "Could not found property {}, try to use default value instead. exception:{}",
+                                configFuture.getDataId(),
+                                e.getMessage());
                     }
                 }
             }
@@ -347,7 +354,6 @@ public class FileConfiguration extends AbstractConfiguration {
                 configFuture.setResult(Boolean.FALSE);
             }
         }
-
     }
 
     public FileConfig getFileConfig() {
@@ -361,8 +367,12 @@ public class FileConfiguration extends AbstractConfiguration {
 
         private final Map<String, Set<ConfigurationChangeListener>> dataIdMap = new HashMap<>();
 
-        private final ExecutorService executor = new ThreadPoolExecutor(CORE_LISTENER_THREAD, MAX_LISTENER_THREAD, 0L,
-                TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(),
+        private final ExecutorService executor = new ThreadPoolExecutor(
+                CORE_LISTENER_THREAD,
+                MAX_LISTENER_THREAD,
+                0L,
+                TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>(),
                 new NamedThreadFactory("fileListener", MAX_LISTENER_THREAD));
 
         /**
@@ -381,25 +391,29 @@ public class FileConfiguration extends AbstractConfiguration {
 
         @Override
         public void onChangeEvent(ConfigurationChangeEvent event) {
-            Boolean enabled = Boolean.valueOf(System.getProperty("file.listener.enabled", "true"));
-            while (enabled) {
-                for (String dataId : dataIdMap.keySet()) {
-                    try {
-                        String currentConfig =
-                                ConfigurationFactory.getInstance().getLatestConfig(dataId, null, DEFAULT_CONFIG_TIMEOUT);
-                        if (StringUtils.isNotBlank(currentConfig)) {
-                            String oldConfig = listenedConfigMap.get(dataId);
-                            if (ObjectUtils.notEqual(currentConfig, oldConfig)) {
-                                listenedConfigMap.put(dataId, currentConfig);
-                                event.setDataId(dataId).setNewValue(currentConfig).setOldValue(oldConfig);
+            while (true) {
+                boolean enabled = Boolean.parseBoolean(System.getProperty("file.listener.enabled", "true"));
+                if (enabled) {
+                    for (String dataId : dataIdMap.keySet()) {
+                        try {
+                            String currentConfig = ConfigurationFactory.getInstance()
+                                    .getLatestConfig(dataId, null, DEFAULT_CONFIG_TIMEOUT);
+                            if (StringUtils.isNotBlank(currentConfig)) {
+                                String oldConfig = listenedConfigMap.get(dataId);
+                                if (ObjectUtils.notEqual(currentConfig, oldConfig)) {
+                                    listenedConfigMap.put(dataId, currentConfig);
+                                    event.setDataId(dataId)
+                                            .setNewValue(currentConfig)
+                                            .setOldValue(oldConfig);
 
-                                for (ConfigurationChangeListener listener : dataIdMap.get(dataId)) {
-                                    listener.onChangeEvent(event);
+                                    for (ConfigurationChangeListener listener : dataIdMap.get(dataId)) {
+                                        listener.onProcessEvent(event);
+                                    }
                                 }
                             }
+                        } catch (Exception exx) {
+                            LOGGER.error("fileListener execute error, dataId :{}", dataId, exx);
                         }
-                    } catch (Exception exx) {
-                        LOGGER.error("fileListener execute error, dataId :{}", dataId, exx);
                     }
                 }
                 try {
@@ -407,7 +421,6 @@ public class FileConfiguration extends AbstractConfiguration {
                 } catch (InterruptedException e) {
                     LOGGER.error("fileListener thread sleep error:{}", e.getMessage());
                 }
-                enabled = Boolean.valueOf(System.getProperty("file.listener.enabled", "true"));
             }
         }
 
@@ -416,5 +429,4 @@ public class FileConfiguration extends AbstractConfiguration {
             return executor;
         }
     }
-
 }

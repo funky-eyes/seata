@@ -20,6 +20,5 @@ package io.seata.rm;
  * The Rm client Initiator.
  *
  */
-public class RMClient extends org.apache.seata.rm.RMClient {
-
-}
+@Deprecated
+public class RMClient extends org.apache.seata.rm.RMClient {}

@@ -16,24 +16,27 @@
  */
 package org.apache.seata.server.lock.redis;
 
-import java.io.IOException;
-
 import org.apache.seata.common.loader.EnhancedServiceLoader;
 import org.apache.seata.core.lock.Locker;
+import org.apache.seata.server.DynamicPortTestConfig;
 import org.apache.seata.server.session.BranchSession;
-import org.apache.seata.server.session.redis.MockRedisServer;
 import org.apache.seata.server.storage.redis.lock.RedisLockManager;
 import org.apache.seata.server.storage.redis.lock.RedisLuaLocker;
-
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Import;
+
+import java.io.IOException;
 
 /**
  * RedisLocker use lua script
  *
  */
 @SpringBootTest
+@EnabledIfSystemProperty(named = "redisCaseEnabled", matches = "true")
+@Import(DynamicPortTestConfig.class)
 public class RedisLuaLockManagerTest extends RedisLockManagerTest {
 
     /**
@@ -46,16 +49,13 @@ public class RedisLuaLockManagerTest extends RedisLockManagerTest {
      */
     @BeforeAll
     public static void start(ApplicationContext context) throws IOException {
-        MockRedisServer.getInstance();
         EnhancedServiceLoader.unloadAll();
         lockManager = new RedisLuaLockManagerTest.RedisLockManagerForTest();
     }
 
-
     public static class RedisLockManagerForTest extends RedisLockManager {
 
-        public RedisLockManagerForTest() {
-        }
+        public RedisLockManagerForTest() {}
 
         @Override
         public Locker getLocker(BranchSession branchSession) {

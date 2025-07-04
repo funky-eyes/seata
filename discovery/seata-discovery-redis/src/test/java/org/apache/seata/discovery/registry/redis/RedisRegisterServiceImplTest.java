@@ -16,11 +16,16 @@
  */
 package org.apache.seata.discovery.registry.redis;
 
-import com.github.microwww.redis.RedisServer;
 import org.apache.seata.common.util.NetUtil;
 import org.apache.seata.config.Configuration;
 import org.apache.seata.config.ConfigurationFactory;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.mockito.MockedStatic;
 import org.mockito.internal.util.collections.Sets;
 
@@ -31,19 +36,21 @@ import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-
+@EnabledIfSystemProperty(named = "redisCaseEnabled", matches = "true")
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class RedisRegisterServiceImplTest {
 
     private static RedisRegistryServiceImpl redisRegistryService;
-
-    private static RedisServer server;
-
 
     @BeforeAll
     public static void init() throws IOException {
@@ -51,14 +58,13 @@ public class RedisRegisterServiceImplTest {
         System.setProperty("config.file.name", "file.conf");
         System.setProperty("txServiceGroup", "default_tx_group");
         System.setProperty("service.vgroupMapping.default_tx_group", "default");
-        System.setProperty("registry.redis.serverAddr", "127.0.0.1:6789");
+        System.setProperty("registry.redis.serverAddr", "127.0.0.1:6379");
         System.setProperty("registry.redis.cluster", "default");
-        RedisServer server = new RedisServer();
-        server.listener("127.0.0.1", 6789);
         redisRegistryService = RedisRegistryServiceImpl.getInstance();
     }
 
     @Test
+    @Order(1)
     public void testFlow() {
 
         redisRegistryService.register(new InetSocketAddress(NetUtil.getLocalIp(), 8091));
@@ -71,6 +77,7 @@ public class RedisRegisterServiceImplTest {
     }
 
     @Test
+    @Order(2)
     public void testRemoveServerAddressByPushEmptyProtection()
             throws NoSuchFieldException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 
@@ -83,16 +90,17 @@ public class RedisRegisterServiceImplTest {
         Field field = RedisRegistryServiceImpl.class.getDeclaredField("CLUSTER_ADDRESS_MAP");
         field.setAccessible(true);
 
-        ConcurrentMap<String, Set<InetSocketAddress>> CLUSTER_ADDRESS_MAP = (ConcurrentMap<String, Set<InetSocketAddress>>)field.get(null);
+        ConcurrentMap<String, Set<InetSocketAddress>> CLUSTER_ADDRESS_MAP =
+                (ConcurrentMap<String, Set<InetSocketAddress>>) field.get(null);
         CLUSTER_ADDRESS_MAP.put("cluster", Sets.newSet(NetUtil.toInetSocketAddress("127.0.0.1:8091")));
 
-        Method method = RedisRegistryServiceImpl.class.getDeclaredMethod("removeServerAddressByPushEmptyProtection", String.class, String.class);
+        Method method = RedisRegistryServiceImpl.class.getDeclaredMethod(
+                "removeServerAddressByPushEmptyProtection", String.class, String.class);
         method.setAccessible(true);
         method.invoke(redisRegistryService, "cluster", "127.0.0.1:8091");
 
         // test the push empty protection situation
         Assertions.assertEquals(1, CLUSTER_ADDRESS_MAP.get("cluster").size());
-
 
         when(configuration.getConfig(anyString())).thenReturn("mycluster");
 
@@ -103,14 +111,30 @@ public class RedisRegisterServiceImplTest {
         Assertions.assertEquals(0, CLUSTER_ADDRESS_MAP.get("cluster").size());
     }
 
-    @AfterAll
-    public static void afterAll() {
-        if (server != null) {
-            try {
-                server.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+    @Test
+    @Order(3)
+    public void testClose() throws Exception {
+        Field executorServiceField1 = RedisRegistryServiceImpl.class.getDeclaredField("threadPoolExecutorForSubscribe");
+        executorServiceField1.setAccessible(true);
+        ScheduledExecutorService executorService1 = mock(ScheduledExecutorService.class);
+        when(executorService1.isShutdown()).thenReturn(false);
+        when(executorService1.awaitTermination(5, TimeUnit.SECONDS))
+                .thenThrow(new InterruptedException("Test interruption"));
+        executorServiceField1.set(redisRegistryService, executorService1);
+
+        Field executorServiceField2 = RedisRegistryServiceImpl.class.getDeclaredField("threadPoolExecutorForUpdateMap");
+        executorServiceField2.setAccessible(true);
+        ScheduledExecutorService executorService2 = mock(ScheduledExecutorService.class);
+        when(executorService2.isShutdown()).thenReturn(false);
+        when(executorService2.awaitTermination(5, TimeUnit.SECONDS))
+                .thenThrow(new InterruptedException("Test interruption"));
+        executorServiceField2.set(redisRegistryService, executorService2);
+
+        redisRegistryService.close();
+
+        verify(executorService1).shutdownNow();
+        verify(executorService2).shutdownNow();
+        assertNull(executorServiceField1.get(redisRegistryService));
+        assertNull(executorServiceField2.get(redisRegistryService));
     }
 }

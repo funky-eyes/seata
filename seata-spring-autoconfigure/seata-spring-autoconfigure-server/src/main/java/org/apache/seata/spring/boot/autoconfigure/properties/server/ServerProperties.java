@@ -21,17 +21,17 @@ import org.springframework.stereotype.Component;
 
 import static org.apache.seata.spring.boot.autoconfigure.StarterConstants.SERVER_PREFIX;
 
-
 @Component
 @ConfigurationProperties(prefix = SERVER_PREFIX)
 public class ServerProperties {
     private long maxCommitRetryTimeout = -1L;
     private long maxRollbackRetryTimeout = -1L;
+    private long maxEndStatusRetryTimeout = -1L;
     private Boolean rollbackRetryTimeoutUnlockEnable = false;
     private Boolean enableCheckAuth = true;
     private Boolean enableParallelRequestHandle = true;
     private Boolean enableParallelHandleBranch = false;
-    private Integer retryDeadThreshold = 130000;
+    private Integer retryDeadThreshold = 70000;
     private Integer servicePort;
     private Integer xaerNotaRetryTimeout = 60000;
 
@@ -53,6 +53,15 @@ public class ServerProperties {
 
     public ServerProperties setMaxRollbackRetryTimeout(long maxRollbackRetryTimeout) {
         this.maxRollbackRetryTimeout = maxRollbackRetryTimeout;
+        return this;
+    }
+
+    public long getMaxEndStatusRetryTimeout() {
+        return maxEndStatusRetryTimeout;
+    }
+
+    public ServerProperties setMaxEndStatusRetryTimeout(long maxEndStatusRetryTimeout) {
+        this.maxEndStatusRetryTimeout = maxEndStatusRetryTimeout;
         return this;
     }
 

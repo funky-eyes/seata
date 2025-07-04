@@ -16,10 +16,6 @@
  */
 package org.apache.seata.serializer.seata.protocol;
 
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.apache.seata.core.protocol.AbstractMessage;
@@ -28,12 +24,22 @@ import org.apache.seata.core.protocol.BatchResultMessage;
 import org.apache.seata.serializer.seata.MessageCodecFactory;
 import org.apache.seata.serializer.seata.MessageSeataCodec;
 
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * the type batch result message codec
  *
  * @since 1.5.0
  */
 public class BatchResultMessageCodec extends AbstractMessageCodec {
+
+    private byte version;
+
+    public BatchResultMessageCodec(byte version) {
+        this.version = version;
+    }
 
     @Override
     public Class<?> getMessageClassType() {
@@ -53,7 +59,7 @@ public class BatchResultMessageCodec extends AbstractMessageCodec {
         for (final AbstractMessage msg : msgs) {
             final ByteBuf subBuffer = Unpooled.buffer(1024);
             short typeCode = msg.getTypeCode();
-            MessageSeataCodec messageCodec = MessageCodecFactory.getMessageCodec(typeCode);
+            MessageSeataCodec messageCodec = MessageCodecFactory.getMessageCodec(typeCode, version);
             messageCodec.encode(msg, subBuffer);
             buffer.writeShort(msg.getTypeCode());
             buffer.writeBytes(subBuffer);
@@ -65,7 +71,7 @@ public class BatchResultMessageCodec extends AbstractMessageCodec {
 
         final int length = buffer.readableBytes();
         final byte[] content = new byte[length];
-        buffer.setInt(0, length - 4);  // minus the placeholder length itself
+        buffer.setInt(0, length - 4); // minus the placeholder length itself
         buffer.readBytes(content);
 
         if (msgs.size() > 20) {
@@ -74,7 +80,6 @@ public class BatchResultMessageCodec extends AbstractMessageCodec {
             }
         }
         out.writeBytes(content);
-
     }
 
     @Override
@@ -107,7 +112,7 @@ public class BatchResultMessageCodec extends AbstractMessageCodec {
         for (int idx = 0; idx < msgNum; idx++) {
             short typeCode = byteBuffer.getShort();
             AbstractMessage abstractResultMessage = MessageCodecFactory.getMessage(typeCode);
-            MessageSeataCodec messageCodec = MessageCodecFactory.getMessageCodec(typeCode);
+            MessageSeataCodec messageCodec = MessageCodecFactory.getMessageCodec(typeCode, version);
             messageCodec.decode(abstractResultMessage, byteBuffer);
             msgs.add((AbstractResultMessage) abstractResultMessage);
         }
@@ -118,6 +123,5 @@ public class BatchResultMessageCodec extends AbstractMessageCodec {
 
         batchResultMessage.setResultMessages(msgs);
         batchResultMessage.setMsgIds(msgIds);
-
     }
 }

@@ -17,9 +17,10 @@
 package org.apache.seata.core.protocol;
 
 import org.apache.seata.config.ConfigurationFactory;
-import org.apache.seata.core.serializer.SerializerType;
 import org.apache.seata.core.compressor.CompressorType;
 import org.apache.seata.core.constants.ConfigurationKeys;
+import org.apache.seata.core.serializer.SerializerServiceLoader;
+import org.apache.seata.core.serializer.SerializerType;
 
 /**
  * @since 0.7.0
@@ -32,9 +33,19 @@ public interface ProtocolConstants {
     byte[] MAGIC_CODE_BYTES = {(byte) 0xda, (byte) 0xda};
 
     /**
+     * Old protocol version
+     */
+    byte VERSION_0 = 0;
+
+    /**
      * Protocol version
      */
-    byte VERSION = 1;
+    byte VERSION_1 = 1;
+
+    /**
+     * Protocol version
+     */
+    byte VERSION = VERSION_1;
 
     /**
      * Max frame length
@@ -45,7 +56,7 @@ public interface ProtocolConstants {
      * HEAD_LENGTH of protocol v1
      */
     int V1_HEAD_LENGTH = 16;
-    
+
     /**
      * Message type: Request
      */
@@ -67,16 +78,15 @@ public interface ProtocolConstants {
      */
     byte MSGTYPE_HEARTBEAT_RESPONSE = 4;
 
-    //byte MSGTYPE_NEGOTIATOR_REQUEST = 5;
-    //byte MSGTYPE_NEGOTIATOR_RESPONSE = 6;
+    // byte MSGTYPE_NEGOTIATOR_REQUEST = 5;
+    // byte MSGTYPE_NEGOTIATOR_RESPONSE = 6;
 
     /**
      * Configured codec by user, default is SEATA
-     * 
+     *
      * @see SerializerType#SEATA
      */
-    byte CONFIGURED_CODEC = SerializerType.getByName(ConfigurationFactory.getInstance()
-            .getConfig(ConfigurationKeys.SERIALIZE_FOR_RPC, SerializerType.SEATA.name())).getCode();
+    byte CONFIGURED_CODEC = SerializerServiceLoader.getDefaultSerializerType().getCode();
 
     /**
      * Configured compressor by user, default is NONE
@@ -84,5 +94,6 @@ public interface ProtocolConstants {
      * @see CompressorType#NONE
      */
     byte CONFIGURED_COMPRESSOR = CompressorType.getByName(ConfigurationFactory.getInstance()
-            .getConfig(ConfigurationKeys.COMPRESSOR_FOR_RPC, CompressorType.NONE.name())).getCode();
+                    .getConfig(ConfigurationKeys.COMPRESSOR_FOR_RPC, CompressorType.NONE.name()))
+            .getCode();
 }

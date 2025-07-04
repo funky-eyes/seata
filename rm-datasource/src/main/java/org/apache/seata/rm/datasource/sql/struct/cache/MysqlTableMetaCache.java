@@ -16,24 +16,24 @@
  */
 package org.apache.seata.rm.datasource.sql.struct.cache;
 
+import org.apache.seata.common.exception.NotSupportYetException;
+import org.apache.seata.common.exception.ShouldNeverHappenException;
+import org.apache.seata.common.loader.LoadLevel;
+import org.apache.seata.sqlparser.struct.ColumnMeta;
+import org.apache.seata.sqlparser.struct.IndexMeta;
+import org.apache.seata.sqlparser.struct.IndexType;
+import org.apache.seata.sqlparser.struct.TableMeta;
+import org.apache.seata.sqlparser.util.ColumnUtils;
+import org.apache.seata.sqlparser.util.JdbcConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-
-import org.apache.seata.common.exception.NotSupportYetException;
-import org.apache.seata.common.exception.ShouldNeverHappenException;
-import org.apache.seata.common.loader.LoadLevel;
-import org.apache.seata.sqlparser.util.ColumnUtils;
-import org.apache.seata.sqlparser.struct.ColumnMeta;
-import org.apache.seata.sqlparser.struct.IndexMeta;
-import org.apache.seata.sqlparser.struct.IndexType;
-import org.apache.seata.sqlparser.struct.TableMeta;
-import org.apache.seata.sqlparser.util.JdbcConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The type Table meta cache.
@@ -48,11 +48,11 @@ public class MysqlTableMetaCache extends AbstractTableMetaCache {
     protected String getCacheKey(Connection connection, String tableName, String resourceId) {
         StringBuilder cacheKey = new StringBuilder(resourceId);
         cacheKey.append(".");
-        //remove single quote and separate it to catalogName and tableName
-        String[] tableNameWithCatalog = tableName.replace("`", "").split("\\.");
-        String defaultTableName = tableNameWithCatalog.length > 1 ? tableNameWithCatalog[1] : tableNameWithCatalog[0];
+        // original: remove single quote and separate it to catalogName and tableName
+        // now: Use the original table name to avoid cache errors of tables with the same name across databases
+        String defaultTableName = ColumnUtils.delEscape(tableName, JdbcConstants.MYSQL);
 
-        DatabaseMetaData databaseMetaData = null;
+        DatabaseMetaData databaseMetaData;
         try {
             databaseMetaData = connection.getMetaData();
         } catch (SQLException e) {
@@ -61,14 +61,17 @@ public class MysqlTableMetaCache extends AbstractTableMetaCache {
         }
 
         try {
-            //prevent duplicated cache key
+            // prevent duplicated cache key
             if (databaseMetaData.supportsMixedCaseIdentifiers()) {
                 cacheKey.append(defaultTableName);
             } else {
                 cacheKey.append(defaultTableName.toLowerCase());
             }
         } catch (SQLException e) {
-            logger.error("Could not get supportsMixedCaseIdentifiers in connection metadata, use default cache key {}", e.getMessage(), e);
+            logger.error(
+                    "Could not get supportsMixedCaseIdentifiers in connection metadata, use default cache key {}",
+                    e.getMessage(),
+                    e);
             return cacheKey.append(defaultTableName).toString();
         }
 
@@ -79,8 +82,8 @@ public class MysqlTableMetaCache extends AbstractTableMetaCache {
     protected TableMeta fetchSchema(Connection connection, String tableName) throws SQLException {
         String sql = "SELECT * FROM " + ColumnUtils.addEscape(tableName, JdbcConstants.MYSQL) + " LIMIT 1";
         try (Statement stmt = connection.createStatement();
-            ResultSet rs = stmt.executeQuery(sql)) {
-            return resultSetMetaToSchema(rs.getMetaData(), connection.getMetaData());
+                ResultSet rs = stmt.executeQuery(sql)) {
+            return resultSetMetaToSchema(rs.getMetaData(), connection.getMetaData(), tableName);
         } catch (SQLException sqlEx) {
             throw sqlEx;
         } catch (Exception e) {
@@ -88,9 +91,9 @@ public class MysqlTableMetaCache extends AbstractTableMetaCache {
         }
     }
 
-    protected TableMeta resultSetMetaToSchema(ResultSetMetaData rsmd, DatabaseMetaData dbmd)
-        throws SQLException {
-        //always "" for mysql
+    protected TableMeta resultSetMetaToSchema(ResultSetMetaData rsmd, DatabaseMetaData dbmd, String originalTableName)
+            throws SQLException {
+        // always "" for mysql
         String schemaName = rsmd.getSchemaName(1);
         String catalogName = rsmd.getCatalogName(1);
         /*
@@ -106,9 +109,13 @@ public class MysqlTableMetaCache extends AbstractTableMetaCache {
 
         TableMeta tm = new TableMeta();
         tm.setTableName(tableName);
-        //always true and nothing to do with escape characters for mysql.
+        // always true and nothing to do with escape characters for mysql.
         // May be not consistent with lower_case_table_names
         tm.setCaseSensitive(true);
+
+        // Save the original table name information for active cache refresh
+        // to avoid refresh failure caused by missing catalog information
+        tm.setOriginalTableName(originalTableName);
 
         /*
          * here has two different type to get the data
@@ -118,8 +125,8 @@ public class MysqlTableMetaCache extends AbstractTableMetaCache {
          */
 
         try (ResultSet rsColumns = dbmd.getColumns(catalogName, schemaName, tableName, "%");
-             ResultSet rsIndex = dbmd.getIndexInfo(catalogName, schemaName, tableName, false, true);
-             ResultSet onUpdateColumns = dbmd.getVersionColumns(catalogName, schemaName, tableName)) {
+                ResultSet rsIndex = dbmd.getIndexInfo(catalogName, schemaName, tableName, false, true);
+                ResultSet onUpdateColumns = dbmd.getVersionColumns(catalogName, schemaName, tableName)) {
             while (rsColumns.next()) {
                 ColumnMeta col = new ColumnMeta();
                 col.setTableCat(rsColumns.getString("TABLE_CAT"));
@@ -143,7 +150,8 @@ public class MysqlTableMetaCache extends AbstractTableMetaCache {
                 col.setCaseSensitive(rsmd.isCaseSensitive(col.getOrdinalPosition()));
 
                 if (tm.getAllColumns().containsKey(col.getColumnName())) {
-                    throw new NotSupportYetException("Not support the table has the same column name with different case yet");
+                    throw new NotSupportYetException(
+                            "Not support the table has the same column name with different case yet");
                 }
                 tm.getAllColumns().put(col.getColumnName(), col);
             }
@@ -179,7 +187,6 @@ public class MysqlTableMetaCache extends AbstractTableMetaCache {
                         index.setIndextype(IndexType.NORMAL);
                     }
                     tm.getAllIndexes().put(indexName, index);
-
                 }
             }
             if (tm.getAllIndexes().isEmpty()) {

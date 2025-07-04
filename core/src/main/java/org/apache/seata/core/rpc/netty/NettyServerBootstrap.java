@@ -16,11 +16,6 @@
  */
 package org.apache.seata.core.rpc.netty;
 
-import java.net.InetSocketAddress;
-import java.net.SocketException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -34,15 +29,24 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.apache.seata.common.ConfigurationKeys;
 import org.apache.seata.common.XID;
+import org.apache.seata.common.metadata.Instance;
+import org.apache.seata.common.metadata.Node;
 import org.apache.seata.common.thread.NamedThreadFactory;
 import org.apache.seata.config.ConfigurationFactory;
+import org.apache.seata.core.protocol.detector.Http2Detector;
+import org.apache.seata.core.protocol.detector.HttpDetector;
+import org.apache.seata.core.protocol.detector.ProtocolDetector;
+import org.apache.seata.core.protocol.detector.SeataDetector;
 import org.apache.seata.core.rpc.RemotingBootstrap;
-import org.apache.seata.core.rpc.netty.v1.ProtocolV1Decoder;
-import org.apache.seata.core.rpc.netty.v1.ProtocolV1Encoder;
 import org.apache.seata.discovery.registry.MultiRegistryFactory;
 import org.apache.seata.discovery.registry.RegistryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.InetSocketAddress;
+import java.net.SocketException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.seata.common.DefaultValues.SERVICE_DEFAULT_PORT;
 
@@ -65,17 +69,31 @@ public class NettyServerBootstrap implements RemotingBootstrap {
     public NettyServerBootstrap(NettyServerConfig nettyServerConfig) {
         this.nettyServerConfig = nettyServerConfig;
         if (NettyServerConfig.enableEpoll()) {
-            this.eventLoopGroupBoss = new EpollEventLoopGroup(nettyServerConfig.getBossThreadSize(),
-                new NamedThreadFactory(nettyServerConfig.getBossThreadPrefix(), nettyServerConfig.getBossThreadSize()));
-            this.eventLoopGroupWorker = new EpollEventLoopGroup(nettyServerConfig.getServerWorkerThreads(),
-                new NamedThreadFactory(nettyServerConfig.getWorkerThreadPrefix(),
-                    nettyServerConfig.getServerWorkerThreads()));
+            this.eventLoopGroupBoss = new EpollEventLoopGroup(
+                    nettyServerConfig.getBossThreadSize(),
+                    new NamedThreadFactory(
+                            nettyServerConfig.getBossThreadPrefix(), nettyServerConfig.getBossThreadSize(), false));
+            this.eventLoopGroupWorker = new EpollEventLoopGroup(
+                    nettyServerConfig.getServerWorkerThreads(),
+                    new NamedThreadFactory(
+                            nettyServerConfig.getWorkerThreadPrefix(),
+                            nettyServerConfig.getServerWorkerThreads(),
+                            false));
         } else {
-            this.eventLoopGroupBoss = new NioEventLoopGroup(nettyServerConfig.getBossThreadSize(),
-                new NamedThreadFactory(nettyServerConfig.getBossThreadPrefix(), nettyServerConfig.getBossThreadSize()));
-            this.eventLoopGroupWorker = new NioEventLoopGroup(nettyServerConfig.getServerWorkerThreads(),
-                new NamedThreadFactory(nettyServerConfig.getWorkerThreadPrefix(),
-                    nettyServerConfig.getServerWorkerThreads()));
+            this.eventLoopGroupBoss = new NioEventLoopGroup(
+                    nettyServerConfig.getBossThreadSize(),
+                    new NamedThreadFactory(
+                            nettyServerConfig.getBossThreadPrefix(), nettyServerConfig.getBossThreadSize(), false));
+            this.eventLoopGroupWorker = new NioEventLoopGroup(
+                    nettyServerConfig.getServerWorkerThreads(),
+                    new NamedThreadFactory(
+                            nettyServerConfig.getWorkerThreadPrefix(),
+                            nettyServerConfig.getServerWorkerThreads(),
+                            false));
+        }
+
+        if (nettyServerConfig.getServerListenPort() > 0) {
+            setListenPort(nettyServerConfig.getServerListenPort());
         }
     }
 
@@ -88,6 +106,10 @@ public class NettyServerBootstrap implements RemotingBootstrap {
         if (handlers != null) {
             channelHandlers = handlers;
         }
+    }
+
+    protected ChannelHandler[] getChannelHandlers() {
+        return channelHandlers;
     }
 
     /**
@@ -141,37 +163,44 @@ public class NettyServerBootstrap implements RemotingBootstrap {
     @Override
     public void start() {
         int port = getListenPort();
-        this.serverBootstrap.group(this.eventLoopGroupBoss, this.eventLoopGroupWorker)
-            .channel(NettyServerConfig.SERVER_CHANNEL_CLAZZ)
-            .option(ChannelOption.SO_BACKLOG, nettyServerConfig.getSoBackLogSize())
-            .option(ChannelOption.SO_REUSEADDR, true)
-            .childOption(ChannelOption.SO_KEEPALIVE, true)
-            .childOption(ChannelOption.TCP_NODELAY, true)
-            .childOption(ChannelOption.SO_SNDBUF, nettyServerConfig.getServerSocketSendBufSize())
-            .childOption(ChannelOption.SO_RCVBUF, nettyServerConfig.getServerSocketResvBufSize())
-            .childOption(ChannelOption.WRITE_BUFFER_WATER_MARK,
-                new WriteBufferWaterMark(nettyServerConfig.getWriteBufferLowWaterMark(),
-                    nettyServerConfig.getWriteBufferHighWaterMark()))
-            .localAddress(new InetSocketAddress(port))
-            .childHandler(new ChannelInitializer<SocketChannel>() {
-                @Override
-                public void initChannel(SocketChannel ch) {
-                    ch.pipeline().addLast(new IdleStateHandler(nettyServerConfig.getChannelMaxReadIdleSeconds(), 0, 0))
-                        .addLast(new ProtocolV1Decoder())
-                        .addLast(new ProtocolV1Encoder());
-                    if (channelHandlers != null) {
-                        addChannelPipelineLast(ch, channelHandlers);
+        this.serverBootstrap
+                .group(this.eventLoopGroupBoss, this.eventLoopGroupWorker)
+                .channel(NettyServerConfig.SERVER_CHANNEL_CLAZZ)
+                .option(ChannelOption.SO_BACKLOG, nettyServerConfig.getSoBackLogSize())
+                .option(ChannelOption.SO_REUSEADDR, true)
+                .childOption(ChannelOption.SO_KEEPALIVE, true)
+                .childOption(ChannelOption.TCP_NODELAY, true)
+                .childOption(ChannelOption.SO_SNDBUF, nettyServerConfig.getServerSocketSendBufSize())
+                .childOption(ChannelOption.SO_RCVBUF, nettyServerConfig.getServerSocketResvBufSize())
+                .childOption(
+                        ChannelOption.WRITE_BUFFER_WATER_MARK,
+                        new WriteBufferWaterMark(
+                                nettyServerConfig.getWriteBufferLowWaterMark(),
+                                nettyServerConfig.getWriteBufferHighWaterMark()))
+                .localAddress(new InetSocketAddress(port))
+                .childHandler(new ChannelInitializer<SocketChannel>() {
+                    @Override
+                    public void initChannel(SocketChannel ch) {
+                        ch.pipeline()
+                                .addLast(new IdleStateHandler(nettyServerConfig.getChannelMaxReadIdleSeconds(), 0, 0))
+                                .addLast(new ProtocolDetectHandler(new ProtocolDetector[] {
+                                    new Http2Detector(getChannelHandlers()),
+                                    new SeataDetector(getChannelHandlers()),
+                                    new HttpDetector()
+                                }));
                     }
-
-                }
-            });
+                });
 
         try {
             this.serverBootstrap.bind(port).sync();
             LOGGER.info("Server started, service listen port: {}", getListenPort());
-            InetSocketAddress address = new InetSocketAddress(XID.getIpAddress(), XID.getPort());
+            Instance instance = Instance.getInstance();
+            // Lines 177-180 are just for compatibility with test cases
+            if (instance.getTransaction() == null) {
+                Instance.getInstance().setTransaction(new Node.Endpoint(XID.getIpAddress(), XID.getPort(), "netty"));
+            }
             for (RegistryService<?> registryService : MultiRegistryFactory.getInstances()) {
-                registryService.register(address);
+                registryService.register(Instance.getInstance());
             }
             initialized.set(true);
         } catch (SocketException se) {
@@ -188,12 +217,11 @@ public class NettyServerBootstrap implements RemotingBootstrap {
                 LOGGER.info("Shutting server down, the listen port: {}", XID.getPort());
             }
             if (initialized.get()) {
-                InetSocketAddress address = new InetSocketAddress(XID.getIpAddress(), XID.getPort());
                 for (RegistryService registryService : MultiRegistryFactory.getInstances()) {
-                    registryService.unregister(address);
+                    registryService.unregister(Instance.getInstance());
                     registryService.close();
                 }
-                //wait a few seconds for server transport
+                // wait a few seconds for server transport
                 TimeUnit.SECONDS.sleep(nettyServerConfig.getServerShutdownWaitTime());
             }
 

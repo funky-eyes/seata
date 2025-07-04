@@ -25,7 +25,8 @@ public class CustomConfigurationForTest extends AbstractConfiguration {
     private Properties properties;
 
     public CustomConfigurationForTest(String name) {
-        try (InputStream input = CustomConfigurationForTest.class.getClassLoader().getResourceAsStream(name)) {
+        try (InputStream input =
+                CustomConfigurationForTest.class.getClassLoader().getResourceAsStream(name)) {
             properties = new Properties();
             properties.load(input);
         } catch (IOException e) {
@@ -59,9 +60,7 @@ public class CustomConfigurationForTest extends AbstractConfiguration {
     }
 
     @Override
-    public void addConfigListener(String dataId, ConfigurationChangeListener listener) {
-        throw new UnsupportedOperationException();
-    }
+    public void addConfigListener(String dataId, ConfigurationChangeListener listener) {}
 
     @Override
     public void removeConfigListener(String dataId, ConfigurationChangeListener listener) {

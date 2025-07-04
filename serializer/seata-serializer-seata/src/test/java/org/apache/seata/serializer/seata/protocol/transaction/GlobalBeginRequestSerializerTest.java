@@ -16,8 +16,9 @@
  */
 package org.apache.seata.serializer.seata.protocol.transaction;
 
-import org.apache.seata.serializer.seata.SeataSerializer;
+import org.apache.seata.core.protocol.ProtocolConstants;
 import org.apache.seata.core.protocol.transaction.GlobalBeginRequest;
+import org.apache.seata.serializer.seata.SeataSerializer;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,13 +32,13 @@ public class GlobalBeginRequestSerializerTest {
     /**
      * The Seata codec.
      */
-    SeataSerializer seataSerializer = new SeataSerializer();
+    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
 
     /**
      * Test codec.
      */
     @Test
-    public void test_codec(){
+    public void test_codec() {
         GlobalBeginRequest globalBeginRequest = new GlobalBeginRequest();
         globalBeginRequest.setTimeout(10);
         globalBeginRequest.setTransactionName("a24");
@@ -48,5 +49,4 @@ public class GlobalBeginRequestSerializerTest {
         assertThat(globalBeginRequest2.getTransactionName()).isEqualTo(globalBeginRequest.getTransactionName());
         assertThat(globalBeginRequest2.getTimeout()).isEqualTo(globalBeginRequest.getTimeout());
     }
-
 }

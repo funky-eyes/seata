@@ -16,20 +16,13 @@
  */
 package org.apache.seata.integration.tx.api.interceptor.handler;
 
-import java.lang.reflect.Method;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.google.common.eventbus.Subscribe;
 import org.apache.seata.common.exception.ShouldNeverHappenException;
 import org.apache.seata.common.thread.NamedThreadFactory;
 import org.apache.seata.common.util.StringUtils;
-import org.apache.seata.config.ConfigurationCache;
+import org.apache.seata.config.CachedConfigurationChangeListener;
+import org.apache.seata.config.Configuration;
 import org.apache.seata.config.ConfigurationChangeEvent;
-import org.apache.seata.config.ConfigurationChangeListener;
 import org.apache.seata.config.ConfigurationFactory;
 import org.apache.seata.core.constants.ConfigurationKeys;
 import org.apache.seata.core.event.EventBus;
@@ -59,6 +52,13 @@ import org.apache.seata.tm.api.transaction.TransactionInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Method;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static org.apache.seata.common.DefaultValues.DEFAULT_DISABLE_GLOBAL_TRANSACTION;
 import static org.apache.seata.common.DefaultValues.DEFAULT_GLOBAL_TRANSACTION_TIMEOUT;
 import static org.apache.seata.common.DefaultValues.DEFAULT_TM_DEGRADE_CHECK;
@@ -70,7 +70,8 @@ import static org.apache.seata.tm.api.GlobalTransactionRole.Participant;
  * The type Global transactional interceptor handler.
  *
  */
-public class GlobalTransactionalInterceptorHandler extends AbstractProxyInvocationHandler implements ConfigurationChangeListener {
+public class GlobalTransactionalInterceptorHandler extends AbstractProxyInvocationHandler
+        implements CachedConfigurationChangeListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalTransactionalInterceptorHandler.class);
 
@@ -98,15 +99,19 @@ public class GlobalTransactionalInterceptorHandler extends AbstractProxyInvocati
         if (GlobalTransactionalInterceptorHandler.defaultGlobalTransactionTimeout <= 0) {
             int defaultGlobalTransactionTimeout;
             try {
-                defaultGlobalTransactionTimeout = ConfigurationFactory.getInstance().getInt(
-                        ConfigurationKeys.DEFAULT_GLOBAL_TRANSACTION_TIMEOUT, DEFAULT_GLOBAL_TRANSACTION_TIMEOUT);
+                defaultGlobalTransactionTimeout = ConfigurationFactory.getInstance()
+                        .getInt(
+                                ConfigurationKeys.DEFAULT_GLOBAL_TRANSACTION_TIMEOUT,
+                                DEFAULT_GLOBAL_TRANSACTION_TIMEOUT);
             } catch (Exception e) {
                 LOGGER.error("Illegal global transaction timeout value: " + e.getMessage());
                 defaultGlobalTransactionTimeout = DEFAULT_GLOBAL_TRANSACTION_TIMEOUT;
             }
             if (defaultGlobalTransactionTimeout <= 0) {
-                LOGGER.warn("Global transaction timeout value '{}' is illegal, and has been reset to the default value '{}'",
-                        defaultGlobalTransactionTimeout, DEFAULT_GLOBAL_TRANSACTION_TIMEOUT);
+                LOGGER.warn(
+                        "Global transaction timeout value '{}' is illegal, and has been reset to the default value '{}'",
+                        defaultGlobalTransactionTimeout,
+                        DEFAULT_GLOBAL_TRANSACTION_TIMEOUT);
                 defaultGlobalTransactionTimeout = DEFAULT_GLOBAL_TRANSACTION_TIMEOUT;
             }
             GlobalTransactionalInterceptorHandler.defaultGlobalTransactionTimeout = defaultGlobalTransactionTimeout;
@@ -116,24 +121,25 @@ public class GlobalTransactionalInterceptorHandler extends AbstractProxyInvocati
     public GlobalTransactionalInterceptorHandler(FailureHandler failureHandler, Set<String> methodsToProxy) {
         this.failureHandler = failureHandler == null ? FailureHandlerHolder.getFailureHandler() : failureHandler;
         this.methodsToProxy = methodsToProxy;
-        this.disable = ConfigurationFactory.getInstance().getBoolean(ConfigurationKeys.DISABLE_GLOBAL_TRANSACTION,
-                DEFAULT_DISABLE_GLOBAL_TRANSACTION);
-
-        boolean degradeCheck = ConfigurationFactory.getInstance().getBoolean(ConfigurationKeys.CLIENT_DEGRADE_CHECK,
-                DEFAULT_TM_DEGRADE_CHECK);
-        degradeCheckPeriod = ConfigurationFactory.getInstance()
-                .getInt(ConfigurationKeys.CLIENT_DEGRADE_CHECK_PERIOD, DEFAULT_TM_DEGRADE_CHECK_PERIOD);
-        degradeCheckAllowTimes = ConfigurationFactory.getInstance()
-                .getInt(ConfigurationKeys.CLIENT_DEGRADE_CHECK_ALLOW_TIMES, DEFAULT_TM_DEGRADE_CHECK_ALLOW_TIMES);
+        Configuration configuration = ConfigurationFactory.getInstance();
+        this.disable = configuration.getBoolean(
+                ConfigurationKeys.DISABLE_GLOBAL_TRANSACTION, DEFAULT_DISABLE_GLOBAL_TRANSACTION);
+        boolean degradeCheck =
+                configuration.getBoolean(ConfigurationKeys.CLIENT_DEGRADE_CHECK, DEFAULT_TM_DEGRADE_CHECK);
+        degradeCheckPeriod =
+                configuration.getInt(ConfigurationKeys.CLIENT_DEGRADE_CHECK_PERIOD, DEFAULT_TM_DEGRADE_CHECK_PERIOD);
+        degradeCheckAllowTimes = configuration.getInt(
+                ConfigurationKeys.CLIENT_DEGRADE_CHECK_ALLOW_TIMES, DEFAULT_TM_DEGRADE_CHECK_ALLOW_TIMES);
         EVENT_BUS.register(this);
         if (degradeCheck && degradeCheckPeriod > 0 && degradeCheckAllowTimes > 0) {
             startDegradeCheck();
         }
-        ConfigurationCache.addConfigListener(ConfigurationKeys.CLIENT_DEGRADE_CHECK, this);
+        configuration.addConfigListener(ConfigurationKeys.CLIENT_DEGRADE_CHECK, this);
         this.initDefaultGlobalTransactionTimeout();
     }
 
-    public GlobalTransactionalInterceptorHandler(FailureHandler failureHandler, Set<String> methodsToProxy, AspectTransactional aspectTransactional) {
+    public GlobalTransactionalInterceptorHandler(
+            FailureHandler failureHandler, Set<String> methodsToProxy, AspectTransactional aspectTransactional) {
         this(failureHandler, methodsToProxy);
         this.aspectTransactional = aspectTransactional;
     }
@@ -145,7 +151,8 @@ public class GlobalTransactionalInterceptorHandler extends AbstractProxyInvocati
         if (specificMethod != null && !specificMethod.getDeclaringClass().equals(Object.class)) {
             boolean localDisable = disable || (ATOMIC_DEGRADE_CHECK.get() && degradeNum >= degradeCheckAllowTimes);
             if (!localDisable) {
-                final AspectTransactional globalTransactionalAnnotation = getAspectTransactional(specificMethod, targetClass);
+                final AspectTransactional globalTransactionalAnnotation =
+                        getAspectTransactional(specificMethod, targetClass);
                 final GlobalLockConfig globalLockAnnotation = getGlobalLockConfig(specificMethod, targetClass);
                 if (globalTransactionalAnnotation != null || this.aspectTransactional != null) {
                     AspectTransactional transactional;
@@ -163,8 +170,8 @@ public class GlobalTransactionalInterceptorHandler extends AbstractProxyInvocati
         return invocation.proceed();
     }
 
-
-    private Object handleGlobalLock(final InvocationWrapper methodInvocation, final GlobalLockConfig globalLockConfig) throws Throwable {
+    private Object handleGlobalLock(final InvocationWrapper methodInvocation, final GlobalLockConfig globalLockConfig)
+            throws Throwable {
         return globalLockTemplate.execute(new GlobalLockExecutor() {
             @Override
             public Object execute() throws Throwable {
@@ -178,8 +185,8 @@ public class GlobalTransactionalInterceptorHandler extends AbstractProxyInvocati
         });
     }
 
-    Object handleGlobalTransaction(final InvocationWrapper methodInvocation,
-                                   final AspectTransactional aspectTransactional) throws Throwable {
+    Object handleGlobalTransaction(
+            final InvocationWrapper methodInvocation, final AspectTransactional aspectTransactional) throws Throwable {
         boolean succeed = true;
         try {
             return transactionalTemplate.execute(new TransactionalExecutor() {
@@ -265,7 +272,8 @@ public class GlobalTransactionalInterceptorHandler extends AbstractProxyInvocati
                         throw e.getOriginalException();
                     }
                 default:
-                    throw new ShouldNeverHappenException(String.format("Unknown TransactionalExecutor.Code: %s", code), e.getOriginalException());
+                    throw new ShouldNeverHappenException(
+                            String.format("Unknown TransactionalExecutor.Code: %s", code), e.getOriginalException());
             }
         } finally {
             if (ATOMIC_DEGRADE_CHECK.get()) {
@@ -288,14 +296,20 @@ public class GlobalTransactionalInterceptorHandler extends AbstractProxyInvocati
 
     public AspectTransactional getAspectTransactional(Method method, Class<?> targetClass) {
         final GlobalTransactional globalTransactionalAnnotation =
-            getAnnotation(method, targetClass, GlobalTransactional.class);
-        return globalTransactionalAnnotation != null ?
-            new AspectTransactional(globalTransactionalAnnotation.timeoutMills(), globalTransactionalAnnotation.name(),
-                globalTransactionalAnnotation.rollbackFor(), globalTransactionalAnnotation.rollbackForClassName(),
-                globalTransactionalAnnotation.noRollbackFor(), globalTransactionalAnnotation.noRollbackForClassName(),
-                globalTransactionalAnnotation.propagation(), globalTransactionalAnnotation.lockRetryInterval(),
-                globalTransactionalAnnotation.lockRetryTimes(), globalTransactionalAnnotation.lockStrategyMode()) :
-            null;
+                getAnnotation(method, targetClass, GlobalTransactional.class);
+        return globalTransactionalAnnotation != null
+                ? new AspectTransactional(
+                        globalTransactionalAnnotation.timeoutMills(),
+                        globalTransactionalAnnotation.name(),
+                        globalTransactionalAnnotation.rollbackFor(),
+                        globalTransactionalAnnotation.rollbackForClassName(),
+                        globalTransactionalAnnotation.noRollbackFor(),
+                        globalTransactionalAnnotation.noRollbackForClassName(),
+                        globalTransactionalAnnotation.propagation(),
+                        globalTransactionalAnnotation.lockRetryInterval(),
+                        globalTransactionalAnnotation.lockRetryTimes(),
+                        globalTransactionalAnnotation.lockStrategyMode())
+                : null;
     }
 
     private String formatMethod(Method method) {
@@ -315,8 +329,11 @@ public class GlobalTransactionalInterceptorHandler extends AbstractProxyInvocati
     @Override
     public void onChangeEvent(ConfigurationChangeEvent event) {
         if (ConfigurationKeys.DISABLE_GLOBAL_TRANSACTION.equals(event.getDataId())) {
-            LOGGER.info("{} config changed, old value:{}, new value:{}", ConfigurationKeys.DISABLE_GLOBAL_TRANSACTION,
-                    disable, event.getNewValue());
+            LOGGER.info(
+                    "{} config changed, old value:{}, new value:{}",
+                    ConfigurationKeys.DISABLE_GLOBAL_TRANSACTION,
+                    disable,
+                    event.getNewValue());
             disable = Boolean.parseBoolean(event.getNewValue().trim());
         } else if (ConfigurationKeys.CLIENT_DEGRADE_CHECK.equals(event.getDataId())) {
             boolean degradeCheck = Boolean.parseBoolean(event.getNewValue());
@@ -352,18 +369,23 @@ public class GlobalTransactionalInterceptorHandler extends AbstractProxyInvocati
             return;
         }
         executor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("degradeCheckWorker", 1, true));
-        executor.scheduleAtFixedRate(() -> {
-            if (ATOMIC_DEGRADE_CHECK.get()) {
-                try {
-                    String xid = TransactionManagerHolder.get().begin(null, null, "degradeCheck", 60000);
-                    TransactionManagerHolder.get().commit(xid);
-                    EVENT_BUS.post(new DegradeCheckEvent(true));
-                } catch (Exception e) {
-                    EVENT_BUS.post(new DegradeCheckEvent(false));
-                }
-            }
-        }, degradeCheckPeriod, degradeCheckPeriod, TimeUnit.MILLISECONDS);
+        executor.scheduleAtFixedRate(
+                () -> {
+                    if (ATOMIC_DEGRADE_CHECK.get()) {
+                        try {
+                            String xid = TransactionManagerHolder.get().begin(null, null, "degradeCheck", 60000);
+                            TransactionManagerHolder.get().commit(xid);
+                            EVENT_BUS.post(new DegradeCheckEvent(true));
+                        } catch (Exception e) {
+                            EVENT_BUS.post(new DegradeCheckEvent(false));
+                        }
+                    }
+                },
+                degradeCheckPeriod,
+                degradeCheckPeriod,
+                TimeUnit.MILLISECONDS);
     }
+
     @Subscribe
     public static void onDegradeCheck(DegradeCheckEvent event) {
         if (event.isRequestSuccess()) {
@@ -398,7 +420,7 @@ public class GlobalTransactionalInterceptorHandler extends AbstractProxyInvocati
             return false;
         }
         if (th instanceof TmTransactionException) {
-            TmTransactionException exx = (TmTransactionException)th;
+            TmTransactionException exx = (TmTransactionException) th;
             if (TransactionExceptionCode.TransactionTimeout == exx.getCode()) {
                 return true;
             }
@@ -415,7 +437,6 @@ public class GlobalTransactionalInterceptorHandler extends AbstractProxyInvocati
     public SeataInterceptorPosition getPosition() {
         return SeataInterceptorPosition.BeforeTransaction;
     }
-
 
     @Override
     public String type() {

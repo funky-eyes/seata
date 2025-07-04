@@ -24,44 +24,50 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 public class AlibabaDubboTransactionPropagationFilterTest {
 
     private static final String DEFAULT_XID = "1234567890";
 
     @Test
     public void testInvoke_And_RootContext() {
-        AlibabaDubboTransactionPropagationFilter filter = new AlibabaDubboTransactionPropagationFilter();
+        AlibabaDubboTransactionProviderFilter providerFilter = new AlibabaDubboTransactionProviderFilter();
 
         // SAGA
         RpcContext.getContext().setAttachment(RootContext.KEY_XID, DEFAULT_XID);
         RpcContext.getContext().setAttachment(RootContext.KEY_BRANCH_TYPE, BranchType.SAGA.name());
-        filter.invoke(new MockInvoker(() -> {
-            assertThat(RootContext.getXID()).isEqualTo(DEFAULT_XID);
-            assertThat(RootContext.getBranchType()).isEqualTo(BranchType.AT);
-        }), null);
+        providerFilter.invoke(
+                new MockInvoker(() -> {
+                    assertThat(RootContext.getXID()).isEqualTo(DEFAULT_XID);
+                    assertThat(RootContext.getBranchType()).isEqualTo(BranchType.AT);
+                }),
+                null);
         assertThat(RootContext.unbind()).isNull();
         assertThat(RootContext.unbindBranchType()).isNull();
 
         // TCC
         RpcContext.getContext().setAttachment(RootContext.KEY_XID, DEFAULT_XID);
         RpcContext.getContext().setAttachment(RootContext.KEY_BRANCH_TYPE, BranchType.TCC.name());
-        filter.invoke(new MockInvoker(() -> {
-            assertThat(RootContext.getXID()).isEqualTo(DEFAULT_XID);
-            assertThat(RootContext.getBranchType()).isEqualTo(BranchType.TCC);
-        }), null);
+        providerFilter.invoke(
+                new MockInvoker(() -> {
+                    assertThat(RootContext.getXID()).isEqualTo(DEFAULT_XID);
+                    assertThat(RootContext.getBranchType()).isEqualTo(BranchType.TCC);
+                }),
+                null);
         assertThat(RootContext.unbind()).isNull();
         assertThat(RootContext.unbindBranchType()).isNull();
 
         // TCC
+        AlibabaDubboTransactionConsumerFilter consumerFilter = new AlibabaDubboTransactionConsumerFilter();
         RootContext.bind(DEFAULT_XID);
         RootContext.bindBranchType(BranchType.SAGA);
         RpcContext.getContext().setAttachment(RootContext.KEY_XID, DEFAULT_XID);
         RpcContext.getContext().setAttachment(RootContext.KEY_BRANCH_TYPE, BranchType.TCC.name());
-        filter.invoke(new MockInvoker(() -> {
-            assertThat(RootContext.getXID()).isEqualTo(DEFAULT_XID);
-            assertThat(RootContext.getBranchType()).isEqualTo(BranchType.SAGA);
-        }), null);
+        consumerFilter.invoke(
+                new MockInvoker(() -> {
+                    assertThat(RootContext.getXID()).isEqualTo(DEFAULT_XID);
+                    assertThat(RootContext.getBranchType()).isEqualTo(BranchType.SAGA);
+                }),
+                null);
         assertThat(RootContext.unbind()).isEqualTo(DEFAULT_XID);
         assertThat(RootContext.unbindBranchType()).isEqualTo(BranchType.SAGA);
     }

@@ -25,6 +25,10 @@ import org.springframework.aop.framework.AopProxyUtils;
 
 import java.util.Set;
 
+/**
+ * The type Local tcc remoting parser.
+ */
+@Deprecated
 public class LocalTCCRemotingParser extends org.apache.seata.rm.tcc.remoting.parser.LocalTCCRemotingParser {
 
     @Override
@@ -71,7 +75,6 @@ public class LocalTCCRemotingParser extends org.apache.seata.rm.tcc.remoting.par
         Class<?> classType = bean.getClass();
         return isLocalTCC(classType);
     }
-
 
     private boolean isLocalTCC(Class<?> classType) {
         Set<Class<?>> interfaceClasses = ReflectionUtil.getInterfaces(classType);

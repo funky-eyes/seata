@@ -21,13 +21,21 @@ import org.apache.seata.core.constants.ConfigurationKeys;
 
 import static org.apache.seata.common.DefaultValues.DEFAULT_TRANSACTION_UNDO_LOG_SERIALIZATION;
 
-
 public interface UndoLogConstants {
 
     String SERIALIZER_KEY = "serializer";
 
     String DEFAULT_SERIALIZER = ConfigurationFactory.getInstance()
-        .getConfig(ConfigurationKeys.TRANSACTION_UNDO_LOG_SERIALIZATION, DEFAULT_TRANSACTION_UNDO_LOG_SERIALIZATION);
+            .getConfig(
+                    ConfigurationKeys.TRANSACTION_UNDO_LOG_SERIALIZATION, DEFAULT_TRANSACTION_UNDO_LOG_SERIALIZATION);
 
     String COMPRESSOR_TYPE_KEY = "compressorType";
+
+    String SUB_ID_KEY = "subId";
+
+    String BRANCH_ID_KEY = "branchId";
+
+    String SUB_SPLIT_KEY = ",";
+
+    String MAX_ALLOWED_PACKET = "map";
 }

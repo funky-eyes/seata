@@ -16,12 +16,13 @@
  */
 package org.apache.seata.saga.statelang.domain.impl;
 
-import java.util.Date;
-
 import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.saga.statelang.domain.ExecutionStatus;
 import org.apache.seata.saga.statelang.domain.StateInstance;
 import org.apache.seata.saga.statelang.domain.StateMachineInstance;
+import org.apache.seata.saga.statelang.domain.StateType;
+
+import java.util.Date;
 
 /**
  * state execution instance
@@ -32,7 +33,7 @@ public class StateInstanceImpl implements StateInstance {
     private String id;
     private String machineInstanceId;
     private String name;
-    private String type;
+    private StateType type;
     private String serviceName;
     private String serviceMethod;
     private String serviceType;
@@ -85,12 +86,12 @@ public class StateInstanceImpl implements StateInstance {
     }
 
     @Override
-    public String getType() {
+    public StateType getType() {
         return type;
     }
 
     @Override
-    public void setType(String type) {
+    public void setType(StateType type) {
         this.type = type;
     }
 

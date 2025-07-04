@@ -16,7 +16,6 @@
  */
 package io.seata.common.util;
 
-
 import java.io.InputStream;
 import java.util.Iterator;
 
@@ -24,7 +23,11 @@ import java.util.Iterator;
  * The type String utils.
  *
  * Compatible for dubbo dubbo-filter-seata
+ * Notes:
+ * https://github.com/apache/dubbo-spi-extensions/blob/master/dubbo-filter-extensions/dubbo-filter-seata/src/main
+ * /java/org/apache/dubbo/seata/SeataTransactionPropagationProviderFilter.java
  */
+@Deprecated
 public class StringUtils {
     /**
      * Is empty boolean.
@@ -64,7 +67,7 @@ public class StringUtils {
      * @return boolean
      */
     public static boolean equals(String a, String b) {
-        return org.apache.seata.common.util.StringUtils.equals(a,b);
+        return org.apache.seata.common.util.StringUtils.equals(a, b);
     }
 
     /**
@@ -75,7 +78,7 @@ public class StringUtils {
      * @return the boolean
      */
     public static boolean equalsIgnoreCase(String a, String b) {
-        return org.apache.seata.common.util.StringUtils.equalsIgnoreCase(a,b);
+        return org.apache.seata.common.util.StringUtils.equalsIgnoreCase(a, b);
     }
 
     /**
@@ -168,7 +171,7 @@ public class StringUtils {
      * @return boolean
      */
     public static boolean checkDataSize(String data, String dataName, int errorSize, boolean throwIfErr) {
-        return org.apache.seata.common.util.StringUtils.checkDataSize(data,dataName,errorSize,throwIfErr);
+        return org.apache.seata.common.util.StringUtils.checkDataSize(data, dataName, errorSize, throwIfErr);
     }
 
     public static boolean hasLowerCase(String str) {
@@ -180,8 +183,6 @@ public class StringUtils {
     }
 
     public static String join(Iterator iterator, String separator) {
-        return org.apache.seata.common.util.StringUtils.join(iterator,separator);
+        return org.apache.seata.common.util.StringUtils.join(iterator, separator);
     }
-
 }
-

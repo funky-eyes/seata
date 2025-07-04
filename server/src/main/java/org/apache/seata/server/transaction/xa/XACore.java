@@ -21,6 +21,8 @@ import org.apache.seata.core.model.BranchStatus;
 import org.apache.seata.core.model.BranchType;
 import org.apache.seata.core.rpc.RemotingServer;
 import org.apache.seata.server.coordinator.AbstractCore;
+import org.apache.seata.server.session.BranchSession;
+import org.apache.seata.server.session.GlobalSession;
 
 /**
  * The type XA core.
@@ -38,11 +40,17 @@ public class XACore extends AbstractCore {
     }
 
     @Override
-    public void branchReport(BranchType branchType, String xid, long branchId, BranchStatus status,
-                             String applicationData) throws TransactionException {
+    public void branchReport(
+            BranchType branchType, String xid, long branchId, BranchStatus status, String applicationData)
+            throws TransactionException {
         super.branchReport(branchType, xid, branchId, status, applicationData);
-        if (BranchStatus.PhaseOne_Failed == status) {
+        if (BranchStatus.PhaseOne_Failed == status) {}
+    }
 
-        }
+    @Override
+    public BranchStatus branchDelete(GlobalSession globalSession, BranchSession branchSession)
+            throws TransactionException {
+        // use rollback to release the branch resource
+        return super.branchRollback(globalSession, branchSession);
     }
 }

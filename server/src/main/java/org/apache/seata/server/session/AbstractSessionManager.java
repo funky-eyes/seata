@@ -16,6 +16,8 @@
  */
 package org.apache.seata.server.session;
 
+import org.apache.seata.config.ConfigurationFactory;
+import org.apache.seata.core.constants.ConfigurationKeys;
 import org.apache.seata.core.exception.BranchTransactionException;
 import org.apache.seata.core.exception.GlobalTransactionException;
 import org.apache.seata.core.exception.TransactionException;
@@ -29,10 +31,14 @@ import org.apache.seata.server.store.TransactionStoreManager.LogOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.seata.common.DefaultValues.DEFAULT_ROLLBACK_FAILED_UNLOCK_ENABLE;
+
 /**
  * The type Abstract session manager.
  */
 public abstract class AbstractSessionManager implements SessionManager {
+    boolean rollbackFailedUnlockEnable = ConfigurationFactory.getInstance()
+            .getBoolean(ConfigurationKeys.ROLLBACK_FAILED_UNLOCK_ENABLE, DEFAULT_ROLLBACK_FAILED_UNLOCK_ENABLE);
 
     /**
      * The constant LOGGER.
@@ -52,8 +58,7 @@ public abstract class AbstractSessionManager implements SessionManager {
     /**
      * Instantiates a new Abstract session manager.
      */
-    public AbstractSessionManager() {
-    }
+    public AbstractSessionManager() {}
 
     /**
      * Instantiates a new Abstract session manager.
@@ -102,7 +107,7 @@ public abstract class AbstractSessionManager implements SessionManager {
 
     @Override
     public void updateBranchSessionStatus(BranchSession branchSession, BranchStatus status)
-        throws TransactionException {
+            throws TransactionException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("MANAGER[{}] SESSION[{}] {}", name, branchSession, LogOperation.BRANCH_UPDATE);
         }
@@ -111,7 +116,7 @@ public abstract class AbstractSessionManager implements SessionManager {
 
     @Override
     public void removeBranchSession(GlobalSession globalSession, BranchSession branchSession)
-        throws TransactionException {
+            throws TransactionException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("MANAGER[{}] SESSION[{}] {}", name, branchSession, LogOperation.BRANCH_REMOVE);
         }
@@ -130,7 +135,7 @@ public abstract class AbstractSessionManager implements SessionManager {
 
     @Override
     public void onBranchStatusChange(GlobalSession globalSession, BranchSession branchSession, BranchStatus status)
-        throws TransactionException {
+            throws TransactionException {
         branchSession.setStatus(status);
         updateBranchSessionStatus(branchSession, status);
     }
@@ -157,39 +162,43 @@ public abstract class AbstractSessionManager implements SessionManager {
 
     @Override
     public void onFailEnd(GlobalSession globalSession) throws TransactionException {
+        if (rollbackFailedUnlockEnable) {
+            globalSession.clean();
+            LOGGER.info("xid:{} fail end and remove lock, transaction:{}", globalSession.getXid(), globalSession);
+            return;
+        }
         LOGGER.info("xid:{} fail end, transaction:{}", globalSession.getXid(), globalSession);
     }
 
     private void writeSession(LogOperation logOperation, SessionStorable sessionStorable) throws TransactionException {
         if (!transactionStoreManager.writeSession(logOperation, sessionStorable)) {
             if (LogOperation.GLOBAL_ADD.equals(logOperation)) {
-                throw new GlobalTransactionException(TransactionExceptionCode.FailedWriteSession,
-                    "Fail to store global session");
+                throw new GlobalTransactionException(
+                        TransactionExceptionCode.FailedWriteSession, "Fail to store global session");
             } else if (LogOperation.GLOBAL_UPDATE.equals(logOperation)) {
-                throw new GlobalTransactionException(TransactionExceptionCode.FailedWriteSession,
-                    "Fail to update global session");
+                throw new GlobalTransactionException(
+                        TransactionExceptionCode.FailedWriteSession, "Fail to update global session");
             } else if (LogOperation.GLOBAL_REMOVE.equals(logOperation)) {
-                throw new GlobalTransactionException(TransactionExceptionCode.FailedWriteSession,
-                    "Fail to remove global session");
+                throw new GlobalTransactionException(
+                        TransactionExceptionCode.FailedWriteSession, "Fail to remove global session");
             } else if (LogOperation.BRANCH_ADD.equals(logOperation)) {
-                throw new BranchTransactionException(TransactionExceptionCode.FailedWriteSession,
-                    "Fail to store branch session");
+                throw new BranchTransactionException(
+                        TransactionExceptionCode.FailedWriteSession, "Fail to store branch session");
             } else if (LogOperation.BRANCH_UPDATE.equals(logOperation)) {
-                throw new BranchTransactionException(TransactionExceptionCode.FailedWriteSession,
-                    "Fail to update branch session");
+                throw new BranchTransactionException(
+                        TransactionExceptionCode.FailedWriteSession, "Fail to update branch session");
             } else if (LogOperation.BRANCH_REMOVE.equals(logOperation)) {
-                throw new BranchTransactionException(TransactionExceptionCode.FailedWriteSession,
-                    "Fail to remove branch session");
+                throw new BranchTransactionException(
+                        TransactionExceptionCode.FailedWriteSession, "Fail to remove branch session");
             } else {
-                throw new BranchTransactionException(TransactionExceptionCode.FailedWriteSession,
-                    "Unknown LogOperation:" + logOperation.name());
+                throw new BranchTransactionException(
+                        TransactionExceptionCode.FailedWriteSession, "Unknown LogOperation:" + logOperation.name());
             }
         }
     }
 
     @Override
-    public void destroy() {
-    }
+    public void destroy() {}
 
     /**
      * Sets transaction store manager.

@@ -16,37 +16,6 @@
  */
 package org.apache.seata.serializer.seata;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-
-import org.apache.seata.serializer.seata.protocol.BatchResultMessageCodec;
-import org.apache.seata.serializer.seata.protocol.MergeResultMessageCodec;
-import org.apache.seata.serializer.seata.protocol.MergedWarpMessageCodec;
-import org.apache.seata.serializer.seata.protocol.RegisterRMRequestCodec;
-import org.apache.seata.serializer.seata.protocol.RegisterRMResponseCodec;
-import org.apache.seata.serializer.seata.protocol.RegisterTMRequestCodec;
-import org.apache.seata.serializer.seata.protocol.RegisterTMResponseCodec;
-import org.apache.seata.serializer.seata.protocol.transaction.BranchCommitRequestCodec;
-import org.apache.seata.serializer.seata.protocol.transaction.BranchCommitResponseCodec;
-import org.apache.seata.serializer.seata.protocol.transaction.BranchRegisterRequestCodec;
-import org.apache.seata.serializer.seata.protocol.transaction.BranchRegisterResponseCodec;
-import org.apache.seata.serializer.seata.protocol.transaction.BranchReportRequestCodec;
-import org.apache.seata.serializer.seata.protocol.transaction.BranchReportResponseCodec;
-import org.apache.seata.serializer.seata.protocol.transaction.BranchRollbackRequestCodec;
-import org.apache.seata.serializer.seata.protocol.transaction.BranchRollbackResponseCodec;
-import org.apache.seata.serializer.seata.protocol.transaction.GlobalBeginRequestCodec;
-import org.apache.seata.serializer.seata.protocol.transaction.GlobalBeginResponseCodec;
-import org.apache.seata.serializer.seata.protocol.transaction.GlobalCommitRequestCodec;
-import org.apache.seata.serializer.seata.protocol.transaction.GlobalCommitResponseCodec;
-import org.apache.seata.serializer.seata.protocol.transaction.GlobalLockQueryRequestCodec;
-import org.apache.seata.serializer.seata.protocol.transaction.GlobalLockQueryResponseCodec;
-import org.apache.seata.serializer.seata.protocol.transaction.GlobalReportRequestCodec;
-import org.apache.seata.serializer.seata.protocol.transaction.GlobalReportResponseCodec;
-import org.apache.seata.serializer.seata.protocol.transaction.GlobalRollbackRequestCodec;
-import org.apache.seata.serializer.seata.protocol.transaction.GlobalRollbackResponseCodec;
-import org.apache.seata.serializer.seata.protocol.transaction.GlobalStatusRequestCodec;
-import org.apache.seata.serializer.seata.protocol.transaction.GlobalStatusResponseCodec;
-import org.apache.seata.serializer.seata.protocol.transaction.UndoLogDeleteRequestCodec;
 import org.apache.seata.core.protocol.AbstractMessage;
 import org.apache.seata.core.protocol.BatchResultMessage;
 import org.apache.seata.core.protocol.MergeResultMessage;
@@ -77,10 +46,40 @@ import org.apache.seata.core.protocol.transaction.GlobalRollbackResponse;
 import org.apache.seata.core.protocol.transaction.GlobalStatusRequest;
 import org.apache.seata.core.protocol.transaction.GlobalStatusResponse;
 import org.apache.seata.core.protocol.transaction.UndoLogDeleteRequest;
+import org.apache.seata.serializer.seata.protocol.BatchResultMessageCodec;
+import org.apache.seata.serializer.seata.protocol.MergeResultMessageCodec;
+import org.apache.seata.serializer.seata.protocol.MergedWarpMessageCodec;
+import org.apache.seata.serializer.seata.protocol.RegisterRMRequestCodec;
+import org.apache.seata.serializer.seata.protocol.RegisterRMResponseCodec;
+import org.apache.seata.serializer.seata.protocol.RegisterTMRequestCodec;
+import org.apache.seata.serializer.seata.protocol.RegisterTMResponseCodec;
+import org.apache.seata.serializer.seata.protocol.transaction.BranchCommitRequestCodec;
+import org.apache.seata.serializer.seata.protocol.transaction.BranchCommitResponseCodec;
+import org.apache.seata.serializer.seata.protocol.transaction.BranchRegisterRequestCodec;
+import org.apache.seata.serializer.seata.protocol.transaction.BranchRegisterResponseCodec;
+import org.apache.seata.serializer.seata.protocol.transaction.BranchReportRequestCodec;
+import org.apache.seata.serializer.seata.protocol.transaction.BranchReportResponseCodec;
+import org.apache.seata.serializer.seata.protocol.transaction.BranchRollbackRequestCodec;
+import org.apache.seata.serializer.seata.protocol.transaction.BranchRollbackResponseCodec;
+import org.apache.seata.serializer.seata.protocol.transaction.GlobalBeginRequestCodec;
+import org.apache.seata.serializer.seata.protocol.transaction.GlobalBeginResponseCodec;
+import org.apache.seata.serializer.seata.protocol.transaction.GlobalCommitRequestCodec;
+import org.apache.seata.serializer.seata.protocol.transaction.GlobalCommitResponseCodec;
+import org.apache.seata.serializer.seata.protocol.transaction.GlobalLockQueryRequestCodec;
+import org.apache.seata.serializer.seata.protocol.transaction.GlobalLockQueryResponseCodec;
+import org.apache.seata.serializer.seata.protocol.transaction.GlobalReportRequestCodec;
+import org.apache.seata.serializer.seata.protocol.transaction.GlobalReportResponseCodec;
+import org.apache.seata.serializer.seata.protocol.transaction.GlobalRollbackRequestCodec;
+import org.apache.seata.serializer.seata.protocol.transaction.GlobalRollbackResponseCodec;
+import org.apache.seata.serializer.seata.protocol.transaction.GlobalStatusRequestCodec;
+import org.apache.seata.serializer.seata.protocol.transaction.GlobalStatusResponseCodec;
+import org.apache.seata.serializer.seata.protocol.transaction.UndoLogDeleteRequestCodec;
+
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * The type Message codec factory.
- *
  */
 public class MessageCodecFactory {
 
@@ -95,8 +94,8 @@ public class MessageCodecFactory {
      * @param abstractMessage the abstract message
      * @return the message codec
      */
-    public static MessageSeataCodec getMessageCodec(AbstractMessage abstractMessage) {
-        return getMessageCodec(abstractMessage.getTypeCode());
+    public static MessageSeataCodec getMessageCodec(AbstractMessage abstractMessage, byte version) {
+        return getMessageCodec(abstractMessage.getTypeCode(), version);
     }
 
     /**
@@ -105,14 +104,14 @@ public class MessageCodecFactory {
      * @param typeCode the type code
      * @return the msg instance by code
      */
-    public static MessageSeataCodec getMessageCodec(short typeCode) {
+    public static MessageSeataCodec getMessageCodec(short typeCode, byte version) {
         MessageSeataCodec msgCodec = null;
         switch (typeCode) {
             case MessageType.TYPE_SEATA_MERGE:
-                msgCodec = new MergedWarpMessageCodec();
+                msgCodec = new MergedWarpMessageCodec(version);
                 break;
             case MessageType.TYPE_SEATA_MERGE_RESULT:
-                msgCodec = new MergeResultMessageCodec();
+                msgCodec = new MergeResultMessageCodec(version);
                 break;
             case MessageType.TYPE_REG_CLT:
                 msgCodec = new RegisterTMRequestCodec();
@@ -136,92 +135,71 @@ public class MessageCodecFactory {
                 msgCodec = new GlobalReportRequestCodec();
                 break;
             case MessageType.TYPE_BATCH_RESULT_MSG:
-                msgCodec = new BatchResultMessageCodec();
+                msgCodec = new BatchResultMessageCodec(version);
                 break;
-            default:
-                break;
-        }
-
-        if (msgCodec != null) {
-            return msgCodec;
-        }
-
-        try {
-            msgCodec = getMergeRequestMessageSeataCodec(typeCode);
-        } catch (Exception exx) {
-        }
-
-        if (msgCodec != null) {
-            return msgCodec;
-        }
-
-        msgCodec = getMergeResponseMessageSeataCodec(typeCode);
-
-        return msgCodec;
-    }
-
-    /**
-     * Gets merge request instance by code.
-     *
-     * @param typeCode the type code
-     * @return the merge request instance by code
-     */
-    protected static MessageSeataCodec getMergeRequestMessageSeataCodec(int typeCode) {
-        switch (typeCode) {
             case MessageType.TYPE_GLOBAL_BEGIN:
-                return new GlobalBeginRequestCodec();
+                msgCodec = new GlobalBeginRequestCodec();
+                break;
             case MessageType.TYPE_GLOBAL_COMMIT:
-                return new GlobalCommitRequestCodec();
+                msgCodec = new GlobalCommitRequestCodec();
+                break;
             case MessageType.TYPE_GLOBAL_ROLLBACK:
-                return new GlobalRollbackRequestCodec();
+                msgCodec = new GlobalRollbackRequestCodec();
+                break;
             case MessageType.TYPE_GLOBAL_STATUS:
-                return new GlobalStatusRequestCodec();
+                msgCodec = new GlobalStatusRequestCodec();
+                break;
             case MessageType.TYPE_GLOBAL_LOCK_QUERY:
-                return new GlobalLockQueryRequestCodec();
+                msgCodec = new GlobalLockQueryRequestCodec();
+                break;
             case MessageType.TYPE_BRANCH_REGISTER:
-                return new BranchRegisterRequestCodec();
+                msgCodec = new BranchRegisterRequestCodec();
+                break;
             case MessageType.TYPE_BRANCH_STATUS_REPORT:
-                return new BranchReportRequestCodec();
-            case MessageType.TYPE_GLOBAL_REPORT:
-                return new GlobalReportRequestCodec();
-            default:
-                throw new IllegalArgumentException("not support typeCode," + typeCode);
-        }
-    }
-
-    /**
-     * Gets merge response instance by code.
-     *
-     * @param typeCode the type code
-     * @return the merge response instance by code
-     */
-    protected static MessageSeataCodec getMergeResponseMessageSeataCodec(int typeCode) {
-        switch (typeCode) {
+                msgCodec = new BranchReportRequestCodec();
+                break;
             case MessageType.TYPE_GLOBAL_BEGIN_RESULT:
-                return new GlobalBeginResponseCodec();
+                msgCodec = new GlobalBeginResponseCodec();
+                break;
             case MessageType.TYPE_GLOBAL_COMMIT_RESULT:
-                return new GlobalCommitResponseCodec();
+                msgCodec = new GlobalCommitResponseCodec();
+                break;
             case MessageType.TYPE_GLOBAL_ROLLBACK_RESULT:
-                return new GlobalRollbackResponseCodec();
+                msgCodec = new GlobalRollbackResponseCodec();
+                break;
             case MessageType.TYPE_GLOBAL_STATUS_RESULT:
-                return new GlobalStatusResponseCodec();
+                msgCodec = new GlobalStatusResponseCodec();
+                break;
             case MessageType.TYPE_GLOBAL_LOCK_QUERY_RESULT:
-                return new GlobalLockQueryResponseCodec();
+                msgCodec = new GlobalLockQueryResponseCodec();
+                break;
             case MessageType.TYPE_BRANCH_REGISTER_RESULT:
-                return new BranchRegisterResponseCodec();
+                msgCodec = new BranchRegisterResponseCodec();
+                break;
             case MessageType.TYPE_BRANCH_STATUS_REPORT_RESULT:
-                return new BranchReportResponseCodec();
+                msgCodec = new BranchReportResponseCodec();
+                break;
             case MessageType.TYPE_BRANCH_COMMIT_RESULT:
-                return new BranchCommitResponseCodec();
+                msgCodec = new BranchCommitResponseCodec();
+                break;
             case MessageType.TYPE_BRANCH_ROLLBACK_RESULT:
-                return new BranchRollbackResponseCodec();
+                msgCodec = new BranchRollbackResponseCodec();
+                break;
             case MessageType.TYPE_RM_DELETE_UNDOLOG:
-                return new UndoLogDeleteRequestCodec();
+                msgCodec = new UndoLogDeleteRequestCodec();
+                break;
             case MessageType.TYPE_GLOBAL_REPORT_RESULT:
-                return new GlobalReportResponseCodec();
+                msgCodec = new GlobalReportResponseCodec();
+                break;
             default:
-                throw new IllegalArgumentException("not support typeCode," + typeCode);
+                break;
         }
+
+        if (msgCodec != null) {
+            return msgCodec;
+        }
+
+        throw new IllegalArgumentException("not support typeCode," + typeCode);
     }
 
     /**
@@ -269,6 +247,54 @@ public class MessageCodecFactory {
             case MessageType.TYPE_BATCH_RESULT_MSG:
                 abstractMessage = new BatchResultMessage();
                 break;
+            case MessageType.TYPE_GLOBAL_BEGIN:
+                abstractMessage = new GlobalBeginRequest();
+                break;
+            case MessageType.TYPE_GLOBAL_COMMIT:
+                abstractMessage = new GlobalCommitRequest();
+                break;
+            case MessageType.TYPE_GLOBAL_ROLLBACK:
+                abstractMessage = new GlobalRollbackRequest();
+                break;
+            case MessageType.TYPE_GLOBAL_STATUS:
+                abstractMessage = new GlobalStatusRequest();
+                break;
+            case MessageType.TYPE_GLOBAL_LOCK_QUERY:
+                abstractMessage = new GlobalLockQueryRequest();
+                break;
+            case MessageType.TYPE_BRANCH_REGISTER:
+                abstractMessage = new BranchRegisterRequest();
+                break;
+            case MessageType.TYPE_BRANCH_STATUS_REPORT:
+                abstractMessage = new BranchReportRequest();
+                break;
+            case MessageType.TYPE_GLOBAL_BEGIN_RESULT:
+                abstractMessage = new GlobalBeginResponse();
+                break;
+            case MessageType.TYPE_GLOBAL_COMMIT_RESULT:
+                abstractMessage = new GlobalCommitResponse();
+                break;
+            case MessageType.TYPE_GLOBAL_ROLLBACK_RESULT:
+                abstractMessage = new GlobalRollbackResponse();
+                break;
+            case MessageType.TYPE_GLOBAL_STATUS_RESULT:
+                abstractMessage = new GlobalStatusResponse();
+                break;
+            case MessageType.TYPE_GLOBAL_LOCK_QUERY_RESULT:
+                abstractMessage = new GlobalLockQueryResponse();
+                break;
+            case MessageType.TYPE_BRANCH_REGISTER_RESULT:
+                abstractMessage = new BranchRegisterResponse();
+                break;
+            case MessageType.TYPE_BRANCH_STATUS_REPORT_RESULT:
+                abstractMessage = new BranchReportResponse();
+                break;
+            case MessageType.TYPE_BRANCH_COMMIT_RESULT:
+                abstractMessage = new BranchCommitResponse();
+                break;
+            case MessageType.TYPE_BRANCH_ROLLBACK_RESULT:
+                abstractMessage = new BranchRollbackResponse();
+                break;
             default:
                 break;
         }
@@ -277,78 +303,6 @@ public class MessageCodecFactory {
             return abstractMessage;
         }
 
-        try {
-            abstractMessage = getMergeRequestInstanceByCode(typeCode);
-        } catch (Exception exx) {
-        }
-
-        if (abstractMessage != null) {
-            return abstractMessage;
-        }
-
-        return getMergeResponseInstanceByCode(typeCode);
+        throw new IllegalArgumentException("not support typeCode," + typeCode);
     }
-
-    /**
-     * Gets merge request instance by code.
-     *
-     * @param typeCode the type code
-     * @return the merge request instance by code
-     */
-    protected static AbstractMessage getMergeRequestInstanceByCode(int typeCode) {
-        switch (typeCode) {
-            case MessageType.TYPE_GLOBAL_BEGIN:
-                return new GlobalBeginRequest();
-            case MessageType.TYPE_GLOBAL_COMMIT:
-                return new GlobalCommitRequest();
-            case MessageType.TYPE_GLOBAL_ROLLBACK:
-                return new GlobalRollbackRequest();
-            case MessageType.TYPE_GLOBAL_STATUS:
-                return new GlobalStatusRequest();
-            case MessageType.TYPE_GLOBAL_LOCK_QUERY:
-                return new GlobalLockQueryRequest();
-            case MessageType.TYPE_BRANCH_REGISTER:
-                return new BranchRegisterRequest();
-            case MessageType.TYPE_BRANCH_STATUS_REPORT:
-                return new BranchReportRequest();
-            case MessageType.TYPE_GLOBAL_REPORT:
-                return new GlobalReportRequest();
-            default:
-                throw new IllegalArgumentException("not support typeCode," + typeCode);
-        }
-    }
-
-    /**
-     * Gets merge response instance by code.
-     *
-     * @param typeCode the type code
-     * @return the merge response instance by code
-     */
-    protected static AbstractMessage getMergeResponseInstanceByCode(int typeCode) {
-        switch (typeCode) {
-            case MessageType.TYPE_GLOBAL_BEGIN_RESULT:
-                return new GlobalBeginResponse();
-            case MessageType.TYPE_GLOBAL_COMMIT_RESULT:
-                return new GlobalCommitResponse();
-            case MessageType.TYPE_GLOBAL_ROLLBACK_RESULT:
-                return new GlobalRollbackResponse();
-            case MessageType.TYPE_GLOBAL_STATUS_RESULT:
-                return new GlobalStatusResponse();
-            case MessageType.TYPE_GLOBAL_LOCK_QUERY_RESULT:
-                return new GlobalLockQueryResponse();
-            case MessageType.TYPE_BRANCH_REGISTER_RESULT:
-                return new BranchRegisterResponse();
-            case MessageType.TYPE_BRANCH_STATUS_REPORT_RESULT:
-                return new BranchReportResponse();
-            case MessageType.TYPE_BRANCH_COMMIT_RESULT:
-                return new BranchCommitResponse();
-            case MessageType.TYPE_BRANCH_ROLLBACK_RESULT:
-                return new BranchRollbackResponse();
-            case MessageType.TYPE_GLOBAL_REPORT_RESULT:
-                return new GlobalReportResponse();
-            default:
-                throw new IllegalArgumentException("not support typeCode," + typeCode);
-        }
-    }
-
 }

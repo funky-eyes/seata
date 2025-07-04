@@ -17,6 +17,7 @@
 package org.apache.seata.rm.datasource.util;
 
 import org.apache.seata.common.loader.EnhancedServiceLoader;
+import org.apache.seata.common.lock.ResourceLock;
 import org.apache.seata.rm.BaseDataSourceResource;
 import org.apache.seata.rm.DefaultResourceManager;
 import org.apache.seata.sqlparser.SqlParserType;
@@ -29,14 +30,14 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
 
-
 public final class JdbcUtils {
 
     private static volatile DbTypeParser dbTypeParser;
+    private static final ResourceLock RESOURCE_LOCK = new ResourceLock();
 
     static DbTypeParser getDbTypeParser() {
         if (dbTypeParser == null) {
-            synchronized (JdbcUtils.class) {
+            try (ResourceLock ignored = RESOURCE_LOCK.obtain()) {
                 if (dbTypeParser == null) {
                     dbTypeParser = EnhancedServiceLoader.load(DbTypeParser.class, SqlParserType.SQL_PARSER_TYPE_DRUID);
                 }
@@ -45,8 +46,7 @@ public final class JdbcUtils {
         return dbTypeParser;
     }
 
-    private JdbcUtils() {
-    }
+    private JdbcUtils() {}
 
     public static String getDbType(String jdbcUrl) {
         return getDbTypeParser().parseFromJdbcUrl(jdbcUrl).toLowerCase();
@@ -59,7 +59,8 @@ public final class JdbcUtils {
      * @param dataSource the DataSource instance
      * @param resourceGroupId the given resource group ID
      */
-    public static void initDataSourceResource(BaseDataSourceResource dataSourceResource, DataSource dataSource, String resourceGroupId) {
+    public static void initDataSourceResource(
+            BaseDataSourceResource dataSourceResource, DataSource dataSource, String resourceGroupId) {
         dataSourceResource.setResourceGroupId(resourceGroupId);
         try (Connection connection = dataSource.getConnection()) {
             String jdbcUrl = connection.getMetaData().getURL();
@@ -73,7 +74,8 @@ public final class JdbcUtils {
         DefaultResourceManager.get().registerResource(dataSourceResource);
     }
 
-    public static void initXADataSourceResource(BaseDataSourceResource dataSourceResource, XADataSource dataSource, String resourceGroupId) {
+    public static void initXADataSourceResource(
+            BaseDataSourceResource dataSourceResource, XADataSource dataSource, String resourceGroupId) {
         dataSourceResource.setResourceGroupId(resourceGroupId);
         try {
             XAConnection xaConnection = dataSource.getXAConnection();
@@ -121,7 +123,7 @@ public final class JdbcUtils {
         }
 
         try {
-            return (Driver)clazz.newInstance();
+            return (Driver) clazz.newInstance();
         } catch (IllegalAccessException | InstantiationException e) {
             throw new SQLException(e.getMessage(), e);
         }

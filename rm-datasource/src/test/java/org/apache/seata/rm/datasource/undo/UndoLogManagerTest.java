@@ -30,15 +30,13 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-
 public class UndoLogManagerTest {
 
-
     private static final int APPEND_IN_SIZE = 10;
-
 
     private static final String THE_APPEND_IN_SIZE_PARAM_STRING = " (?,?,?,?,?,?,?,?,?,?) ";
 
@@ -47,11 +45,11 @@ public class UndoLogManagerTest {
     @Test
     public void testBatchDeleteUndoLog() throws Exception {
         Set<String> xids = new HashSet<>();
-        for (int i = 0;i < APPEND_IN_SIZE;i++){
+        for (int i = 0; i < APPEND_IN_SIZE; i++) {
             xids.add(UUID.randomUUID().toString());
         }
         Set<Long> branchIds = new HashSet<>();
-        for (int i = 0;i < APPEND_IN_SIZE;i++){
+        for (int i = 0; i < APPEND_IN_SIZE; i++) {
             branchIds.add((long) i);
         }
         Connection connection = mock(Connection.class);
@@ -59,23 +57,24 @@ public class UndoLogManagerTest {
         when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
         UndoLogManagerFactory.getUndoLogManager(JdbcConstants.MYSQL).batchDeleteUndoLog(xids, branchIds, connection);
 
-        //verify
-        for (int i = 1;i <= APPEND_IN_SIZE;i++){
-            verify(preparedStatement).setLong(eq(i),anyLong());
+        // verify
+        for (int i = 1; i <= APPEND_IN_SIZE; i++) {
+            verify(preparedStatement).setLong(eq(i), anyLong());
+            verify(preparedStatement).setString(eq(i), anyString());
         }
-        for (int i = APPEND_IN_SIZE + 1;i <= APPEND_IN_SIZE * 2;i++){
-            verify(preparedStatement).setString(eq(i),anyString());
+        for (int i = APPEND_IN_SIZE + 1; i <= APPEND_IN_SIZE * 2; i++) {
+            verify(preparedStatement, times(2)).setString(eq(i), anyString());
         }
-        verify(preparedStatement).executeUpdate();
+        verify(preparedStatement, times(2)).executeUpdate();
     }
 
     @Test
     public void testToBatchDeleteUndoLogSql() {
-        String expectedSqlString="DELETE FROM undo_log WHERE  branch_id IN " +
-                THE_APPEND_IN_SIZE_PARAM_STRING +
-                " AND xid IN " +
-                THE_DOUBLE_APPEND_IN_SIZE_PARAM_STRING;
-        String batchDeleteUndoLogSql = AbstractUndoLogManager.toBatchDeleteUndoLogSql(APPEND_IN_SIZE * 2, APPEND_IN_SIZE);
+        String expectedSqlString = "DELETE FROM undo_log WHERE  branch_id IN " + THE_APPEND_IN_SIZE_PARAM_STRING
+                + " AND xid IN "
+                + THE_DOUBLE_APPEND_IN_SIZE_PARAM_STRING;
+        String batchDeleteUndoLogSql =
+                AbstractUndoLogManager.toBatchDeleteUndoLogSql(APPEND_IN_SIZE * 2, APPEND_IN_SIZE);
         System.out.println(batchDeleteUndoLogSql);
         assertThat(batchDeleteUndoLogSql).isEqualTo(expectedSqlString);
     }

@@ -16,12 +16,10 @@
  */
 package io.seata.rm.datasource.undo.parser.spi;
 
-
 /**
  * The interface Jackson serializer.
  *
  * @param <T> the type parameter
  */
-public interface JacksonSerializer<T> extends org.apache.seata.rm.datasource.undo.parser.spi.JacksonSerializer<T> {
-
-}
+@Deprecated
+public interface JacksonSerializer<T> extends org.apache.seata.rm.datasource.undo.parser.spi.JacksonSerializer<T> {}

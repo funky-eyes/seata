@@ -24,6 +24,7 @@ import org.apache.seata.tm.api.BaseTransaction;
 /**
  * Global transaction.
  */
+@Deprecated
 public interface GlobalTransaction extends BaseTransaction {
 
     /**
@@ -81,7 +82,7 @@ public interface GlobalTransaction extends BaseTransaction {
     /**
      * Suspend the global transaction.
      *
-     * @param clean the clean if true, clean the transaction context. otherwise,supend only
+     * @param clean the clean if true, clean the transaction context. otherwise,suspend only
      * @return the SuspendedResourcesHolder which holds the suspend resources
      * @throws TransactionException Any exception that fails this will be wrapped with TransactionException and thrown
      * @see SuspendedResourcesHolder

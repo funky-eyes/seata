@@ -16,12 +16,10 @@
  */
 package io.seata.rm.datasource.undo.parser.spi;
 
-
 /**
  * The interface Kryo type serializer.
  *
  * @param <T> the type parameter
  */
-public interface KryoTypeSerializer<T> extends org.apache.seata.rm.datasource.undo.parser.spi.KryoTypeSerializer<T> {
-
-}
+@Deprecated
+public interface KryoTypeSerializer<T> extends org.apache.seata.rm.datasource.undo.parser.spi.KryoTypeSerializer<T> {}

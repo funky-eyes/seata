@@ -19,7 +19,6 @@ package org.apache.seata.core.store.db.sql.log;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-
 public class LogStoreSqlsFactoryTest {
 
     private static LogStoreSqls mysqlLog = LogStoreSqlsFactory.getLogStoreSqls("mysql");
@@ -33,6 +32,8 @@ public class LogStoreSqlsFactoryTest {
     private static LogStoreSqls oceanbase = LogStoreSqlsFactory.getLogStoreSqls("oceanbase");
 
     private static LogStoreSqls dmLog = LogStoreSqlsFactory.getLogStoreSqls("dm");
+
+    private static LogStoreSqls oscarLog = LogStoreSqlsFactory.getLogStoreSqls("oscar");
 
     private static String globalTable = "global_table";
 
@@ -244,6 +245,40 @@ public class LogStoreSqlsFactoryTest {
         sql = dmLog.getQueryGlobalMax(globalTable);
         Assertions.assertNotNull(sql);
         sql = dmLog.getQueryBranchMax(branchTable);
+        Assertions.assertNotNull(sql);
+    }
+
+    @Test
+    public void oscarLogTest() {
+        String sql = oscarLog.getInsertGlobalTransactionSQL(globalTable);
+        Assertions.assertNotNull(sql);
+        sql = oscarLog.getUpdateGlobalTransactionStatusSQL(globalTable);
+        Assertions.assertNotNull(sql);
+        sql = oscarLog.getDeleteGlobalTransactionSQL(globalTable);
+        Assertions.assertNotNull(sql);
+        sql = oscarLog.getQueryGlobalTransactionSQL(globalTable);
+        Assertions.assertNotNull(sql);
+        sql = oscarLog.getQueryGlobalTransactionSQLByTransactionId(globalTable);
+        Assertions.assertNotNull(sql);
+        sql = oscarLog.getQueryGlobalTransactionSQLByStatus(globalTable, "1");
+        Assertions.assertNotNull(sql);
+        sql = oscarLog.getQueryGlobalTransactionForRecoverySQL(globalTable);
+        Assertions.assertNotNull(sql);
+        sql = oscarLog.getInsertBranchTransactionSQL(branchTable);
+        Assertions.assertNotNull(sql);
+        sql = oscarLog.getUpdateBranchTransactionStatusSQL(branchTable);
+        Assertions.assertNotNull(sql);
+        sql = oscarLog.getDeleteBranchTransactionByBranchIdSQL(branchTable);
+        Assertions.assertNotNull(sql);
+        sql = oscarLog.getDeleteBranchTransactionByXId(branchTable);
+        Assertions.assertNotNull(sql);
+        sql = oscarLog.getQueryBranchTransaction(branchTable);
+        Assertions.assertNotNull(sql);
+        sql = oscarLog.getQueryBranchTransaction(branchTable, "1");
+        Assertions.assertNotNull(sql);
+        sql = oscarLog.getQueryGlobalMax(globalTable);
+        Assertions.assertNotNull(sql);
+        sql = oscarLog.getQueryBranchMax(branchTable);
         Assertions.assertNotNull(sql);
     }
 }
