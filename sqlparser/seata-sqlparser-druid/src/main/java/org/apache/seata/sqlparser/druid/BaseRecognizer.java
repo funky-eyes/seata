@@ -159,6 +159,9 @@ public abstract class BaseRecognizer implements SQLRecognizer {
     }
 
     public List<String> getWhereColumns(SQLExpr sqlExpr) {
+        if (sqlExpr == null) {
+            return Collections.emptyList();
+        }
         // single condition
         if (sqlExpr instanceof SQLBinaryOpExpr) {
             return getWhereColumns(Collections.singletonList(sqlExpr));
