@@ -103,9 +103,9 @@ public abstract class AbstractDMLBaseExecutor<T, S extends Statement> extends Ba
             int updateCount = statementProxy.getUpdateCount();
             if (updateCount > 0) {
                 if (SQLType.UPDATE == sqlRecognizer.getSQLType()) {
-                    if (updateCount > beforeImage.size()) {
+                    if (updateCount != beforeImage.size()) {
                         String errorMsg =
-                                "Before image size is not equaled to after image size, probably because you use read committed, please retry transaction.";
+                                "Before image size is not equal to after image size, possibly due to read committed isolation level or other issues. Please retry the transaction.";
                         throw new ShouldNeverHappenException(errorMsg);
                     }
                 }
