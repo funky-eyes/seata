@@ -67,11 +67,13 @@ public class ConnectionProxy extends AbstractConnectionProxy {
      */
     public ConnectionProxy(DataSourceProxy dataSourceProxy, Connection targetConnection) {
         super(dataSourceProxy, targetConnection);
-        String dbType = dataSourceProxy.getDbType();
-        if (JdbcConstants.MYSQL.equals(dbType) || JdbcConstants.MARIADB.equals(dbType)) {
-            context.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
-        } else {
-            context.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        if (dataSourceProxy != null) {
+            String dbType = dataSourceProxy.getDbType();
+            if (JdbcConstants.MYSQL.equals(dbType) || JdbcConstants.MARIADB.equals(dbType)) {
+                context.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
+            } else {
+                context.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            }
         }
     }
 
