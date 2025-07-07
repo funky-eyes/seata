@@ -40,6 +40,9 @@ import org.mockito.Mockito;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
+import static java.sql.Connection.TRANSACTION_READ_COMMITTED;
+import static java.sql.Connection.TRANSACTION_REPEATABLE_READ;
+
 /**
  * ConnectionProxy test
  *
@@ -48,6 +51,8 @@ import java.lang.reflect.Modifier;
 }) // `ReflectionUtil.modifyStaticFinalField` does not supported java17 and above versions
 public class ConnectionProxyTest {
     private DataSourceProxy dataSourceProxy;
+
+    private DataSourceProxy oracleDataSourceProxy;
 
     private static final String TEST_RESOURCE_ID = "testResourceId";
 
@@ -73,6 +78,9 @@ public class ConnectionProxyTest {
         dataSourceProxy = Mockito.mock(DataSourceProxy.class);
         Mockito.when(dataSourceProxy.getResourceId()).thenReturn(TEST_RESOURCE_ID);
         Mockito.when(dataSourceProxy.getDbType()).thenReturn(DB_TYPE);
+        oracleDataSourceProxy = Mockito.mock(DataSourceProxy.class);
+        Mockito.when(oracleDataSourceProxy.getResourceId()).thenReturn(TEST_RESOURCE_ID);
+        Mockito.when(oracleDataSourceProxy.getDbType()).thenReturn("oracle");
         DefaultResourceManager rm = Mockito.mock(DefaultResourceManager.class);
 
         Mockito.when(rm.branchRegister(
@@ -131,5 +139,13 @@ public class ConnectionProxyTest {
         connectionProxy.getContext().appendUndoItem(sqlUndoLog);
         Assertions.assertThrows(LockWaitTimeoutException.class, connectionProxy::commit);
         branchRollbackFlagField.set(null, oldBranchRollbackFlag);
+    }
+
+    @Test
+    public void testGetTransactionIsolation() throws Exception {
+        ConnectionProxy connectionProxy = new ConnectionProxy(dataSourceProxy, null);
+        Assertions.assertEquals(TRANSACTION_REPEATABLE_READ, connectionProxy.getTransactionIsolation());
+        connectionProxy = new ConnectionProxy(oracleDataSourceProxy, null);
+        Assertions.assertEquals(TRANSACTION_READ_COMMITTED, connectionProxy.getTransactionIsolation());
     }
 }

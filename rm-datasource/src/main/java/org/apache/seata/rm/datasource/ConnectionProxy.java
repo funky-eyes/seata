@@ -28,6 +28,7 @@ import org.apache.seata.rm.datasource.exec.LockConflictException;
 import org.apache.seata.rm.datasource.exec.LockRetryController;
 import org.apache.seata.rm.datasource.undo.SQLUndoLog;
 import org.apache.seata.rm.datasource.undo.UndoLogManagerFactory;
+import org.apache.seata.sqlparser.util.JdbcConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,6 +67,12 @@ public class ConnectionProxy extends AbstractConnectionProxy {
      */
     public ConnectionProxy(DataSourceProxy dataSourceProxy, Connection targetConnection) {
         super(dataSourceProxy, targetConnection);
+        String dbType = dataSourceProxy.getDbType();
+        if (JdbcConstants.MYSQL.equals(dbType) || JdbcConstants.MARIADB.equals(dbType)) {
+            context.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
+        } else {
+            context.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        }
     }
 
     /**

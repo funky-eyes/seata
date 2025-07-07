@@ -333,6 +333,7 @@ public class ConnectionContext {
         lockKeysBuffer.clear();
         sqlUndoItemsBuffer.clear();
         this.autoCommitChanged = false;
+        this.transactionIsolation = null;
         applicationData.clear();
     }
 
