@@ -64,9 +64,10 @@ public abstract class AbstractSeataInstanceStrategy implements SeataInstanceStra
 
     @Override
     public void init() {
-        if (!StringUtils.equals(registryProperties.getType(), NAMING_SERVER)) {
-            return;
-        }
+	    String types = registryProperties.getType();
+	    if (types == null || !Arrays.asList(types.split(",")).contains(NAMING_SERVER)) {
+		    return;
+	    }
         Instance instance = serverInstanceInit();
         if (init.compareAndSet(false, true)) {
             VGroupMappingStoreManager vGroupMappingStoreManager = SessionHolder.getRootVGroupMappingManager();
