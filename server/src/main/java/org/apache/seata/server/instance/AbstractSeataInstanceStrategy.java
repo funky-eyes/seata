@@ -18,7 +18,6 @@ package org.apache.seata.server.instance;
 
 import org.apache.seata.common.metadata.Instance;
 import org.apache.seata.common.thread.NamedThreadFactory;
-import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.server.session.SessionHolder;
 import org.apache.seata.server.store.VGroupMappingStoreManager;
 import org.apache.seata.spring.boot.autoconfigure.properties.registry.RegistryNamingServerProperties;
@@ -65,10 +64,10 @@ public abstract class AbstractSeataInstanceStrategy implements SeataInstanceStra
 
     @Override
     public void init() {
-	    String types = registryProperties.getType();
-	    if (types == null || !Arrays.asList(types.split(",")).contains(NAMING_SERVER)) {
-		    return;
-	    }
+        String types = registryProperties.getType();
+        if (types == null || !Arrays.asList(types.split(",")).contains(NAMING_SERVER)) {
+            return;
+        }
         Instance instance = serverInstanceInit();
         if (init.compareAndSet(false, true)) {
             VGroupMappingStoreManager vGroupMappingStoreManager = SessionHolder.getRootVGroupMappingManager();
