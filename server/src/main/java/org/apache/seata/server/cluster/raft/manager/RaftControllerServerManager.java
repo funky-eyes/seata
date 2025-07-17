@@ -134,7 +134,7 @@ public class RaftControllerServerManager {
                 serverId = new PeerId(host, port);
             }
 
-            final String dataPath = CONFIG.getConfig("store.controller.file.dir", DEFAULT_SESSION_STORE_FILE_DIR)
+            final String dataPath = CONFIG.getConfig(ConfigurationKeys.STORE_FILE_DIR, DEFAULT_SESSION_STORE_FILE_DIR)
                     + separator + "raft-controller" + separator + serverId.getPort();
             String controllerGroup = CONFIG.getConfig("server.raft.controller.group", DEFAULT_CONTROLLER_GROUP);
 

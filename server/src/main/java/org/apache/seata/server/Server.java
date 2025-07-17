@@ -25,6 +25,7 @@ import org.apache.seata.common.util.UUIDGenerator;
 import org.apache.seata.config.ConfigurationFactory;
 import org.apache.seata.core.rpc.netty.NettyRemotingServer;
 import org.apache.seata.core.rpc.netty.NettyServerConfig;
+import org.apache.seata.server.cluster.raft.manager.RaftControllerServerManager;
 import org.apache.seata.server.coordinator.DefaultCoordinator;
 import org.apache.seata.server.instance.SeataInstanceStrategy;
 import org.apache.seata.server.lock.LockerManagerFactory;
@@ -102,6 +103,8 @@ public class Server {
                     .addApplicationListener((ApplicationListener<?>) coordinator);
         }
         // log store mode : file, db, redis
+        RaftControllerServerManager.init();
+        RaftControllerServerManager.start();
         SessionHolder.init();
         LockerManagerFactory.init();
         coordinator.init();
