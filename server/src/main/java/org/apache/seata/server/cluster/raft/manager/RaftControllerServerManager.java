@@ -258,13 +258,13 @@ public class RaftControllerServerManager {
         NodeOptions nodeOptions = new NodeOptions();
         // enable the CLI service.
         nodeOptions.setDisableCli(false);
-        // snapshot should be made every 600 seconds (can be configured differently for controller)
-        int snapshotInterval = CONFIG.getInt("server.raft.controller.snapshot.interval", 60 * 10);
+        // snapshot should be made every 600 seconds
+        int snapshotInterval = CONFIG.getInt(SERVER_RAFT_SNAPSHOT_INTERVAL, 60 * 10);
         nodeOptions.setSnapshotIntervalSecs(snapshotInterval);
         nodeOptions.setRaftOptions(initRaftOptions());
-        // set the election timeout to 1 second (can be configured differently for controller)
+        // set the election timeout to 1 second
         nodeOptions.setElectionTimeoutMs(
-                CONFIG.getInt("server.raft.controller.election.timeout.ms", DEFAULT_SERVER_RAFT_ELECTION_TIMEOUT_MS));
+                CONFIG.getInt(SERVER_RAFT_ELECTION_TIMEOUT_MS, DEFAULT_SERVER_RAFT_ELECTION_TIMEOUT_MS));
         // set up the initial cluster configuration
         nodeOptions.setInitialConf(initConf);
         return nodeOptions;
