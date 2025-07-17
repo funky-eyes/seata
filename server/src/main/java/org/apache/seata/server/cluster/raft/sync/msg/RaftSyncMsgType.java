@@ -69,5 +69,21 @@ public enum RaftSyncMsgType {
      * update vgroup mapping
      */
     UPDATE_VGROUP_MAPPING,
-    ;
+
+    /**
+     * add new raft group
+     */
+    ADD_RAFT_GROUP,
+
+    /**
+     * remove raft group
+     */
+    REMOVE_RAFT_GROUP,
+
+    /**
+     * update raft group meta data
+     */
+    UPDATE_RAFT_GROUP_METADATA,
+
+
 }
