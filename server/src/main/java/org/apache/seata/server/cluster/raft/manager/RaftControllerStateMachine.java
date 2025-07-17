@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.seata.server.cluster.raft.manager;
 
 import com.alipay.sofa.jraft.Closure;
@@ -344,7 +360,7 @@ public class RaftControllerStateMachine extends StateMachineAdapter {
             try {
                 allGroupsMetadata.put(groupId, groupMetadata);
                 // Sync this change to followers
-                RaftClusterMetadataMsg msg = new RaftClusterMetadataMsg(RaftSyncMsgType.ADD_RAFT_GROUP, groupMetadata);
+                RaftGroupMetadataMsg msg = new RaftGroupMetadataMsg(RaftSyncMsgType.ADD_RAFT_GROUP, groupId, groupMetadata);
                 RaftTaskUtil.createTask(status -> addRaftGroupMetadata(msg), msg, null);
                 LOGGER.info("Added managed group: {}", groupId);
                 return true;
@@ -448,7 +464,7 @@ public class RaftControllerStateMachine extends StateMachineAdapter {
     public void refreshControllerMetadata(RaftBaseMsg syncMsg) {
         // Directly receive messages from the leader and update the controller cluster metadata
         if (syncMsg instanceof RaftClusterMetadataMsg) {
-            raftClusterMetadata = ((RaftClusterMetadataMsg) syncMsg).getraftClusterMetadata();
+            raftClusterMetadata = ((RaftClusterMetadataMsg) syncMsg).getRaftClusterMetadata();
             ((ApplicationEventPublisher) ObjectHolder.INSTANCE.getObject(OBJECT_KEY_SPRING_APPLICATION_CONTEXT))
                     .publishEvent(new ClusterChangeEvent(this, group, raftClusterMetadata.getTerm(), this.isLeader()));
             LOGGER.info("controllerGroup: {}, refresh controller cluster metadata: {}", group, raftClusterMetadata);
@@ -477,7 +493,7 @@ public class RaftControllerStateMachine extends StateMachineAdapter {
             // Ensure that the current leader must be version 2.1 or later to synchronize the operation
             Node leader = raftClusterMetadata.getLeader();
             if (leader != null && StringUtils.isNotBlank(leader.getVersion())) {
-                RaftControllerServer raftControllerServer = RaftControllerServerManager.getRaftControllerServer(controllerGroup);
+                RaftControllerServer raftControllerServer = RaftControllerServerManager.getRaftControllerServer(group);
                 PeerId currentPeerId = raftControllerServer.getServerId();
                 Node node = raftClusterMetadata.createNode(
                         currentPeerId.getIp(),
