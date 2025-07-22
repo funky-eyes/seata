@@ -119,7 +119,7 @@ public class SessionHolder {
                 SESSION_MANAGER_MAP.put(group, ROOT_SESSION_MANAGER);
                 ROOT_VGROUP_MAPPING_MANAGER =
                         EnhancedServiceLoader.load(VGroupMappingStoreManager.class, SessionMode.RAFT.getName());
-                RaftServerManager.init();
+
                 RaftServerManager.start();
             } else {
                 String vGroupMappingStorePath =

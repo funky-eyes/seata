@@ -16,26 +16,12 @@
  */
 package org.apache.seata.server.cluster.raft.manager;
 
-import com.alipay.remoting.serialization.SerializerManager;
-import com.alipay.sofa.jraft.CliService;
-import com.alipay.sofa.jraft.RaftServiceFactory;
-import com.alipay.sofa.jraft.conf.Configuration;
+
 import com.alipay.sofa.jraft.entity.PeerId;
-import com.alipay.sofa.jraft.option.CliOptions;
 import com.alipay.sofa.jraft.option.NodeOptions;
-import com.alipay.sofa.jraft.option.RaftOptions;
-import com.alipay.sofa.jraft.rpc.CliClientService;
-import com.alipay.sofa.jraft.rpc.RaftRpcServerFactory;
 import com.alipay.sofa.jraft.rpc.RpcServer;
-import com.alipay.sofa.jraft.rpc.impl.cli.CliClientServiceImpl;
-import org.apache.seata.common.ConfigurationKeys;
-import org.apache.seata.common.XID;
-import org.apache.seata.common.util.NetUtil;
-import org.apache.seata.common.util.StringUtils;
-import org.apache.seata.config.ConfigurationFactory;
-import org.apache.seata.core.serializer.SerializerType;
-import org.apache.seata.server.cluster.raft.processor.PutNodeInfoRequestProcessor;
-import org.apache.seata.server.cluster.raft.serializer.JacksonBoltSerializer;
+import org.apache.seata.server.cluster.raft.AbstractRaftServerManager;
+import org.apache.seata.server.cluster.raft.RaftServerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,109 +32,66 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static java.io.File.separator;
-import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_APPLY_BATCH;
-import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_DISRUPTOR_BUFFER_SIZE;
-import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_ELECTION_TIMEOUT_MS;
-import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_MAX_APPEND_BUFFER_SIZE;
-import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_MAX_REPLICATOR_INFLIGHT_MSGS;
-import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_PORT_CAMEL;
-import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_SNAPSHOT_INTERVAL;
-import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_SYNC;
-import static org.apache.seata.common.DefaultValues.DEFAULT_SEATA_GROUP;
-import static org.apache.seata.common.DefaultValues.DEFAULT_SERVER_RAFT_ELECTION_TIMEOUT_MS;
-import static org.apache.seata.common.DefaultValues.DEFAULT_SESSION_STORE_FILE_DIR;
 
 /**
  * Controller Raft Server Manager for managing metadata across multiple raft groups
  */
-public class RaftControllerServerManager {
+public class RaftControllerServerManager extends AbstractRaftServerManager<RaftControllerServer> {
+
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RaftControllerServerManager.class);
 
     // Map of controller group IDs to RaftControllerServer instances
     private static final Map<String /*controller-group*/, RaftControllerServer /*raft-controller-cluster*/> RAFT_CONTROLLER_SERVER_MAP = new HashMap<>();
-    private static final AtomicBoolean INIT = new AtomicBoolean(false);
-
-    private static final org.apache.seata.config.Configuration CONFIG = ConfigurationFactory.getInstance();
     private static volatile boolean CONTROLLER_MODE;
-    private static RpcServer controllerRpcServer;
 
     // Default controller group name
     private static final String DEFAULT_CONTROLLER_GROUP = "controller-group";
 
-    public static CliService getCliServiceInstance() {
-        return SingletonHandler.CLI_SERVICE;
+    @Override
+    protected RaftServerConfig getRaftServerConfig() {
+        return new RaftServerConfig(
+                "server.raft.controller.cluster",
+                "server.raftControllerPort",
+                "server.raft.controller.group",
+                DEFAULT_CONTROLLER_GROUP,
+                "raft-controller",
+                "server.raft.controller.cluster has duplicate ip, For local debugging, use -Dserver.raftControllerPort to specify the raft controller port"
+        );
     }
 
-    public static CliClientService getCliClientServiceInstance() {
-        return SingletonHandler.CLI_CLIENT_SERVICE;
+    @Override
+    public void init() {
+        super.init();
     }
 
-    public static void init() {
-        if (INIT.compareAndSet(false, true)) {
-            // Controller-specific configuration key
-            String initConfStr = CONFIG.getConfig("server.raft.controller.cluster");
-            CONTROLLER_MODE = CONFIG.getBoolean("server.raft.controller.enabled", false);
+    @Override
+    protected RaftControllerServer createRaftServer(String dataPath, String group, PeerId serverId,
+                                                    NodeOptions nodeOptions, RpcServer rpcServer) throws IOException {
+        return new RaftControllerServer(dataPath, group, serverId, nodeOptions, rpcServer);
+    }
 
-            if (StringUtils.isBlank(initConfStr)) {
-                if (CONTROLLER_MODE) {
-                    throw new IllegalArgumentException(
-                            "Controller mode must config: server.raft.controller.cluster");
-                }
-                return;
-            } else {
-                LOGGER.warn("raft controller mode is an experimental feature for managing multiple raft groups");
-            }
+    @Override
+    protected void storeRaftServer(String group, RaftControllerServer raftControllerServer) {
+        RAFT_CONTROLLER_SERVER_MAP.put(group, raftControllerServer);
+    }
 
-            final Configuration initConf = new Configuration();
-            if (!initConf.parse(initConfStr)) {
-                throw new IllegalArgumentException("fail to parse controller initConf:" + initConfStr);
-            }
+    @Override
+    protected boolean isModeEnabled() {
+        CONTROLLER_MODE = CONFIG.getBoolean("server.raft.controller.enabled", false);
+        return CONTROLLER_MODE;
+    }
 
-            // Controller uses a different port range
-            int port = Integer.parseInt(System.getProperty("server.raftControllerPort", "0"));
-            PeerId serverId = null;
-            String host = XID.getIpAddress();
+    @Override
+    protected String getExperimentalWarningMessage() {
+        return "raft controller mode is an experimental feature for managing multiple raft groups";
+    }
 
-            if (port <= 0) {
-                // Highly available deployments require different nodes
-                for (PeerId peer : initConf.getPeers()) {
-                    List<String> peerIps = NetUtil.getHostByName(peer.getIp());
-                    for (String peerIp : peerIps) {
-                        if (StringUtils.equals(peerIp, host)) {
-                            if (serverId != null) {
-                                throw new IllegalArgumentException(
-                                        "server.raft.controller.cluster has duplicate ip, For local debugging, use -Dserver.raftControllerPort to specify the raft controller port");
-                            }
-                            serverId = peer;
-                            break;
-                        }
-                    }
-                }
-            } else {
-                // Local debugging use
-                serverId = new PeerId(host, port);
-            }
-
-            final String dataPath = CONFIG.getConfig(ConfigurationKeys.STORE_FILE_DIR, DEFAULT_SESSION_STORE_FILE_DIR)
-                    + separator + "raft-controller" + separator + serverId.getPort();
-            String controllerGroup = CONFIG.getConfig("server.raft.controller.group", DEFAULT_CONTROLLER_GROUP);
-
-            try {
-                // Controller RPC server for metadata management
-                controllerRpcServer = RaftRpcServerFactory.createRaftRpcServer(serverId.getEndpoint());
-                RaftControllerServer raftControllerServer = new RaftControllerServer(
-                        dataPath, controllerGroup, serverId, initNodeOptions(initConf), controllerRpcServer);
-                // Store the controller server
-                RAFT_CONTROLLER_SERVER_MAP.put(controllerGroup, raftControllerServer);
-            } catch (IOException e) {
-                throw new IllegalArgumentException("fail init raft controller cluster:" + e.getMessage(), e);
-            }
-        }
+    @Override
+    protected void validateModeRequirements() {
+        // Controller mode specific validations can be added here
+        // For now, no specific requirements beyond the base class
     }
 
     public static void start() {
@@ -161,14 +104,7 @@ public class RaftControllerServerManager {
             }
             LOGGER.info("started seata controller raft cluster, group: {} ", controllerGroup);
         });
-
-        if (controllerRpcServer != null) {
-            controllerRpcServer.registerProcessor(new PutNodeInfoRequestProcessor());
-            SerializerManager.addSerializer(SerializerType.JACKSON.getCode(), new JacksonBoltSerializer());
-            if (!controllerRpcServer.init(null)) {
-                throw new RuntimeException("start raft controller node fail!");
-            }
-        }
+        startSharedRpcServer();
     }
 
     public static void destroy() {
@@ -176,11 +112,9 @@ public class RaftControllerServerManager {
             raftControllerServer.close();
             LOGGER.info("closed seata controller raft cluster, group: {} ", controllerGroup);
         });
-        Optional.ofNullable(controllerRpcServer).ifPresent(RpcServer::shutdown);
         RAFT_CONTROLLER_SERVER_MAP.clear();
-        controllerRpcServer = null;
+        destroySharedRpcServer();
         CONTROLLER_MODE = false;
-        INIT.set(false);
     }
 
     public static RaftControllerServer getRaftControllerServer(String controllerGroup) {
@@ -241,45 +175,7 @@ public class RaftControllerServerManager {
         return false;
     }
 
-    private static RaftOptions initRaftOptions() {
-        RaftOptions raftOptions = new RaftOptions();
-        raftOptions.setApplyBatch(CONFIG.getInt(SERVER_RAFT_APPLY_BATCH, raftOptions.getApplyBatch()));
-        raftOptions.setMaxAppendBufferSize(
-                CONFIG.getInt(SERVER_RAFT_MAX_APPEND_BUFFER_SIZE, raftOptions.getMaxAppendBufferSize()));
-        raftOptions.setDisruptorBufferSize(
-                CONFIG.getInt(SERVER_RAFT_DISRUPTOR_BUFFER_SIZE, raftOptions.getDisruptorBufferSize()));
-        raftOptions.setMaxReplicatorInflightMsgs(
-                CONFIG.getInt(SERVER_RAFT_MAX_REPLICATOR_INFLIGHT_MSGS, raftOptions.getMaxReplicatorInflightMsgs()));
-        raftOptions.setSync(CONFIG.getBoolean(SERVER_RAFT_SYNC, raftOptions.isSync()));
-        return raftOptions;
-    }
-
-    private static NodeOptions initNodeOptions(Configuration initConf) {
-        NodeOptions nodeOptions = new NodeOptions();
-        // enable the CLI service.
-        nodeOptions.setDisableCli(false);
-        // snapshot should be made every 600 seconds
-        int snapshotInterval = CONFIG.getInt(SERVER_RAFT_SNAPSHOT_INTERVAL, 60 * 10);
-        nodeOptions.setSnapshotIntervalSecs(snapshotInterval);
-        nodeOptions.setRaftOptions(initRaftOptions());
-        // set the election timeout to 1 second
-        nodeOptions.setElectionTimeoutMs(
-                CONFIG.getInt(SERVER_RAFT_ELECTION_TIMEOUT_MS, DEFAULT_SERVER_RAFT_ELECTION_TIMEOUT_MS));
-        // set up the initial cluster configuration
-        nodeOptions.setInitialConf(initConf);
-        return nodeOptions;
-    }
-
     public static Set<String> getControllerGroups() {
         return RAFT_CONTROLLER_SERVER_MAP.keySet();
-    }
-
-    private static class SingletonHandler {
-        private static final CliService CLI_SERVICE = RaftServiceFactory.createAndInitCliService(new CliOptions());
-        private static final CliClientService CLI_CLIENT_SERVICE = new CliClientServiceImpl();
-
-        static {
-            CLI_CLIENT_SERVICE.init(new CliOptions());
-        }
     }
 }
