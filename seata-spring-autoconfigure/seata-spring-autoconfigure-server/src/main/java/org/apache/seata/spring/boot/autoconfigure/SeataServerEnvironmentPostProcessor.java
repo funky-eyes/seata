@@ -21,6 +21,7 @@ import org.apache.seata.spring.boot.autoconfigure.properties.server.ServerProper
 import org.apache.seata.spring.boot.autoconfigure.properties.server.ServerRateLimitProperties;
 import org.apache.seata.spring.boot.autoconfigure.properties.server.ServerRecoveryProperties;
 import org.apache.seata.spring.boot.autoconfigure.properties.server.ServerUndoProperties;
+import org.apache.seata.spring.boot.autoconfigure.properties.server.raft.ServerRaftControllerProperties;
 import org.apache.seata.spring.boot.autoconfigure.properties.server.raft.ServerRaftProperties;
 import org.apache.seata.spring.boot.autoconfigure.properties.server.raft.ServerRaftSSLClientProperties;
 import org.apache.seata.spring.boot.autoconfigure.properties.server.raft.ServerRaftSSLProperties;
@@ -45,6 +46,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.apache.seata.spring.boot.autoconfigure.StarterConstants.METRICS_PREFIX;
 import static org.apache.seata.spring.boot.autoconfigure.StarterConstants.PROPERTY_BEAN_MAP;
 import static org.apache.seata.spring.boot.autoconfigure.StarterConstants.SERVER_PREFIX;
+import static org.apache.seata.spring.boot.autoconfigure.StarterConstants.SERVER_RAFT_CONTROLLER_PREFIX;
 import static org.apache.seata.spring.boot.autoconfigure.StarterConstants.SERVER_RAFT_PREFIX;
 import static org.apache.seata.spring.boot.autoconfigure.StarterConstants.SERVER_RAFT_SSL_CLIENT_KEYSTORE_PREFIX;
 import static org.apache.seata.spring.boot.autoconfigure.StarterConstants.SERVER_RAFT_SSL_PREFIX;
@@ -96,6 +98,7 @@ public class SeataServerEnvironmentPostProcessor implements EnvironmentPostProce
             PROPERTY_BEAN_MAP.put(STORE_REDIS_SINGLE_PREFIX, StoreRedisProperties.Single.class);
             PROPERTY_BEAN_MAP.put(STORE_REDIS_SENTINEL_PREFIX, StoreRedisProperties.Sentinel.class);
             PROPERTY_BEAN_MAP.put(SERVER_RAFT_PREFIX, ServerRaftProperties.class);
+            PROPERTY_BEAN_MAP.put(SERVER_RAFT_CONTROLLER_PREFIX, ServerRaftControllerProperties.class);
             PROPERTY_BEAN_MAP.put(SERVER_RAFT_SSL_SERVER_KEYSTORE_PREFIX, ServerRaftSSLServerProperties.class);
             PROPERTY_BEAN_MAP.put(SERVER_RAFT_SSL_PREFIX, ServerRaftSSLProperties.class);
             PROPERTY_BEAN_MAP.put(SERVER_RAFT_SSL_CLIENT_KEYSTORE_PREFIX, ServerRaftSSLClientProperties.class);
