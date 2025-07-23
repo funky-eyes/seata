@@ -83,3 +83,5 @@ Thumbs.db
 /console/src/main/resources/static/saga-statemachine-designer/
 /console/src/main/resources/static/index.html
 /console/src/main/resources/static/version.json
+/node_modules/.package-lock.json
+/package-lock.json
