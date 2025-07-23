@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.seata.server.cluster.raft.manager;
+package org.apache.seata.server.cluster.raft;
 
 import com.alipay.sofa.jraft.Closure;
 import com.alipay.sofa.jraft.Iterator;
@@ -32,26 +32,37 @@ import org.apache.seata.common.holder.ObjectHolder;
 import org.apache.seata.common.metadata.ClusterRole;
 import org.apache.seata.common.metadata.Node;
 import org.apache.seata.common.store.SessionMode;
+import org.apache.seata.common.store.StoreMode;
 import org.apache.seata.common.thread.NamedThreadFactory;
 import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.core.serializer.SerializerType;
 import org.apache.seata.server.cluster.listener.ClusterChangeEvent;
-import org.apache.seata.server.cluster.raft.RaftStateMachine;
 import org.apache.seata.server.cluster.raft.context.SeataClusterContext;
 import org.apache.seata.server.cluster.raft.execute.RaftMsgExecute;
+import org.apache.seata.server.cluster.raft.execute.branch.AddBranchSessionExecute;
+import org.apache.seata.server.cluster.raft.execute.branch.RemoveBranchSessionExecute;
+import org.apache.seata.server.cluster.raft.execute.branch.UpdateBranchSessionExecute;
+import org.apache.seata.server.cluster.raft.execute.global.AddGlobalSessionExecute;
+import org.apache.seata.server.cluster.raft.execute.global.RemoveGlobalSessionExecute;
+import org.apache.seata.server.cluster.raft.execute.global.UpdateGlobalSessionExecute;
+import org.apache.seata.server.cluster.raft.execute.lock.BranchReleaseLockExecute;
+import org.apache.seata.server.cluster.raft.execute.lock.GlobalReleaseLockExecute;
+import org.apache.seata.server.cluster.raft.execute.vgroup.VGroupAddExecute;
+import org.apache.seata.server.cluster.raft.execute.vgroup.VGroupRemoveExecute;
 import org.apache.seata.server.cluster.raft.processor.request.PutNodeMetadataRequest;
 import org.apache.seata.server.cluster.raft.processor.response.PutNodeMetadataResponse;
 import org.apache.seata.server.cluster.raft.snapshot.StoreSnapshotFile;
 import org.apache.seata.server.cluster.raft.snapshot.metadata.LeaderMetadataSnapshotFile;
+import org.apache.seata.server.cluster.raft.snapshot.session.SessionSnapshotFile;
 import org.apache.seata.server.cluster.raft.snapshot.vgroup.VGroupSnapshotFile;
 import org.apache.seata.server.cluster.raft.sync.RaftSyncMessageSerializer;
 import org.apache.seata.server.cluster.raft.sync.msg.RaftBaseMsg;
 import org.apache.seata.server.cluster.raft.sync.msg.RaftClusterMetadataMsg;
-import org.apache.seata.server.cluster.raft.sync.msg.RaftGroupMetadataMsg;
 import org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType;
 import org.apache.seata.server.cluster.raft.sync.msg.dto.RaftClusterMetadata;
 import org.apache.seata.server.cluster.raft.util.RaftTaskUtil;
+import org.apache.seata.server.session.SessionHolder;
 import org.apache.seata.server.store.StoreConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,20 +70,40 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.env.Environment;
 
 import java.nio.ByteBuffer;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_APPLICATION_CONTEXT;
 import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_CONFIGURABLE_ENVIRONMENT;
+import static org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType.ADD_BRANCH_SESSION;
+import static org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType.ADD_GLOBAL_SESSION;
+import static org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType.ADD_VGROUP_MAPPING;
+import static org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType.REFRESH_CLUSTER_METADATA;
+import static org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType.RELEASE_BRANCH_SESSION_LOCK;
+import static org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType.RELEASE_GLOBAL_SESSION_LOCK;
+import static org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType.REMOVE_BRANCH_SESSION;
+import static org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType.REMOVE_GLOBAL_SESSION;
+import static org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType.REMOVE_VGROUP_MAPPING;
+import static org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType.UPDATE_BRANCH_SESSION_STATUS;
+import static org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType.UPDATE_GLOBAL_SESSION_STATUS;
 
-public class RaftControllerStateMachine extends RaftStateMachine {
+/**
+ */
+public class RaftTransactionStateMachine extends RaftStateMachine {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RaftControllerStateMachine.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RaftTransactionStateMachine.class);
 
     private final String mode;
 
@@ -80,30 +111,14 @@ public class RaftControllerStateMachine extends RaftStateMachine {
 
     private final List<StoreSnapshotFile> snapshotFiles = new ArrayList<>();
 
-    private static final Map<RaftSyncMsgType, RaftMsgExecute<?>> CONTROLLER_EXECUTES = new HashMap<>();
+    private static final Map<RaftSyncMsgType, RaftMsgExecute<?>> EXECUTES = new HashMap<>();
 
-    // Metadata for all managed raft groups
-    private volatile Map<String, Object> allGroupsMetadata = new ConcurrentHashMap<>();
-
-    // Controller-specific cluster metadata
     private volatile RaftClusterMetadata raftClusterMetadata = new RaftClusterMetadata();
 
     private final Lock lock = new ReentrantLock();
 
-    private static final ScheduledThreadPoolExecutor CONTROLLER_METADATA_POOL =
-            new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("reSyncControllerMetadataPool", 1, true));
-
-    /**
-     * Leader term
-     */
-    private final AtomicLong leaderTerm = new AtomicLong(-1);
-
-    /**
-     * current term
-     */
-    private final AtomicLong currentTerm = new AtomicLong(-1);
-
-    private final AtomicBoolean initSync = new AtomicBoolean(false);
+    private static final ScheduledThreadPoolExecutor RESYNC_METADATA_POOL =
+            new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("reSyncMetadataPool", 1, true));
 
     private ScheduledFuture<?> scheduledFuture;
 
@@ -111,39 +126,30 @@ public class RaftControllerStateMachine extends RaftStateMachine {
         return this.leaderTerm.get() > 0;
     }
 
-    public RaftControllerStateMachine(String group) {
+    public RaftTransactionStateMachine(String group) {
         this.group = group;
         mode = StoreConfig.getSessionMode().getName();
-
-        // Register controller-specific message handlers
-        CONTROLLER_EXECUTES.put(RaftSyncMsgType.REFRESH_CLUSTER_METADATA, syncMsg -> {
-            refreshControllerMetadata(syncMsg);
+        EXECUTES.put(REFRESH_CLUSTER_METADATA, syncMsg -> {
+            refreshClusterMetadata(syncMsg);
             return null;
         });
-
-        // Add controller-specific message types for managing multiple groups
-        CONTROLLER_EXECUTES.put(RaftSyncMsgType.ADD_RAFT_GROUP, syncMsg -> {
-            addRaftGroupMetadata(syncMsg);
-            return null;
-        });
-
-        CONTROLLER_EXECUTES.put(RaftSyncMsgType.REMOVE_RAFT_GROUP, syncMsg -> {
-            removeRaftGroupMetadata(syncMsg);
-            return null;
-        });
-
-        CONTROLLER_EXECUTES.put(RaftSyncMsgType.UPDATE_RAFT_GROUP_METADATA, syncMsg -> {
-            updateRaftGroupMetadata(syncMsg);
-            return null;
-        });
-
-        // Register controller-specific snapshot files
         registryStoreSnapshotFile(new LeaderMetadataSnapshotFile(group));
-        registryStoreSnapshotFile(new VGroupSnapshotFile(group));
-
-        // Start periodic controller metadata sync
-        this.scheduledFuture = CONTROLLER_METADATA_POOL.scheduleAtFixedRate(
-                () -> syncControllerNodeInfo(group), 10, 10, TimeUnit.SECONDS);
+        if (StoreMode.RAFT.getName().equalsIgnoreCase(mode)) {
+            registryStoreSnapshotFile(new SessionSnapshotFile(group));
+            registryStoreSnapshotFile(new VGroupSnapshotFile(group));
+            EXECUTES.put(ADD_GLOBAL_SESSION, new AddGlobalSessionExecute());
+            EXECUTES.put(ADD_BRANCH_SESSION, new AddBranchSessionExecute());
+            EXECUTES.put(REMOVE_BRANCH_SESSION, new RemoveBranchSessionExecute());
+            EXECUTES.put(UPDATE_GLOBAL_SESSION_STATUS, new UpdateGlobalSessionExecute());
+            EXECUTES.put(RELEASE_GLOBAL_SESSION_LOCK, new GlobalReleaseLockExecute());
+            EXECUTES.put(REMOVE_GLOBAL_SESSION, new RemoveGlobalSessionExecute());
+            EXECUTES.put(UPDATE_BRANCH_SESSION_STATUS, new UpdateBranchSessionExecute());
+            EXECUTES.put(RELEASE_BRANCH_SESSION_LOCK, new BranchReleaseLockExecute());
+            EXECUTES.put(REMOVE_VGROUP_MAPPING, new VGroupRemoveExecute());
+            EXECUTES.put(ADD_VGROUP_MAPPING, new VGroupAddExecute());
+            this.scheduledFuture = RESYNC_METADATA_POOL.scheduleAtFixedRate(
+                    () -> syncCurrentNodeInfo(group), 10, 10, TimeUnit.SECONDS);
+        }
     }
 
     @Override
@@ -161,9 +167,9 @@ public class RaftControllerStateMachine extends RaftStateMachine {
                             RaftSyncMessageSerializer.decode(byteBuffer.array()).getBody();
                     // follower executes the corresponding task
                     if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("controller sync msg: {}", msg);
+                        LOGGER.debug("sync msg: {}", msg);
                     }
-                    onExecuteControllerRaft(msg);
+                    onExecuteRaft(msg);
                 }
             }
             iterator.next();
@@ -184,7 +190,7 @@ public class RaftControllerStateMachine extends RaftStateMachine {
                 return;
             }
         }
-        LOGGER.info("controllerGroup: {}, onSnapshotSave cost: {} ms.", group, System.currentTimeMillis() - current);
+        LOGGER.info("groupId: {}, onSnapshotSave cost: {} ms.", group, System.currentTimeMillis() - current);
         done.run(Status.OK());
     }
 
@@ -205,7 +211,7 @@ public class RaftControllerStateMachine extends RaftStateMachine {
                 return false;
             }
         }
-        LOGGER.info("controllerGroup: {}, onSnapshotLoad cost: {} ms.", group, System.currentTimeMillis() - current);
+        LOGGER.info("groupId: {}, onSnapshotLoad cost: {} ms.", group, System.currentTimeMillis() - current);
         return true;
     }
 
@@ -213,58 +219,60 @@ public class RaftControllerStateMachine extends RaftStateMachine {
     public void onLeaderStart(final long term) {
         boolean leader = isLeader();
         this.leaderTerm.set(term);
-        LOGGER.info("controllerGroup: {}, onLeaderStart: term={}.", group, term);
+        LOGGER.info("groupId: {}, onLeaderStart: term={}.", group, term);
         this.currentTerm.set(term);
-        syncControllerMetadata();
-
-        if (!leader) {
+        syncMetadata();
+        if (!leader && RaftTransactionServerManager.getInstance().isRaftMode()) {
             CompletableFuture.runAsync(() -> {
-                LOGGER.info("controller became leader, managing {} raft groups", allGroupsMetadata.size());
+                LOGGER.info(
+                        "reload session, groupId: {}, session map size: {} ",
+                        group,
+                        SessionHolder.getRootSessionManager().allSessions().size());
                 SeataClusterContext.bindGroup(group);
                 try {
-                    // Reload controller metadata and managed groups
-                    reloadControllerState();
+                    // become the leader again,reloading global session
+                    SessionHolder.reload(SessionHolder.getRootSessionManager().allSessions(), SessionMode.RAFT, false);
                 } finally {
                     SeataClusterContext.unbindGroup();
                 }
             });
             Configuration conf = RouteTable.getInstance().getConfiguration(group);
-            // A member change might trigger a leader re-election. At this point, it's necessary to filter out
+            // A member change might trigger a leader re-election. At this point, it’s necessary to filter out
             // non-existent members and synchronize again.
-            changeControllerPeers(conf);
+            changePeers(conf);
         }
     }
 
     @Override
     public void onLeaderStop(final Status status) {
         this.leaderTerm.set(-1);
-        LOGGER.info("controllerGroup: {}, onLeaderStop: status={}.", group, status);
+        LOGGER.info("groupId: {}, onLeaderStop: status={}.", group, status);
     }
 
     @Override
     public void onStopFollowing(final LeaderChangeContext ctx) {
-        LOGGER.info("controllerGroup: {}, onStopFollowing: {}.", group, ctx);
+        LOGGER.info("groupId: {}, onStopFollowing: {}.", group, ctx);
     }
 
     @Override
     public void onStartFollowing(final LeaderChangeContext ctx) {
-        LOGGER.info("controllerGroup: {}, onStartFollowing: {}.", group, ctx);
+        LOGGER.info("groupId: {}, onStartFollowing: {}.", group, ctx);
         this.currentTerm.set(ctx.getTerm());
-        CompletableFuture.runAsync(() -> syncControllerNodeInfo(ctx.getLeaderId()), CONTROLLER_METADATA_POOL);
+        CompletableFuture.runAsync(() -> syncCurrentNodeInfo(ctx.getLeaderId()), RESYNC_METADATA_POOL);
     }
 
     @Override
     public void onConfigurationCommitted(Configuration conf) {
-        LOGGER.info("controllerGroup: {}, onConfigurationCommitted: {}.", group, conf);
+        LOGGER.info("groupId: {}, onConfigurationCommitted: {}.", group, conf);
         RouteTable.getInstance().updateConfiguration(group, conf);
         // After a member change, the metadata needs to be synchronized again.
         initSync.compareAndSet(true, false);
         if (isLeader()) {
-            changeControllerPeers(conf);
+            changePeers(conf);
         }
     }
 
-    private void changeControllerPeers(Configuration conf) {
+    private void changePeers(Configuration conf) {
         lock.lock();
         try {
             List<PeerId> newFollowers = conf.getPeers();
@@ -272,23 +280,23 @@ public class RaftControllerStateMachine extends RaftStateMachine {
             List<Node> currentFollowers = raftClusterMetadata.getFollowers();
             if (CollectionUtils.isNotEmpty(newFollowers)) {
                 raftClusterMetadata.setFollowers(currentFollowers.stream()
-                        .filter(node -> containsPeer(node, newFollowers))
+                        .filter(node -> contains(node, newFollowers))
                         .collect(Collectors.toList()));
             }
             if (CollectionUtils.isNotEmpty(newLearners)) {
                 raftClusterMetadata.setLearner(raftClusterMetadata.getLearner().stream()
-                        .filter(node -> containsPeer(node, newLearners))
+                        .filter(node -> contains(node, newLearners))
                         .collect(Collectors.toList()));
             } else {
                 raftClusterMetadata.setLearner(Collections.emptyList());
             }
-            CompletableFuture.runAsync(this::syncControllerMetadata, CONTROLLER_METADATA_POOL);
+            CompletableFuture.runAsync(this::syncMetadata, RESYNC_METADATA_POOL);
         } finally {
             lock.unlock();
         }
     }
 
-    private boolean containsPeer(Node node, Collection<PeerId> list) {
+    private boolean contains(Node node, Collection<PeerId> list) {
         // This indicates that the node is of a lower version.
         // When scaling up or down on a higher version
         // you need to ensure that the cluster is consistent first
@@ -301,14 +309,14 @@ public class RaftControllerStateMachine extends RaftStateMachine {
         return list.contains(nodePeer);
     }
 
-    public void syncControllerMetadata() {
+    public void syncMetadata() {
         if (isLeader()) {
             SeataClusterContext.bindGroup(group);
             try {
-                RaftClusterMetadataMsg controllerMetadataMsg =
-                        new RaftClusterMetadataMsg(changeOrInitraftClusterMetadata());
+                RaftClusterMetadataMsg raftClusterMetadataMsg =
+                        new RaftClusterMetadataMsg(changeOrInitRaftClusterMetadata());
                 RaftTaskUtil.createTask(
-                        status -> refreshControllerMetadata(controllerMetadataMsg), controllerMetadataMsg, null);
+                        status -> refreshClusterMetadata(raftClusterMetadataMsg), raftClusterMetadataMsg, null);
             } catch (Exception e) {
                 LOGGER.error(e.getMessage(), e);
             } finally {
@@ -317,142 +325,50 @@ public class RaftControllerStateMachine extends RaftStateMachine {
         }
     }
 
-    private void onExecuteControllerRaft(RaftBaseMsg msg) {
-        RaftMsgExecute<?> execute = CONTROLLER_EXECUTES.get(msg.getMsgType());
+    private void onExecuteRaft(RaftBaseMsg msg) {
+        RaftMsgExecute<?> execute = EXECUTES.get(msg.getMsgType());
         if (execute == null) {
             throw new RuntimeException(
-                    "the controller state machine does not allow events that cannot be executed, please feedback the information to the Seata community !!! msg: "
+                    "the state machine does not allow events that cannot be executed, please feedback the information to the Seata community !!! msg: "
                             + msg);
         }
         try {
             execute.execute(msg);
         } catch (Throwable e) {
-            LOGGER.error(
-                    "Controller message synchronization failure: {}, msgType: {}", e.getMessage(), msg.getMsgType(), e);
+            LOGGER.error("Message synchronization failure: {}, msgType: {}", e.getMessage(), msg.getMsgType(), e);
             throw new RuntimeException(e);
         }
-    }
-
-    public AtomicLong getCurrentTerm() {
-        return currentTerm;
     }
 
     public void registryStoreSnapshotFile(StoreSnapshotFile storeSnapshotFile) {
         snapshotFiles.add(storeSnapshotFile);
     }
 
-    public RaftClusterMetadata getRaftClusterMetadata() {
+    public RaftClusterMetadata getRaftLeaderMetadata() {
         return raftClusterMetadata;
     }
 
-    public void setRaftClusterMetadata(RaftClusterMetadata raftClusterMetadata) {
+    public void setRaftLeaderMetadata(RaftClusterMetadata raftClusterMetadata) {
         this.raftClusterMetadata = raftClusterMetadata;
     }
 
-    public Map<String, Object> getAllGroupsMetadata() {
-        return new HashMap<>(allGroupsMetadata);
-    }
-
-    public boolean addManagedGroup(String groupId, Map<String, Object> groupMetadata) {
-        if (isLeader()) {
-            lock.lock();
-            try {
-                allGroupsMetadata.put(groupId, groupMetadata);
-                // Sync this change to followers
-                RaftGroupMetadataMsg msg =
-                        new RaftGroupMetadataMsg(RaftSyncMsgType.ADD_RAFT_GROUP, groupId, groupMetadata);
-                RaftTaskUtil.createTask(status -> addRaftGroupMetadata(msg), msg, null);
-                LOGGER.info("Added managed group: {}", groupId);
-                return true;
-            } catch (Exception e) {
-                LOGGER.error("Failed to add managed group: {}", groupId, e);
-                return false;
-            } finally {
-                lock.unlock();
-            }
-        }
-        return false;
-    }
-
-    public boolean removeManagedGroup(String groupId) {
-        if (isLeader()) {
-            lock.lock();
-            try {
-                Object removed = allGroupsMetadata.remove(groupId);
-                if (removed != null) {
-                    // Sync this change to followers
-                    RaftGroupMetadataMsg msg =
-                            new RaftGroupMetadataMsg(RaftSyncMsgType.REMOVE_RAFT_GROUP, groupId, null);
-                    RaftTaskUtil.createTask(status -> removeRaftGroupMetadata(msg), msg, null);
-                    LOGGER.info("Removed managed group: {}", groupId);
-                    return true;
-                }
-            } catch (Exception e) {
-                LOGGER.error("Failed to remove managed group: {}", groupId, e);
-            } finally {
-                lock.unlock();
-            }
-        }
-        return false;
-    }
-
-    public boolean updateGroupMetadata(String groupId, Map<String, Object> newMetadata) {
-        if (isLeader() && allGroupsMetadata.containsKey(groupId)) {
-            lock.lock();
-            try {
-                allGroupsMetadata.put(groupId, newMetadata);
-                // Sync this change to followers
-                RaftGroupMetadataMsg msg =
-                        new RaftGroupMetadataMsg(RaftSyncMsgType.UPDATE_RAFT_GROUP_METADATA, groupId, newMetadata);
-                RaftTaskUtil.createTask(status -> updateRaftGroupMetadata(msg), msg, null);
-                LOGGER.info("Updated metadata for group: {}", groupId);
-                return true;
-            } catch (Exception e) {
-                LOGGER.error("Failed to update metadata for group: {}", groupId, e);
-                return false;
-            } finally {
-                lock.unlock();
-            }
-        }
-        return false;
-    }
-
-    private void addRaftGroupMetadata(RaftBaseMsg syncMsg) {
-        RaftGroupMetadataMsg msg = (RaftGroupMetadataMsg) syncMsg;
-        allGroupsMetadata.put(msg.getGroupId(), msg.getGroupMetadata());
-        LOGGER.info("Follower added managed group: {}", msg.getGroupId());
-    }
-
-    private void removeRaftGroupMetadata(RaftBaseMsg syncMsg) {
-        RaftGroupMetadataMsg msg = (RaftGroupMetadataMsg) syncMsg;
-        allGroupsMetadata.remove(msg.getGroupId());
-        LOGGER.info("Follower removed managed group: {}", msg.getGroupId());
-    }
-
-    private void updateRaftGroupMetadata(RaftBaseMsg syncMsg) {
-        RaftGroupMetadataMsg msg = (RaftGroupMetadataMsg) syncMsg;
-        allGroupsMetadata.put(msg.getGroupId(), msg.getGroupMetadata());
-        LOGGER.info("Follower updated metadata for group: {}", msg.getGroupId());
-    }
-
-    public RaftClusterMetadata changeOrInitraftClusterMetadata() {
+    public RaftClusterMetadata changeOrInitRaftClusterMetadata() {
         raftClusterMetadata.setTerm(this.currentTerm.get());
         Node leaderNode = raftClusterMetadata.getLeader();
-        RaftControllerServer raftControllerServer =
-                RaftControllerServerManager.getInstance().getRaftServer(group);
-        PeerId currentPeerId = raftControllerServer.getServerId();
-
+        RaftTransactionServer raftTransactionServer =
+                RaftTransactionServerManager.getInstance().getInstance().getRaftServer(group);
+        PeerId cureentPeerId = raftTransactionServer.getServerId();
         // After the re-election, the leader information may be different from the latest leader, and you need to
         // replace the leader information
         if (leaderNode == null
                 || (leaderNode.getInternal() != null
-                        && !currentPeerId.equals(new PeerId(
+                        && !cureentPeerId.equals(new PeerId(
                                 leaderNode.getInternal().getHost(),
                                 leaderNode.getInternal().getPort())))) {
             Node leader = raftClusterMetadata.createNode(
-                    currentPeerId.getIp(),
+                    cureentPeerId.getIp(),
                     XID.getPort(),
-                    raftControllerServer.getServerId().getPort(),
+                    raftTransactionServer.getServerId().getPort(),
                     Integer.parseInt(
                             ((Environment) ObjectHolder.INSTANCE.getObject(OBJECT_KEY_SPRING_CONFIGURABLE_ENVIRONMENT))
                                     .getProperty("server.port", String.valueOf(7091))),
@@ -464,27 +380,27 @@ public class RaftControllerStateMachine extends RaftStateMachine {
         return raftClusterMetadata;
     }
 
-    public void refreshControllerMetadata(RaftBaseMsg syncMsg) {
-        // Directly receive messages from the leader and update the controller cluster metadata
-        if (syncMsg instanceof RaftClusterMetadataMsg) {
-            raftClusterMetadata = ((RaftClusterMetadataMsg) syncMsg).getRaftClusterMetadata();
-            ((ApplicationEventPublisher) ObjectHolder.INSTANCE.getObject(OBJECT_KEY_SPRING_APPLICATION_CONTEXT))
-                    .publishEvent(new ClusterChangeEvent(this, group, raftClusterMetadata.getTerm(), this.isLeader()));
-            LOGGER.info("controllerGroup: {}, refresh controller cluster metadata: {}", group, raftClusterMetadata);
-        }
+    public void refreshClusterMetadata(RaftBaseMsg syncMsg) {
+        // Directly receive messages from the leader and update the cluster metadata
+        raftClusterMetadata = ((RaftClusterMetadataMsg) syncMsg).getRaftClusterMetadata();
+        ((ApplicationEventPublisher) ObjectHolder.INSTANCE.getObject(OBJECT_KEY_SPRING_APPLICATION_CONTEXT))
+                .publishEvent(new ClusterChangeEvent(this, group, raftClusterMetadata.getTerm(), this.isLeader()));
+        LOGGER.info("groupId: {}, refresh cluster metadata: {}", group, raftClusterMetadata);
     }
 
-    private void syncControllerNodeInfo(String controllerGroup) {
+    private void syncCurrentNodeInfo(String group) {
         if (initSync.compareAndSet(false, true)) {
             try {
                 RouteTable.getInstance()
                         .refreshLeader(
-                                RaftControllerServerManager.getInstance().getCliClientServiceInstance(),
-                                controllerGroup,
+                                RaftTransactionServerManager.getInstance()
+                                        .getInstance()
+                                        .getCliClientServiceInstance(),
+                                group,
                                 1000);
-                PeerId peerId = RouteTable.getInstance().selectLeader(controllerGroup);
+                PeerId peerId = RouteTable.getInstance().selectLeader(group);
                 if (peerId != null) {
-                    syncControllerNodeInfo(peerId);
+                    syncCurrentNodeInfo(peerId);
                 } else {
                     initSync.compareAndSet(true, false);
                 }
@@ -495,18 +411,18 @@ public class RaftControllerStateMachine extends RaftStateMachine {
         }
     }
 
-    private void syncControllerNodeInfo(PeerId leaderPeerId) {
+    private void syncCurrentNodeInfo(PeerId leaderPeerId) {
         try {
             // Ensure that the current leader must be version 2.1 or later to synchronize the operation
             Node leader = raftClusterMetadata.getLeader();
             if (leader != null && StringUtils.isNotBlank(leader.getVersion())) {
-                RaftControllerServer raftControllerServer =
-                        RaftControllerServerManager.getInstance().getRaftServer(group);
-                PeerId currentPeerId = raftControllerServer.getServerId();
+                RaftTransactionServer raftTransactionServer =
+                        RaftTransactionServerManager.getInstance().getInstance().getRaftServer(group);
+                PeerId cureentPeerId = raftTransactionServer.getServerId();
                 Node node = raftClusterMetadata.createNode(
-                        currentPeerId.getIp(),
+                        cureentPeerId.getIp(),
                         XID.getPort(),
-                        currentPeerId.getPort(),
+                        cureentPeerId.getPort(),
                         Integer.parseInt(((Environment)
                                         ObjectHolder.INSTANCE.getObject(OBJECT_KEY_SPRING_CONFIGURABLE_ENVIRONMENT))
                                 .getProperty("server.port", String.valueOf(7091))),
@@ -516,11 +432,11 @@ public class RaftControllerStateMachine extends RaftStateMachine {
                 PutNodeMetadataRequest putNodeInfoRequest = new PutNodeMetadataRequest(node);
                 Configuration configuration = RouteTable.getInstance().getConfiguration(group);
                 node.setRole(
-                        configuration.getPeers().contains(currentPeerId) ? ClusterRole.FOLLOWER : ClusterRole.LEARNER);
+                        configuration.getPeers().contains(cureentPeerId) ? ClusterRole.FOLLOWER : ClusterRole.LEARNER);
                 invokeContext.put(
                         com.alipay.remoting.InvokeContext.BOLT_CUSTOM_SERIALIZER, SerializerType.JACKSON.getCode());
                 CliClientServiceImpl cliClientService = (CliClientServiceImpl)
-                        RaftControllerServerManager.getInstance().getCliClientServiceInstance();
+                        RaftTransactionServerManager.getInstance().getInstance().getCliClientServiceInstance();
                 // The previous leader may be an old snapshot or log playback, which is not accurate, and you
                 // need to get the leader again
                 cliClientService
@@ -536,20 +452,18 @@ public class RaftControllerStateMachine extends RaftStateMachine {
                                         if (putNodeMetadataResponse.isSuccess()) {
                                             scheduledFuture.cancel(true);
                                             LOGGER.info(
-                                                    "sync controller node info to leader: {}, result: {}",
-                                                    leaderPeerId,
-                                                    result);
+                                                    "sync node info to leader: {}, result: {}", leaderPeerId, result);
                                         } else {
                                             initSync.compareAndSet(true, false);
                                             LOGGER.info(
-                                                    "sync controller node info to leader: {}, result: {}, retry will be made at the time of the re-election or after 10 seconds",
+                                                    "sync node info to leader: {}, result: {}, retry will be made at the time of the re-election or after 10 seconds",
                                                     leaderPeerId,
                                                     result);
                                         }
                                     } else {
                                         initSync.compareAndSet(true, false);
                                         LOGGER.error(
-                                                "sync controller node info to leader: {}, error: {}",
+                                                "sync node info to leader: {}, error: {}",
                                                 leaderPeerId,
                                                 err.getMessage(),
                                                 err);
@@ -565,7 +479,7 @@ public class RaftControllerStateMachine extends RaftStateMachine {
         }
     }
 
-    public void changeControllerNodeMetadata(Node node) {
+    public void changeNodeMetadata(Node node) {
         lock.lock();
         try {
             List<Node> list = node.getRole() == ClusterRole.FOLLOWER
@@ -590,15 +504,9 @@ public class RaftControllerStateMachine extends RaftStateMachine {
             }
             // add new node node metadata
             list.add(node);
-            syncControllerMetadata();
+            syncMetadata();
         } finally {
             lock.unlock();
         }
-    }
-
-    private void reloadControllerState() {
-        // Reload controller-specific state
-        LOGGER.info("Reloading controller state for managing {} groups", allGroupsMetadata.size());
-        // Add any controller-specific reload logic here
     }
 }

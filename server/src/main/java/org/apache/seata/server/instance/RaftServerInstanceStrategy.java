@@ -23,8 +23,8 @@ import org.apache.seata.common.metadata.Instance;
 import org.apache.seata.common.metadata.Node;
 import org.apache.seata.server.cluster.listener.ClusterChangeEvent;
 import org.apache.seata.server.cluster.listener.ClusterChangeListener;
-import org.apache.seata.server.cluster.raft.RaftServerManager;
-import org.apache.seata.server.cluster.raft.RaftStateMachine;
+import org.apache.seata.server.cluster.raft.RaftTransactionServerManager;
+import org.apache.seata.server.cluster.raft.RaftTransactionStateMachine;
 import org.apache.seata.server.session.SessionHolder;
 import org.apache.seata.server.store.StoreConfig;
 import org.apache.seata.spring.boot.autoconfigure.properties.server.raft.ServerRaftProperties;
@@ -64,8 +64,10 @@ public class RaftServerInstanceStrategy extends AbstractSeataInstanceStrategy
         // load cluster type
         String clusterType = String.valueOf(StoreConfig.getSessionMode());
         instance.addMetadata("cluster-type", "raft".equalsIgnoreCase(clusterType) ? clusterType : "default");
-        RaftStateMachine stateMachine = RaftServerManager.getRaftServer(unit).getRaftStateMachine();
-        long term = RaftServerManager.getRaftServer(unit)
+        RaftTransactionStateMachine stateMachine = (RaftTransactionStateMachine)
+                RaftTransactionServerManager.getInstance().getRaftServer(unit).getRaftStateMachine();
+        long term = RaftTransactionServerManager.getInstance()
+                .getRaftServer(unit)
                 .getRaftStateMachine()
                 .getCurrentTerm()
                 .get();

@@ -7,7 +7,7 @@ public class RaftGroupMetadataMsg extends RaftBaseMsg {
     private RaftSyncMsgType msgType;
     private Map<String, Object> groupMetadata;
 
-    public RaftGroupMetadataMsg(RaftSyncMsgType msgType,String groupId, Map<String, Object> groupMetadata) {
+    public RaftGroupMetadataMsg(RaftSyncMsgType msgType, String groupId, Map<String, Object> groupMetadata) {
         this.msgType = msgType;
         this.groupId = groupId;
         this.groupMetadata = groupMetadata;
@@ -21,4 +21,3 @@ public class RaftGroupMetadataMsg extends RaftBaseMsg {
         return groupMetadata;
     }
 }
-

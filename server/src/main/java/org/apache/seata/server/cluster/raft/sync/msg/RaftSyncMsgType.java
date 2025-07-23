@@ -84,6 +84,4 @@ public enum RaftSyncMsgType {
      * update raft group meta data
      */
     UPDATE_RAFT_GROUP_METADATA,
-
-
 }

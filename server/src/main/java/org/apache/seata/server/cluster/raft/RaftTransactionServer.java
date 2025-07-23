@@ -16,30 +16,31 @@
  */
 package org.apache.seata.server.cluster.raft;
 
-import com.alipay.sofa.jraft.core.StateMachineAdapter;
+import com.alipay.sofa.jraft.entity.PeerId;
+import com.alipay.sofa.jraft.option.NodeOptions;
+import com.alipay.sofa.jraft.rpc.RpcServer;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
+/**
+ */
+public class RaftTransactionServer extends AbstractRaftServer {
 
-public abstract class RaftStateMachine extends StateMachineAdapter {
-
-    /**
-     * Leader term
-     */
-    protected final AtomicLong leaderTerm = new AtomicLong(-1);
-
-    /**
-     * current term
-     */
-    protected final AtomicLong currentTerm = new AtomicLong(-1);
-
-    protected final AtomicBoolean initSync = new AtomicBoolean(false);
-
-    public boolean isLeader() {
-        return this.leaderTerm.get() > 0;
+    public RaftTransactionServer(
+            final String dataPath,
+            final String groupId,
+            final PeerId serverId,
+            final NodeOptions nodeOptions,
+            final RpcServer rpcServer) {
+        super(dataPath, groupId, serverId, nodeOptions, rpcServer);
+        this.raftStateMachine = new RaftTransactionStateMachine(groupId);
     }
 
-    public AtomicLong getCurrentTerm() {
-        return this.currentTerm;
+    @Override
+    public RaftTransactionStateMachine getRaftStateMachine() {
+        return (RaftTransactionStateMachine) this.raftStateMachine;
+    }
+
+    @Override
+    public boolean isController() {
+        return false;
     }
 }

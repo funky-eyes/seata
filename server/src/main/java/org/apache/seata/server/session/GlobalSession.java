@@ -32,7 +32,7 @@ import org.apache.seata.core.model.BranchStatus;
 import org.apache.seata.core.model.BranchType;
 import org.apache.seata.core.model.GlobalStatus;
 import org.apache.seata.core.model.LockStatus;
-import org.apache.seata.server.cluster.raft.RaftServerManager;
+import org.apache.seata.server.cluster.raft.RaftTransactionServerManager;
 import org.apache.seata.server.lock.LockerManagerFactory;
 import org.apache.seata.server.store.SessionStorable;
 import org.apache.seata.server.store.StoreConfig;
@@ -340,7 +340,7 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
         for (SessionLifecycleListener lifecycleListener : lifecycleListeners) {
             lifecycleListener.onAddBranch(this, branchSession);
         }
-        if (!RaftServerManager.isRaftMode()) {
+        if (!RaftTransactionServerManager.getInstance().isRaftMode()) {
             add(branchSession);
         }
     }
@@ -376,7 +376,7 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
             lifecycleListener.onRemoveBranch(this, branchSession);
         }
 
-        if (!RaftServerManager.isRaftMode()) {
+        if (!RaftTransactionServerManager.getInstance().isRaftMode()) {
             this.remove(branchSession);
         }
     }
@@ -638,7 +638,7 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
         byte[] xidBytes = xid != null ? xid.getBytes() : null;
 
         byte[] applicationDataBytes = applicationData != null ? applicationData.getBytes() : null;
-        if (!RaftServerManager.isRaftMode()) {
+        if (!RaftTransactionServerManager.getInstance().isRaftMode()) {
             checkSize(byApplicationIdBytes, byServiceGroupBytes, byTxNameBytes, xidBytes, applicationDataBytes);
         }
         ByteBuffer byteBuffer = byteBufferThreadLocal.get();

@@ -23,7 +23,7 @@ import org.apache.seata.common.metadata.Instance;
 import org.apache.seata.core.store.MappingDO;
 import org.apache.seata.discovery.registry.MultiRegistryFactory;
 import org.apache.seata.discovery.registry.RegistryService;
-import org.apache.seata.server.cluster.raft.RaftServerManager;
+import org.apache.seata.server.cluster.raft.RaftTransactionServerManager;
 import org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType;
 import org.apache.seata.server.cluster.raft.sync.msg.RaftVGroupSyncMsg;
 import org.apache.seata.server.cluster.raft.util.RaftTaskUtil;
@@ -132,9 +132,12 @@ public class RaftVGroupMappingStoreManager implements VGroupMappingStoreManager 
         Map<String, Object> map = this.readVGroups();
         instance.addMetadata("vGroup", map);
         try {
-            for (String group : RaftServerManager.groups()) {
+            for (String group : RaftTransactionServerManager.getInstance().groups()) {
                 Instance node = instance.clone();
-                node.setRole(RaftServerManager.isLeader(group) ? ClusterRole.LEADER : ClusterRole.FOLLOWER);
+                node.setRole(
+                        RaftTransactionServerManager.getInstance().isLeader(group)
+                                ? ClusterRole.LEADER
+                                : ClusterRole.FOLLOWER);
                 Instance.getInstances().add(node);
                 for (RegistryService<?> registryService : MultiRegistryFactory.getInstances()) {
                     registryService.register(node);

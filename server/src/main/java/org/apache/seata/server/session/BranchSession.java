@@ -22,7 +22,7 @@ import org.apache.seata.core.exception.TransactionException;
 import org.apache.seata.core.model.BranchStatus;
 import org.apache.seata.core.model.BranchType;
 import org.apache.seata.core.model.LockStatus;
-import org.apache.seata.server.cluster.raft.RaftServerManager;
+import org.apache.seata.server.cluster.raft.RaftTransactionServerManager;
 import org.apache.seata.server.lock.LockManager;
 import org.apache.seata.server.lock.LockerManagerFactory;
 import org.apache.seata.server.storage.file.lock.FileLocker;
@@ -337,7 +337,7 @@ public class BranchSession implements Lockable, Comparable<BranchSession>, Sessi
         byte[] xidBytes = xid != null ? xid.getBytes() : null;
 
         byte branchTypeByte = branchType != null ? (byte) branchType.ordinal() : -1;
-        if (!RaftServerManager.isRaftMode()) {
+        if (!RaftTransactionServerManager.getInstance().isRaftMode()) {
             checkSize(resourceIdBytes, lockKeyBytes, clientIdBytes, applicationDataBytes, xidBytes);
         }
         ByteBuffer byteBuffer = byteBufferThreadLocal.get();

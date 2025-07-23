@@ -14,40 +14,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.seata.server.cluster.raft.manager;
+package org.apache.seata.server.cluster.raft;
 
 import com.alipay.remoting.serialization.SerializerManager;
 import com.alipay.sofa.jraft.conf.Configuration;
 import org.apache.seata.common.ConfigurationKeys;
 import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.core.serializer.SerializerType;
-import org.apache.seata.server.cluster.raft.AbstractRaftServerManager;
-import org.apache.seata.server.cluster.raft.RaftServer;
-import org.apache.seata.server.cluster.raft.RaftTransactionServer;
 import org.apache.seata.server.cluster.raft.processor.PutNodeInfoRequestProcessor;
 import org.apache.seata.server.cluster.raft.serializer.JacksonBoltSerializer;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import static java.io.File.separator;
 import static org.apache.seata.common.DefaultValues.DEFAULT_SEATA_GROUP;
 import static org.apache.seata.common.DefaultValues.DEFAULT_SESSION_STORE_FILE_DIR;
 
-public class RaftControllerServerManager extends AbstractRaftServerManager {
+public class RaftTransactionServerManager extends AbstractRaftServerManager {
 
-    public static volatile RaftControllerServerManager raftControllerServerManager;
+    public static volatile RaftTransactionServerManager raftTransactionServerManager;
 
-    public static RaftControllerServerManager getInstance() {
-        if (raftControllerServerManager == null) {
-            synchronized (RaftControllerServerManager.class) {
-                if (raftControllerServerManager == null) {
-                    raftControllerServerManager = new RaftControllerServerManager();
+    public static RaftTransactionServerManager getInstance() {
+        if (raftTransactionServerManager == null) {
+            synchronized (RaftTransactionServerManager.class) {
+                if (raftTransactionServerManager == null) {
+                    raftTransactionServerManager = new RaftTransactionServerManager();
                 }
             }
         }
-        return raftControllerServerManager;
+        return raftTransactionServerManager;
     }
 
     public void start() {
@@ -69,8 +68,8 @@ public class RaftControllerServerManager extends AbstractRaftServerManager {
         }
     }
 
-    public RaftControllerServer getRaftServer(String group) {
-        return (RaftControllerServer) RAFT_SERVER_MAP.get(group);
+    public RaftTransactionServer getRaftServer(String group) {
+        return (RaftTransactionServer) RAFT_SERVER_MAP.get(group);
     }
 
     public Collection<RaftServer> getRaftServers() {
@@ -84,21 +83,38 @@ public class RaftControllerServerManager extends AbstractRaftServerManager {
     @Override
     public void init() {
         String dataPath;
-        String group;
         String controllerInitConf = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_CONTROLLER_SERVER_ADDR);
         String initConf;
         if (StringUtils.isBlank(controllerInitConf)) {
-            return;
-        } else {
-            // todo: This needs to be modified to obtain the group and address list through TXG.
-            group = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_GROUP, DEFAULT_SEATA_GROUP);
+            // It is currently in single-raft mode.
+            String group = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_GROUP, DEFAULT_SEATA_GROUP);
             dataPath = CONFIG.getConfig(ConfigurationKeys.STORE_FILE_DIR, DEFAULT_SESSION_STORE_FILE_DIR) + separator
                     + "raft" + separator + serverId.getPort();
             initConf = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_SERVER_ADDR);
+            init(initConf);
+            Configuration configuration = new Configuration();
+            configuration.parse(initConf);
+            try {
+                RAFT_SERVER_MAP.put(group, createRaftServer(dataPath, group, configuration));
+            } catch (IOException e) {
+                throw new IllegalArgumentException("fail init raft cluster:" + e.getMessage(), e);
+            }
+        } else {
+            // todo: This needs to be modified to obtain the group and address list through TXG.
+            List<String> groups = Collections.emptyList();
+            dataPath = CONFIG.getConfig(ConfigurationKeys.STORE_FILE_DIR, DEFAULT_SESSION_STORE_FILE_DIR) + separator
+                    + "raft" + separator + serverId.getPort();
+            initConf = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_SERVER_ADDR);
+            init(initConf);
+            Configuration configuration = new Configuration();
+            configuration.parse(initConf);
+            groups.forEach(group -> {
+                createRaftServers(group, dataPath, configuration);
+            });
         }
-        init(initConf);
-        Configuration configuration = new Configuration();
-        configuration.parse(initConf);
+    }
+
+    private void createRaftServers(String group, String dataPath, Configuration configuration) {
         try {
             RAFT_SERVER_MAP.put(group, createRaftServer(dataPath, group, configuration));
         } catch (IOException e) {
