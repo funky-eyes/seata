@@ -73,6 +73,7 @@ public interface StarterConstants {
     String SERVER_UNDO_PREFIX = SERVER_PREFIX + ".undo";
     String SERVER_RAFT_PREFIX = SERVER_PREFIX + ".raft";
     String SERVER_RAFT_SSL_PREFIX = SERVER_RAFT_PREFIX + ".ssl";
+    String SERVER_RAFT_CONTROLLER_PREFIX = SERVER_RAFT_PREFIX + ".controller";
     String SERVER_RAFT_SSL_CLIENT_KEYSTORE_PREFIX = SERVER_RAFT_SSL_PREFIX + ".client.keystore";
     String SERVER_RAFT_SSL_SERVER_KEYSTORE_PREFIX = SERVER_RAFT_SSL_PREFIX + ".server.keystore";
     String SERVER_RECOVERY_PREFIX = SERVER_PREFIX + ".recovery";

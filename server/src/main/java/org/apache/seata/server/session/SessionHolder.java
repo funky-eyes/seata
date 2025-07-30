@@ -31,7 +31,7 @@ import org.apache.seata.core.model.GlobalStatus;
 import org.apache.seata.core.model.LockStatus;
 import org.apache.seata.core.store.DistributedLockDO;
 import org.apache.seata.core.store.DistributedLocker;
-import org.apache.seata.server.cluster.raft.RaftServerManager;
+import org.apache.seata.server.cluster.raft.RaftTransactionServerManager;
 import org.apache.seata.server.cluster.raft.context.SeataClusterContext;
 import org.apache.seata.server.lock.distributed.DistributedLockerFactory;
 import org.apache.seata.server.store.StoreConfig;
@@ -120,7 +120,7 @@ public class SessionHolder {
                 ROOT_VGROUP_MAPPING_MANAGER =
                         EnhancedServiceLoader.load(VGroupMappingStoreManager.class, SessionMode.RAFT.getName());
 
-                RaftServerManager.start();
+                RaftTransactionServerManager.getInstance().start();
             } else {
                 String vGroupMappingStorePath =
                         CONFIG.getConfig(ConfigurationKeys.STORE_FILE_DIR, DEFAULT_VGROUP_MAPPING_STORE_FILE_DIR)
@@ -448,7 +448,7 @@ public class SessionHolder {
     }
 
     public static void destroy() {
-        RaftServerManager.destroy();
+        RaftTransactionServerManager.getInstance().destroy();
         if (ROOT_SESSION_MANAGER != null) {
             ROOT_SESSION_MANAGER.destroy();
         }

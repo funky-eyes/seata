@@ -27,8 +27,9 @@ import org.apache.seata.common.rpc.http.HttpContext;
 import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.config.ConfigurationFactory;
 import org.apache.seata.server.cluster.manager.ClusterWatcherManager;
-import org.apache.seata.server.cluster.raft.RaftServer;
-import org.apache.seata.server.cluster.raft.RaftServerManager;
+import org.apache.seata.server.cluster.raft.RaftTransactionServer;
+import org.apache.seata.server.cluster.raft.RaftTransactionServerManager;
+import org.apache.seata.server.cluster.raft.RaftTransactionStateMachine;
 import org.apache.seata.server.cluster.raft.sync.msg.dto.RaftClusterMetadata;
 import org.apache.seata.server.cluster.watch.Watcher;
 import org.slf4j.Logger;
@@ -65,8 +66,9 @@ public class ClusterController {
         if (!newConf.parse(raftClusterStr)) {
             result.setMessage("fail to parse initConf:" + raftClusterStr);
         } else {
-            RaftServerManager.groups().forEach(group -> {
-                RaftServerManager.getCliServiceInstance()
+            RaftTransactionServerManager.getInstance().groups().forEach(group -> {
+                RaftTransactionServerManager.getInstance()
+                        .getCliServiceInstance()
                         .changePeers(group, RouteTable.getInstance().getConfiguration(group), newConf);
                 RouteTable.getInstance().updateConfiguration(group, newConf);
             });
@@ -81,22 +83,22 @@ public class ClusterController {
             group = ConfigurationFactory.getInstance()
                     .getConfig(ConfigurationKeys.SERVER_RAFT_GROUP, DEFAULT_SEATA_GROUP);
         }
-        RaftServer raftServer = RaftServerManager.getRaftServer(group);
-        if (raftServer != null) {
+        RaftTransactionServer raftTransactionServer =
+                RaftTransactionServerManager.getInstance().getRaftServer(group);
+        if (raftTransactionServer != null) {
             String mode = ConfigurationFactory.getInstance().getConfig(STORE_MODE);
             metadataResponse.setStoreMode(mode);
             RouteTable routeTable = RouteTable.getInstance();
             try {
-                routeTable.refreshLeader(RaftServerManager.getCliClientServiceInstance(), group, 1000);
+                routeTable.refreshLeader(
+                        RaftTransactionServerManager.getInstance().getCliClientServiceInstance(), group, 1000);
                 PeerId leader = routeTable.selectLeader(group);
                 if (leader != null) {
                     Set<Node> nodes = new HashSet<>();
-                    RaftClusterMetadata raftClusterMetadata =
-                            raftServer.getRaftStateMachine().getRaftLeaderMetadata();
-                    Node leaderNode = raftServer
-                            .getRaftStateMachine()
-                            .getRaftLeaderMetadata()
-                            .getLeader();
+                    RaftTransactionStateMachine raftTransactionStateMachine =
+                            ((RaftTransactionStateMachine) raftTransactionServer.getRaftStateMachine());
+                    RaftClusterMetadata raftClusterMetadata = raftTransactionStateMachine.getRaftLeaderMetadata();
+                    Node leaderNode = raftClusterMetadata.getLeader();
                     leaderNode.setGroup(group);
                     nodes.add(leaderNode);
                     nodes.addAll(raftClusterMetadata.getLearner());

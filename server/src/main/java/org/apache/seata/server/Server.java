@@ -103,7 +103,8 @@ public class Server {
                     .addApplicationListener((ApplicationListener<?>) coordinator);
         }
         // log store mode : file, db, redis
-        RaftControllerServerManager.start();
+        RaftControllerServerManager.getInstance().init();
+        RaftControllerServerManager.getInstance().start();
         SessionHolder.init();
         LockerManagerFactory.init();
         coordinator.init();

@@ -1036,9 +1036,19 @@ public interface ConfigurationKeys {
     String SERVER_RAFT_GROUP = SERVER_RAFT + "group";
 
     /**
-     * The constant SERVER_RAFT_GROUP.
+     * The constant SERVER_RAFT_CONTROLLER.
      */
-    String CONTROLLER_SERVER_RAFT_GROUP = SERVER_RAFT + "controller-group";
+    String SERVER_RAFT_CONTROLLER = SERVER_RAFT + "controller.";
+
+    /**
+     * The constant SERVER_RAFT_CONTROLLER_GROUP.
+     */
+    String SERVER_RAFT_CONTROLLER_GROUP = SERVER_RAFT_CONTROLLER + "group";
+
+    /**
+     * The constant SERVER_RAFT_CONTROLLER_SERVER_ADDR.
+     */
+    String SERVER_RAFT_CONTROLLER_SERVER_ADDR = SERVER_RAFT_CONTROLLER + "serverAddr";
 
     /**
      * The constant SERVER_RAFT_SNAPSHOT_INTERVAL.

@@ -21,7 +21,7 @@ import org.apache.seata.common.XID;
 import org.apache.seata.config.ConfigurationCache;
 import org.apache.seata.config.ConfigurationFactory;
 import org.apache.seata.server.DynamicPortTestConfig;
-import org.apache.seata.server.cluster.raft.RaftServerManager;
+import org.apache.seata.server.cluster.raft.RaftTransactionServerManager;
 import org.apache.seata.server.lock.LockerManagerFactory;
 import org.apache.seata.server.session.SessionHolder;
 import org.apache.seata.server.store.StoreConfig;
@@ -41,13 +41,13 @@ import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_SSL_TMF_ALGO
 
 @SpringBootTest
 @Import(DynamicPortTestConfig.class)
-public class RaftServerTest {
+public class RaftTransactionServerTest {
 
     @BeforeAll
     public static void setUp(ApplicationContext context) {
         LockerManagerFactory.destroy();
         SessionHolder.destroy();
-        RaftServerManager.destroy();
+        RaftTransactionServerManager.getInstance().destroy();
     }
 
     @AfterEach
@@ -58,7 +58,7 @@ public class RaftServerTest {
         StoreConfig.setStartupParameter("file", "file", "file");
         LockerManagerFactory.destroy();
         SessionHolder.destroy();
-        RaftServerManager.destroy();
+        RaftTransactionServerManager.getInstance().destroy();
     }
 
     @Test
@@ -77,19 +77,21 @@ public class RaftServerTest {
                 ConfigurationKeys.SERVER_RAFT_SERVER_ADDR,
                 XID.getIpAddress() + ":9091" + "," + XID.getIpAddress() + ":9092" + "," + XID.getIpAddress() + ":9093");
         StoreConfig.setStartupParameter("raft", "raft", "raft");
-        Assertions.assertDoesNotThrow(RaftServerManager::init);
-        Assertions.assertNotNull(RaftServerManager.getRaftServer("default"));
-        Assertions.assertNotNull(RaftServerManager.groups());
-        Assertions.assertNotNull(RaftServerManager.getCliServiceInstance());
-        Assertions.assertNotNull(RaftServerManager.getCliClientServiceInstance());
-        Assertions.assertFalse(RaftServerManager.isLeader("default"));
-        RaftServerManager.start();
+        Assertions.assertDoesNotThrow(
+                () -> RaftTransactionServerManager.getInstance().init());
+        Assertions.assertNotNull(RaftTransactionServerManager.getInstance().getRaftServer("default"));
+        Assertions.assertNotNull(RaftTransactionServerManager.getInstance().groups());
+        Assertions.assertNotNull(RaftTransactionServerManager.getInstance().getCliServiceInstance());
+        Assertions.assertNotNull(RaftTransactionServerManager.getInstance().getCliClientServiceInstance());
+        Assertions.assertFalse(RaftTransactionServerManager.getInstance().isLeader("default"));
+        RaftTransactionServerManager.getInstance().start();
     }
 
     @Test
     public void initRaftServerFail() {
         StoreConfig.setStartupParameter("raft", "raft", "raft");
-        Assertions.assertThrows(IllegalArgumentException.class, RaftServerManager::init);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> RaftTransactionServerManager.getInstance()
+                .init());
     }
 
     @Test
@@ -98,6 +100,7 @@ public class RaftServerTest {
                 ConfigurationKeys.SERVER_RAFT_SERVER_ADDR,
                 XID.getIpAddress() + ":9091" + "," + XID.getIpAddress() + ":9092" + "," + XID.getIpAddress() + ":9093");
         StoreConfig.setStartupParameter("raft", "raft", "raft");
-        Assertions.assertThrows(IllegalArgumentException.class, RaftServerManager::init);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> RaftTransactionServerManager.getInstance()
+                .init());
     }
 }

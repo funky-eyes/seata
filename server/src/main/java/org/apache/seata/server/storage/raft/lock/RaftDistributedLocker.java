@@ -21,7 +21,7 @@ import org.apache.seata.common.loader.LoadLevel;
 import org.apache.seata.config.ConfigurationFactory;
 import org.apache.seata.core.store.DistributedLockDO;
 import org.apache.seata.core.store.DistributedLocker;
-import org.apache.seata.server.cluster.raft.RaftServerManager;
+import org.apache.seata.server.cluster.raft.RaftTransactionServerManager;
 import org.apache.seata.server.storage.redis.lock.RedisDistributedLocker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +47,7 @@ public class RaftDistributedLocker implements DistributedLocker {
      */
     @Override
     public boolean acquireLock(DistributedLockDO distributedLockDO) {
-        return RaftServerManager.isLeader(group);
+        return RaftTransactionServerManager.getInstance().isLeader(group);
     }
 
     /**

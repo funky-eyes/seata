@@ -1,6 +1,5 @@
 package org.apache.seata.server.cluster.raft;
 
-
 import com.alipay.sofa.jraft.CliService;
 import com.alipay.sofa.jraft.RaftServiceFactory;
 import com.alipay.sofa.jraft.conf.Configuration;
@@ -9,163 +8,121 @@ import com.alipay.sofa.jraft.option.CliOptions;
 import com.alipay.sofa.jraft.option.NodeOptions;
 import com.alipay.sofa.jraft.option.RaftOptions;
 import com.alipay.sofa.jraft.rpc.CliClientService;
+import com.alipay.sofa.jraft.rpc.RaftRpcServerFactory;
 import com.alipay.sofa.jraft.rpc.RpcServer;
 import com.alipay.sofa.jraft.rpc.impl.cli.CliClientServiceImpl;
 import org.apache.seata.common.ConfigurationKeys;
 import org.apache.seata.common.XID;
+import org.apache.seata.common.store.SessionMode;
 import org.apache.seata.common.util.NetUtil;
 import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.config.ConfigurationFactory;
+import org.apache.seata.discovery.registry.FileRegistryServiceImpl;
+import org.apache.seata.discovery.registry.MultiRegistryFactory;
+import org.apache.seata.discovery.registry.RegistryService;
+import org.apache.seata.discovery.registry.namingserver.NamingserverRegistryServiceImpl;
+import org.apache.seata.server.store.StoreConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
-
-import static java.io.File.separator;
 import static org.apache.seata.common.ConfigurationKeys.*;
+import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_DISRUPTOR_BUFFER_SIZE;
+import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_ELECTION_TIMEOUT_MS;
+import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_MAX_REPLICATOR_INFLIGHT_MSGS;
+import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_SNAPSHOT_INTERVAL;
+import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_SYNC;
 import static org.apache.seata.common.DefaultValues.DEFAULT_SERVER_RAFT_ELECTION_TIMEOUT_MS;
-import static org.apache.seata.common.DefaultValues.DEFAULT_SESSION_STORE_FILE_DIR;
 
 /**
- * Abstract base class for Raft server managers
+ * this is base abstract class for all raft server managers
  */
-public abstract class AbstractRaftServerManager<T> implements RaftInit {
+public abstract class AbstractRaftServerManager implements  RaftServerManager<RaftServer>  {
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRaftServerManager.class);
+    protected static final Map<String /*group*/, RaftServer /*raft-group-cluster*/> RAFT_SERVER_MAP = new HashMap<>();
+    protected static final AtomicBoolean INIT = new AtomicBoolean(false);
+
     protected static final org.apache.seata.config.Configuration CONFIG = ConfigurationFactory.getInstance();
+    protected static volatile boolean RAFT_MODE;
+    protected static volatile RpcServer rpcServer;
+    protected PeerId serverId;
 
-    protected final AtomicBoolean initialized = new AtomicBoolean(false);
-
-    // Singleton CLI services
-    private static final CliService CLI_SERVICE = RaftServiceFactory.createAndInitCliService(new CliOptions());
-    private static final CliClientService CLI_CLIENT_SERVICE;
-
-    static {
-        CLI_CLIENT_SERVICE = new CliClientServiceImpl();
-        CLI_CLIENT_SERVICE.init(new CliOptions());
-    }
-
-    /**
-     * Get the configuration for this specific Raft server type
-     */
-    protected abstract RaftServerConfig getRaftServerConfig();
-
-    /**
-     * Create the specific Raft server instance
-     */
-    protected abstract T createRaftServer(String dataPath, String group, PeerId serverId,
-                                          NodeOptions nodeOptions, RpcServer rpcServer) throws IOException;
-
-    /**
-     * Store the created Raft server in the appropriate map
-     */
-    protected abstract void storeRaftServer(String group, T raftServer);
-
-    /**
-     * Check if the mode is enabled for this server type
-     */
-    protected abstract boolean isModeEnabled();
-
-    /**
-     * Get warning message for experimental features
-     */
-    protected abstract String getExperimentalWarningMessage();
-
-    /**
-     * Validate mode-specific requirements
-     */
-    protected abstract void validateModeRequirements();
-
-    @Override
-    public void init() {
-        if (initialized.compareAndSet(false, true)) {
-            try {
-                RaftServerConfig config = getRaftServerConfig();
-                String initConfStr = CONFIG.getConfig(config.getConfigKey());
-
-                if (StringUtils.isBlank(initConfStr)) {
-                    if (isModeEnabled()) {
-                        throw new IllegalArgumentException(
-                                "Mode enabled but missing config: " + config.getConfigKey());
-                    }
-                    return;
-                } else {
-                    if (isModeEnabled()) {
-                        validateModeRequirements();
-                    }
-                    LOGGER.warn(getExperimentalWarningMessage());
+    public void init(String initConfStr) {
+        if (INIT.compareAndSet(false, true)) {
+            RAFT_MODE = StoreConfig.getSessionMode().equals(SessionMode.RAFT);
+            if (StringUtils.isBlank(initConfStr)) {
+                if (RAFT_MODE) {
+                    throw new IllegalArgumentException(
+                            "Raft store mode must config: " + ConfigurationKeys.SERVER_RAFT_SERVER_ADDR);
                 }
-
-                final Configuration initConf = new Configuration();
-                if (!initConf.parse(initConfStr)) {
-                    throw new IllegalArgumentException("fail to parse initConf:" + initConfStr);
-                }
-
-                PeerId serverId = resolveServerId(initConf, config);
-                String dataPath = buildDataPath(serverId, config);
-                String group = CONFIG.getConfig(config.getGroupConfigKey(), config.getDefaultGroup());
-
-                // Use shared RPC server
-                RpcServer rpcServer = SharedRpcServerManager.getOrCreateSharedRpcServer(serverId);
-                T raftServer = createRaftServer(dataPath, group, serverId, initNodeOptions(initConf), rpcServer);
-
-                storeRaftServer(group, raftServer);
-
-            } catch (IOException e) {
-                initialized.set(false);
-                throw new IllegalArgumentException("fail init raft cluster:" + e.getMessage(), e);
-            }
-        }
-    }
-
-    /**
-     * Resolve the server ID based on configuration and available peers
-     */
-    private PeerId resolveServerId(Configuration initConf, RaftServerConfig config) {
-        int port = Integer.parseInt(System.getProperty(config.getPortProperty(), "0"));
-        PeerId serverId = null;
-        String host = XID.getIpAddress();
-
-        if (port <= 0) {
-            // Highly available deployments require different nodes
-            for (PeerId peer : initConf.getPeers()) {
-                List<String> peerIps = NetUtil.getHostByName(peer.getIp());
-                for (String peerIp : peerIps) {
-                    if (StringUtils.equals(peerIp, host)) {
-                        if (serverId != null) {
-                            throw new IllegalArgumentException(config.getDuplicateIpErrorMessage());
+                return;
+            } else {
+                if (RAFT_MODE) {
+                    for (RegistryService<?> instance : MultiRegistryFactory.getInstances()) {
+                        if (!(instance instanceof FileRegistryServiceImpl)
+                                && !(instance instanceof NamingserverRegistryServiceImpl)) {
+                            throw new IllegalArgumentException("Raft store mode not support other Registration Center");
                         }
-                        serverId = peer;
-                        break;
                     }
                 }
+                logger.warn("raft mode and raft cluster is an experimental feature");
             }
-        } else {
-            // Local debugging use
-            serverId = new PeerId(host, port);
+            final Configuration initConf = new Configuration();
+            if (!initConf.parse(initConfStr)) {
+                throw new IllegalArgumentException("fail to parse initConf:" + initConfStr);
+            }
+            if (serverId == null) {
+                int port = Integer.parseInt(System.getProperty(SERVER_RAFT_PORT_CAMEL, "0"));
+                String host = XID.getIpAddress();
+                if (port <= 0) {
+                    // Highly available deployments require different nodes
+                    for (PeerId peer : initConf.getPeers()) {
+                        List<String> peerIps = NetUtil.getHostByName(peer.getIp());
+                        for (String peerIp : peerIps) {
+                            if (StringUtils.equals(peerIp, host)) {
+                                if (serverId != null) {
+                                    throw new IllegalArgumentException(
+                                            "server.raft.cluster has duplicate ip, For local debugging, use -Dserver.raftPort to specify the raft port");
+                                }
+                                serverId = peer;
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    // Local debugging use
+                    serverId = new PeerId(host, port);
+                }
+            }
+            // Here you have raft RPC and business RPC using the same RPC server, and you can usually do this
+            // separately
+            if (rpcServer != null) {
+                rpcServer = RaftRpcServerFactory.createRaftRpcServer(serverId.getEndpoint());
+            }
         }
-
-        if (serverId == null) {
-            throw new IllegalArgumentException("Could not resolve server ID for host: " + host);
-        }
-
-        return serverId;
     }
 
-    /**
-     * Build the data path for the Raft server
-     */
-    private String buildDataPath(PeerId serverId, RaftServerConfig config) {
-        return CONFIG.getConfig(ConfigurationKeys.STORE_FILE_DIR, DEFAULT_SESSION_STORE_FILE_DIR)
-                + separator + config.getDataPathSuffix() + separator + serverId.getPort();
+    public static boolean isLeader(String group) {
+        AtomicReference<RaftStateMachine> stateMachine = new AtomicReference<>();
+        Optional.ofNullable(RAFT_SERVER_MAP.get(group)).ifPresent(raftServer -> {
+            stateMachine.set(raftServer.getRaftStateMachine());
+        });
+        RaftStateMachine raftStateMachine = stateMachine.get();
+        return !isRaftMode() && RAFT_SERVER_MAP.isEmpty() || (raftStateMachine != null && raftStateMachine.isLeader());
     }
 
-    /**
-     * Initialize Raft options from configuration
-     */
+    public static boolean isRaftMode() {
+        return RAFT_MODE;
+    }
+
     protected static RaftOptions initRaftOptions() {
         RaftOptions raftOptions = new RaftOptions();
         raftOptions.setApplyBatch(CONFIG.getInt(SERVER_RAFT_APPLY_BATCH, raftOptions.getApplyBatch()));
@@ -179,10 +136,7 @@ public abstract class AbstractRaftServerManager<T> implements RaftInit {
         return raftOptions;
     }
 
-    /**
-     * Initialize node options from configuration
-     */
-    protected static NodeOptions initNodeOptions(Configuration initConf) {
+    protected NodeOptions initNodeOptions(Configuration initConf) {
         NodeOptions nodeOptions = new NodeOptions();
         // enable the CLI service.
         nodeOptions.setDisableCli(false);
@@ -198,26 +152,36 @@ public abstract class AbstractRaftServerManager<T> implements RaftInit {
         return nodeOptions;
     }
 
-    /**
-     * Start the shared RPC server
-     */
-    protected static void startSharedRpcServer() {
-        SharedRpcServerManager.initializeSharedRpcServer();
-        SharedRpcServerManager.startSharedRpcServer();
+    public void destroy() {
+        RAFT_SERVER_MAP.forEach((group, raftServer) -> {
+            try {
+                raftServer.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            logger.info("closed seata server raft cluster, group: {} ", group);
+        });
+        Optional.ofNullable(rpcServer).ifPresent(RpcServer::shutdown);
+        RAFT_SERVER_MAP.clear();
+        rpcServer = null;
+        RAFT_MODE = false;
+        INIT.set(false);
     }
 
-    /**
-     * Shutdown the shared RPC server
-     */
-    protected static void destroySharedRpcServer() {
-        SharedRpcServerManager.shutdownSharedRpcServer();
+    public CliService getCliServiceInstance() {
+        return SingletonHandler.CLI_SERVICE;
     }
 
-    public static CliService getCliServiceInstance() {
-        return CLI_SERVICE;
+    public CliClientService getCliClientServiceInstance() {
+        return SingletonHandler.CLI_CLIENT_SERVICE;
     }
 
-    public static CliClientService getCliClientServiceInstance() {
-        return CLI_CLIENT_SERVICE;
+    private static class SingletonHandler {
+        private static final CliService CLI_SERVICE = RaftServiceFactory.createAndInitCliService(new CliOptions());
+        private static final CliClientService CLI_CLIENT_SERVICE = new CliClientServiceImpl();
+
+        static {
+            CLI_CLIENT_SERVICE.init(new CliOptions());
+        }
     }
 }

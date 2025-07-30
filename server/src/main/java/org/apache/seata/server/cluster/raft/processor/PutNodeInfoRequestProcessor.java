@@ -19,9 +19,9 @@ package org.apache.seata.server.cluster.raft.processor;
 import com.alipay.sofa.jraft.rpc.RpcContext;
 import com.alipay.sofa.jraft.rpc.RpcProcessor;
 import org.apache.seata.common.metadata.Node;
-import org.apache.seata.server.cluster.raft.RaftServer;
-import org.apache.seata.server.cluster.raft.RaftServerManager;
-import org.apache.seata.server.cluster.raft.RaftStateMachine;
+import org.apache.seata.server.cluster.raft.RaftTransactionServer;
+import org.apache.seata.server.cluster.raft.RaftTransactionServerManager;
+import org.apache.seata.server.cluster.raft.RaftTransactionStateMachine;
 import org.apache.seata.server.cluster.raft.processor.request.PutNodeMetadataRequest;
 import org.apache.seata.server.cluster.raft.processor.response.PutNodeMetadataResponse;
 
@@ -35,10 +35,11 @@ public class PutNodeInfoRequestProcessor implements RpcProcessor<PutNodeMetadata
     public void handleRequest(RpcContext rpcCtx, PutNodeMetadataRequest request) {
         Node node = request.getNode();
         String group = node.getGroup();
-        if (RaftServerManager.isLeader(group)) {
-            RaftServer raftServer = RaftServerManager.getRaftServer(group);
-            RaftStateMachine raftStateMachine = raftServer.getRaftStateMachine();
-            raftStateMachine.changeNodeMetadata(node);
+        if (RaftTransactionServerManager.getInstance().isLeader(group)) {
+            RaftTransactionServer raftTransactionServer =
+                    RaftTransactionServerManager.getInstance().getRaftServer(group);
+            RaftTransactionStateMachine raftTransactionStateMachine = raftTransactionServer.getRaftStateMachine();
+            raftTransactionStateMachine.changeNodeMetadata(node);
             rpcCtx.sendResponse(new PutNodeMetadataResponse(true));
         } else {
             rpcCtx.sendResponse(new PutNodeMetadataResponse(false));
