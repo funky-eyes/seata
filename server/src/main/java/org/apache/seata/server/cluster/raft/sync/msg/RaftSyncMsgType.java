@@ -85,5 +85,10 @@ public enum RaftSyncMsgType {
      */
     UPDATE_RAFT_GROUP_METADATA,
 
+    /**
+     * update Transaction raft group meta data
+     */
+    UPDATE_TXG_GROUP_ASSIGNMENTS,
+
 
 }

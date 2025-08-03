@@ -35,6 +35,7 @@ import org.apache.seata.common.store.SessionMode;
 import org.apache.seata.common.thread.NamedThreadFactory;
 import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.common.util.StringUtils;
+import org.apache.seata.config.ConfigurationFactory;
 import org.apache.seata.core.serializer.SerializerType;
 import org.apache.seata.server.cluster.listener.ClusterChangeEvent;
 import org.apache.seata.server.cluster.raft.RaftStateMachine;
@@ -46,11 +47,9 @@ import org.apache.seata.server.cluster.raft.snapshot.StoreSnapshotFile;
 import org.apache.seata.server.cluster.raft.snapshot.metadata.LeaderMetadataSnapshotFile;
 import org.apache.seata.server.cluster.raft.snapshot.vgroup.VGroupSnapshotFile;
 import org.apache.seata.server.cluster.raft.sync.RaftSyncMessageSerializer;
-import org.apache.seata.server.cluster.raft.sync.msg.RaftBaseMsg;
-import org.apache.seata.server.cluster.raft.sync.msg.RaftClusterMetadataMsg;
-import org.apache.seata.server.cluster.raft.sync.msg.RaftGroupMetadataMsg;
-import org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType;
+import org.apache.seata.server.cluster.raft.sync.msg.*;
 import org.apache.seata.server.cluster.raft.sync.msg.dto.RaftClusterMetadata;
+import org.apache.seata.server.cluster.raft.sync.msg.dto.TxgGroupAssignmentDTO;
 import org.apache.seata.server.cluster.raft.util.RaftTaskUtil;
 import org.apache.seata.server.store.StoreConfig;
 import org.slf4j.Logger;
@@ -67,6 +66,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
+import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_CONTROLLER_GROUP;
 import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_APPLICATION_CONTEXT;
 import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_CONFIGURABLE_ENVIRONMENT;
 
@@ -224,6 +224,9 @@ public class RaftControllerStateMachine extends RaftStateMachine {
                 try {
                     // Reload controller metadata and managed groups
                     reloadControllerState();
+
+                    // Then, initialize TXG groups based on configuration
+                    initializeTxgGroups();
                 } finally {
                     SeataClusterContext.unbindGroup();
                 }
@@ -233,6 +236,137 @@ public class RaftControllerStateMachine extends RaftStateMachine {
             // non-existent members and synchronize again.
             changeControllerPeers(conf);
         }
+    }
+
+    private void initializeTxgGroups() {
+        try {
+            // 1. Read the TXG configuration
+            String txgGroupsConfig = ConfigurationFactory.getInstance()
+                    .getConfig(SERVER_RAFT_CONTROLLER_GROUP);
+
+            if (StringUtils.isBlank(txgGroupsConfig)) {
+                LOGGER.warn("No TXG groups configured in {}, skipping TXG initialization",
+                        SERVER_RAFT_CONTROLLER_GROUP);
+                return;
+            }
+
+            String[] groupNames = txgGroupsConfig.split(",");
+
+            // 2. Get current controller cluster members
+            Configuration controllerConf = RouteTable.getInstance().getConfiguration(group);
+            if (controllerConf == null) {
+                LOGGER.error("Controller configuration not found for group: {}", group);
+                return;
+            }
+
+            List<PeerId> controllerMembers = controllerConf.getPeers();
+
+            // 3. Validate requirements
+            if (!validateTxgRequirements(groupNames, controllerMembers)) {
+                return; // Validation failed, early return
+            }
+
+            // 4. Proceed with initialization...
+            LOGGER.info("Starting TXG group initialization for: {}", Arrays.toString(groupNames));
+
+            Map<String, List<String>> txgGroupAssignments = createTxgGroupAssignments(
+                    groupNames, controllerMembers);
+
+            submitTxgGroupAssignments(txgGroupAssignments);
+
+        } catch (Exception e) {
+            LOGGER.error("Failed to initialize TXG groups", e);
+        }
+    }
+
+    private boolean validateTxgRequirements(String[] groupNames, List<PeerId> controllerMembers) {
+        // Validate exactly 3 groups
+        if (groupNames.length != 3) {
+            LOGGER.error("TXG initialization requires exactly 3 groups, but found {}. " +
+                            "Current groups: {}",
+                    groupNames.length, Arrays.toString(groupNames));
+            return false;
+        }
+
+        // Validate exactly 3 controller nodes
+        if (controllerMembers.size() != 3) {
+            LOGGER.error("TXG initialization requires exactly 3 controller nodes, but found {}. " +
+                            "Current nodes: {}",
+                    controllerMembers.size(),
+                    controllerMembers.stream()
+                            .map(PeerId::toString)
+                            .collect(Collectors.toList()));
+            return false;
+        }
+
+        // Validate group names are not empty/null
+        for (String groupName : groupNames) {
+            if (StringUtils.isBlank(groupName.trim())) {
+                LOGGER.error("TXG group name cannot be empty. Groups: {}", Arrays.toString(groupNames));
+                return false;
+            }
+        }
+
+        LOGGER.info("TXG requirements validation passed: {} groups, {} nodes",
+                groupNames.length, controllerMembers.size());
+        return true;
+    }
+
+    private Map<String, List<String>> createTxgGroupAssignments(String[] groupNames, List<PeerId> members) {
+        Map<String, List<String>> assignments = new HashMap<>();
+
+        // Convert PeerId list to string list (IP:Port format)
+        List<String> memberEndpoints = members.stream()
+                .map(peerId -> peerId.getIp() + ":" + peerId.getPort())
+                .collect(Collectors.toList());
+
+        //since there are only 3 nodes, assign all nodes to all groups
+        // will need a better algorithm if we need to have dynamic numbers but for now lets keep it simple?
+        // TXG-1: 192.168.1.100,192.168.1.101,192.168.1.102
+        // TXG-2: 192.168.1.100,192.168.1.101,192.168.1.102
+        // TXG-3: 192.168.1.100,192.168.1.101,192.168.1.102
+        for (String groupName : groupNames) {
+            String trimmedGroupName = groupName.trim();
+            assignments.put(trimmedGroupName, new ArrayList<>(memberEndpoints));
+            LOGGER.info("Assigned all {} nodes to group {}: {}",
+                    memberEndpoints.size(), trimmedGroupName, memberEndpoints);
+        }
+
+        return assignments;
+    }
+
+    private void submitTxgGroupAssignments(Map<String, List<String>> assignments) {
+        try {
+            // Create the DTO
+            TxgGroupAssignmentDTO txgAssignments = new TxgGroupAssignmentDTO(assignments);
+
+            // Create the message
+            RaftTxgGroupMsg message = new RaftTxgGroupMsg(txgAssignments);
+            message.setGroup(group); // Set the controller group
+
+            // Submit to state machine so all controller followers get the assignments
+            RaftTaskUtil.createTask(
+                    status -> {
+                        if (status.isOk()) {
+                            LOGGER.info("TXG group assignments successfully replicated to all controller nodes");
+                            // After successful replication, do we need to trigger something?
+                            triggerTxgConstruction();
+                        } else {
+                            LOGGER.error("Failed to replicate TXG assignments: {}", status.getErrorMsg());
+                        }
+                    },
+                    message,  // The message containing group assignments
+                    null
+            );
+
+        } catch (Exception e) {
+            LOGGER.error("Failed to submit TXG group assignments", e);
+        }
+    }
+
+    private void triggerTxgConstruction() {
+        //spin-wait here?
+        LOGGER.info("Starting TXG construction process...");
     }
 
     @Override
