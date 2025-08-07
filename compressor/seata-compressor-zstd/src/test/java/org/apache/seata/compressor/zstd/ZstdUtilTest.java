@@ -21,14 +21,13 @@ import java.util.List;
 import com.github.luben.zstd.Zstd;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 
 /**
  * the Zstd Util test
  */
 public class ZstdUtilTest {
 
-    private int MAX_COMPRESSED_SIZE = 4 * 1024 * 1024; // 4MB
+    private final int MAX_COMPRESSED_SIZE = 4 * 1024 * 1024; // 4MB
 
     @Test
     public void test_compress() {
@@ -64,15 +63,13 @@ public class ZstdUtilTest {
 
     @Test
     public void test_decompress_with_len() {
-        Assertions.assertDoesNotThrow(new Executable() {
-            @Override public void execute() throws Throwable {
-                byte[] data = new byte[MAX_COMPRESSED_SIZE + 1];
-                for (int i = 0; i < data.length; i++) {
-                    data[i] = (byte) ('A' + i % 26);
-                }
-                byte[] compressedData = Zstd.compress(data);
-                ZstdUtil.decompress(compressedData);
+        Assertions.assertDoesNotThrow(() -> {
+            byte[] data = new byte[MAX_COMPRESSED_SIZE + 1];
+            for (int i = 0; i < data.length; i++) {
+                data[i] = (byte) ('A' + i % 26);
             }
+            byte[] compressedData = Zstd.compress(data);
+            ZstdUtil.decompress(compressedData);
         });
         int len = MAX_COMPRESSED_SIZE / 2;
         byte[] data = new byte[len];
