@@ -16,11 +16,12 @@
  */
 package org.apache.seata.compressor.zstd;
 
-import java.util.ArrayList;
-import java.util.List;
 import com.github.luben.zstd.Zstd;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * the Zstd Util test
