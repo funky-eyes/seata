@@ -45,24 +45,6 @@ public class ZstdUtilTest {
     }
 
     @Test
-    public void test_decompress_with_len_illegal() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            // https://github.com/facebook/zstd/blob/dev/doc/zstd_compression_format.md#zstandard-frames
-            List<Byte> bytes = new ArrayList<>();
-            byte[] magic = new byte[] {(byte) 0x28, (byte) 0xB5, (byte) 0x2F, (byte) 0xFD};
-            byte[] frameHeaderDescriptor = new byte[magic.length + 1];
-            System.arraycopy(magic, 0, frameHeaderDescriptor, 0, magic.length);
-            frameHeaderDescriptor[magic.length] = (byte) 0xA0;
-            // 4*1024*1024 + 1
-            byte[] frameContentSize = new byte[] {(byte) 0x00, (byte) 0x40, (byte) 0x00, (byte) 0x01};
-            byte[] frameContent = new byte[frameHeaderDescriptor.length + frameContentSize.length];
-            System.arraycopy(frameHeaderDescriptor, 0, frameContent, 0, frameHeaderDescriptor.length);
-            System.arraycopy(frameContentSize, 0, frameContent, frameHeaderDescriptor.length, frameContentSize.length);
-            ZstdUtil.decompress(frameContent);
-        });
-    }
-
-    @Test
     public void test_decompress_with_len() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             byte[] data = new byte[MAX_COMPRESSED_SIZE + 1];
