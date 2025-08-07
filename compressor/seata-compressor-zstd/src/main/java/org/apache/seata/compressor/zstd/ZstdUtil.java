@@ -24,26 +24,19 @@ import com.github.luben.zstd.Zstd;
  */
 public class ZstdUtil {
 
-    public static final int MAX_COMPRESSED_SIZE = 4 * 1024 * 1024;
-
     public static byte[] compress(byte[] bytes) {
         if (bytes == null) {
             throw new NullPointerException("bytes is null");
         }
-
-        return Zstd.compress(bytes);
+        byte[] compressBytes = Zstd.compress(bytes);
+        return compressBytes;
     }
 
     public static byte[] decompress(byte[] bytes) {
         if (bytes == null) {
             throw new NullPointerException("bytes is null");
         }
-
         long size = Zstd.decompressedSize(bytes);
-        if (size < 0 || size > MAX_COMPRESSED_SIZE) {
-            throw new IllegalArgumentException("Invalid decompressed size: " + size
-                    + ", the value of size ranges from 0 to " + MAX_COMPRESSED_SIZE);
-        }
         byte[] decompressBytes = new byte[(int) size];
         Zstd.decompress(decompressBytes, bytes);
         return decompressBytes;
