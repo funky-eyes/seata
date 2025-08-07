@@ -28,7 +28,7 @@ public class ZstdUtil {
         if (bytes == null) {
             throw new NullPointerException("bytes is null");
         }
-	    return Zstd.compress(bytes);
+        return Zstd.compress(bytes);
     }
 
     public static byte[] decompress(byte[] bytes) {
