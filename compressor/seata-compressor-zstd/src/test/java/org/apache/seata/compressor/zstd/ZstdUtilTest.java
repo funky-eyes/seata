@@ -17,6 +17,7 @@
 package org.apache.seata.compressor.zstd;
 
 import com.github.luben.zstd.Zstd;
+import com.github.luben.zstd.ZstdException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -46,7 +47,7 @@ public class ZstdUtilTest {
 
     @Test
     public void test_decompress_with_len_illegal() {
-        Assertions.assertDoesNotThrow(() -> {
+        Assertions.assertThrows(ZstdException.class, () -> {
             // https://github.com/facebook/zstd/blob/dev/doc/zstd_compression_format.md#zstandard-frames
             List<Byte> bytes = new ArrayList<>();
             byte[] magic = new byte[] {(byte) 0x28, (byte) 0xB5, (byte) 0x2F, (byte) 0xFD};
