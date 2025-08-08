@@ -106,6 +106,6 @@ public class ZstdUtilTest {
                 frameHeaderDescriptor.length + frameContentSize.length,
                 fakeContent.length);
         Assertions.assertThrows(IllegalArgumentException.class, () -> ZstdUtil.decompress(frameContent));
-        Assertions.assertTrue(Zstd.decompressedSize(frameContent) > 4 * 1024 * 1024);
+        Assertions.assertTrue(Zstd.decompressedSize(frameContent) > MAX_COMPRESSED_SIZE);
     }
 }
