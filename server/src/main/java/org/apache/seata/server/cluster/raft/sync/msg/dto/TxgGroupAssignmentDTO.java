@@ -9,6 +9,9 @@ public class TxgGroupAssignmentDTO implements Serializable {
     //do we need this term?
     private static final long serialVersionUID = 6208583637662412658L;
 
+    Map<String, List<String>> groupMemberMap;
+
     public TxgGroupAssignmentDTO( Map<String, List<String>> groupMemberMap) {
+        this.groupMemberMap = groupMemberMap;
     }
 }
