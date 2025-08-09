@@ -280,29 +280,22 @@ public class RaftControllerStateMachine extends RaftStateMachine {
     }
 
     private boolean validateTxgRequirements(String[] groupNames, List<PeerId> controllerMembers) {
-        // Validate exactly 3 groups
-        if (groupNames.length != 3) {
-            LOGGER.error("TXG initialization requires exactly 3 groups, but found {}. " +
-                            "Current groups: {}",
-                    groupNames.length, Arrays.toString(groupNames));
+        // Validate groupNames is not null
+        if (groupNames == null) {
+            LOGGER.error("TXG initialization requires groupNames to be non-null");
             return false;
         }
 
-        // Validate exactly 3 controller nodes
-        if (controllerMembers.size() != 3) {
-            LOGGER.error("TXG initialization requires exactly 3 controller nodes, but found {}. " +
-                            "Current nodes: {}",
-                    controllerMembers.size(),
-                    controllerMembers.stream()
-                            .map(PeerId::toString)
-                            .collect(Collectors.toList()));
+        // Validate controllerMembers is not null
+        if (controllerMembers == null) {
+            LOGGER.error("TXG initialization requires controllerMembers to be non-null");
             return false;
         }
 
         // Validate group names are not empty/null
         for (String groupName : groupNames) {
-            if (StringUtils.isBlank(groupName.trim())) {
-                LOGGER.error("TXG group name cannot be empty. Groups: {}", Arrays.toString(groupNames));
+            if (groupName == null || StringUtils.isBlank(groupName.trim())) {
+                LOGGER.error("TXG group name cannot be null or empty. Groups: {}", Arrays.toString(groupNames));
                 return false;
             }
         }
@@ -350,7 +343,6 @@ public class RaftControllerStateMachine extends RaftStateMachine {
                         if (status.isOk()) {
                             LOGGER.info("TXG group assignments successfully replicated to all controller nodes");
                             // After successful replication, do we need to trigger something?
-                            triggerTxgConstruction();
                         } else {
                             LOGGER.error("Failed to replicate TXG assignments: {}", status.getErrorMsg());
                         }
@@ -362,11 +354,6 @@ public class RaftControllerStateMachine extends RaftStateMachine {
         } catch (Exception e) {
             LOGGER.error("Failed to submit TXG group assignments", e);
         }
-    }
-
-    private void triggerTxgConstruction() {
-        //spin-wait here?
-        LOGGER.info("Starting TXG construction process...");
     }
 
     @Override
