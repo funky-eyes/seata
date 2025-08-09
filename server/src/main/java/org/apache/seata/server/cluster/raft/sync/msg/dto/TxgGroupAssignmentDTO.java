@@ -13,4 +13,12 @@ public class TxgGroupAssignmentDTO implements Serializable {
     public TxgGroupAssignmentDTO( Map<String, List<String>> groupMemberMap) {
         this.groupMemberMap = groupMemberMap;
     }
+
+    public Map<String, List<String>> getGroupMemberMap() {
+        return groupMemberMap;
+    }
+
+    public void setGroupMemberMap(Map<String, List<String>> groupMemberMap) {
+        this.groupMemberMap = groupMemberMap;
+    }
 }

@@ -20,9 +20,14 @@ import com.alipay.remoting.serialization.SerializerManager;
 import com.alipay.sofa.jraft.conf.Configuration;
 import com.alipay.sofa.jraft.entity.PeerId;
 import com.alipay.sofa.jraft.option.NodeOptions;
+import com.alipay.sofa.jraft.rpc.CliClientService;
+import com.alipay.sofa.jraft.rpc.InvokeContext;
 import com.alipay.sofa.jraft.rpc.RpcServer;
+import com.alipay.sofa.jraft.rpc.impl.cli.CliClientServiceImpl;
 import org.apache.seata.common.ConfigurationKeys;
+import org.apache.seata.common.XID;
 import org.apache.seata.common.store.SessionMode;
+import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.core.serializer.SerializerType;
 import org.apache.seata.discovery.registry.FileRegistryServiceImpl;
@@ -30,13 +35,19 @@ import org.apache.seata.discovery.registry.MultiRegistryFactory;
 import org.apache.seata.discovery.registry.RegistryService;
 import org.apache.seata.discovery.registry.namingserver.NamingserverRegistryServiceImpl;
 import org.apache.seata.server.cluster.raft.processor.PutNodeInfoRequestProcessor;
+import org.apache.seata.server.cluster.raft.processor.request.GetTxgGroupsRequest;
+import org.apache.seata.server.cluster.raft.processor.response.GetTxgGroupsResponse;
 import org.apache.seata.server.cluster.raft.serializer.JacksonBoltSerializer;
+import org.apache.seata.server.cluster.raft.sync.msg.dto.TxgGroupAssignmentDTO;
 import org.apache.seata.server.store.StoreConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.io.File.separator;
@@ -92,6 +103,14 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
         return RAFT_SERVER_MAP.keySet();
     }
 
+    /**
+     * Request Flow:
+     *
+     * Transaction server reads controller addresses from config
+     * Makes RPC call to controller asking for TXG groups assigned to its IP
+     * Controller responds with list of groups this node should participate in
+     * Transaction server manager creates raft servers for each assigned group
+     */
     @Override
     public void init() {
         String dataPath;
@@ -113,18 +132,118 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
             }
         } else {
             // todo: This needs to be modified to obtain the group and address list through TXG.
-            List<String> groups = Collections.emptyList();
+            //Retrieve TXG information from CG interface
             dataPath = CONFIG.getConfig(ConfigurationKeys.STORE_FILE_DIR, DEFAULT_SESSION_STORE_FILE_DIR) + separator
                     + "raft" + separator + serverId.getPort();
             initConf = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_SERVER_ADDR);
             init(initConf);
             Configuration configuration = new Configuration();
             configuration.parse(initConf);
-            groups.forEach(group -> {
-                createRaftServers(group, dataPath, configuration);
-            });
+
+            // Retrieve TXG assignments from CG via RPC
+            TxgGroupAssignmentDTO txgAssignments = retrieveTxgAssignmentsFromCG(controllerInitConf);
+
+            if (txgAssignments != null && txgAssignments.getGroupMemberMap() != null) {
+                String currentEndpoint = XID.getIpAddress() + ":" + serverId.getPort();
+
+                // Create raft servers for each TXG group assigned to this node
+                for (Map.Entry<String, List<String>> entry : txgAssignments.getGroupMemberMap().entrySet()) {
+                    String groupName = entry.getKey();
+                    List<String> members = entry.getValue();
+
+                    if (members.contains(currentEndpoint)) {
+                        logger.info("Creating raft server for TXG group: {} with members: {}", groupName, members);
+                        createRaftServers(groupName, dataPath, configuration);
+                    }
+                }
+            } else {
+                logger.warn("No TXG assignments received from controller, no raft groups will be created");
+            }
         }
     }
+
+    private TxgGroupAssignmentDTO retrieveTxgAssignmentsFromCG(String controllerInitConf) {
+        try {
+            // Parse controller addresses
+            Configuration controllerConfiguration = new Configuration();
+            controllerConfiguration.parse(controllerInitConf);
+            List<PeerId> controllerPeers = controllerConfiguration.getPeers();
+
+            if (CollectionUtils.isEmpty(controllerPeers)) {
+                logger.warn("No controller peers found in configuration: {}", controllerInitConf);
+                return null;
+            }
+
+            // Try to get TXG assignments from each controller peer
+            for (PeerId controllerPeer : controllerPeers) {
+                try {
+                    GetTxgGroupsRequest request = new GetTxgGroupsRequest(XID.getIpAddress());
+                    GetTxgGroupsResponse response = makeRpcCallToController(controllerPeer, request);
+
+                    if (response != null && response.isSuccess()) {
+                        logger.info("Successfully retrieved TXG assignments from controller {}", controllerPeer);
+                        return response.getTxgAssignments();
+                    }
+                } catch (Exception e) {
+                    logger.warn("Error calling controller {}: {}", controllerPeer, e.getMessage());
+                }
+            }
+
+            logger.error("Failed to retrieve TXG assignments from any controller");
+            return null;
+
+        } catch (Exception e) {
+            logger.error("Failed to retrieve TXG assignments from CG", e);
+            return null;
+        }
+    }
+
+    private GetTxgGroupsResponse makeRpcCallToController(PeerId controllerPeer, GetTxgGroupsRequest request)
+            throws Exception {
+
+        InvokeContext invokeContext = new InvokeContext();
+        invokeContext.put(com.alipay.remoting.InvokeContext.BOLT_CUSTOM_SERIALIZER,
+                SerializerType.JACKSON.getCode());
+
+        CliClientService cliClientService = getCliClientServiceInstance();
+
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicReference<GetTxgGroupsResponse> responseHolder = new AtomicReference<>();
+        AtomicReference<Exception> errorHolder = new AtomicReference<>();
+
+        ((CliClientServiceImpl) cliClientService)
+                .getRpcClient()
+                .invokeAsync(
+                        controllerPeer.getEndpoint(),
+                        request,
+                        invokeContext,
+                        (result, err) -> {
+                            try {
+                                if (err == null) {
+                                    responseHolder.set((GetTxgGroupsResponse) result);
+                                } else {
+                                    errorHolder.set(new Exception("RPC error: " + err.getMessage(), err));
+                                }
+                            } finally {
+                                latch.countDown();
+                            }
+                        },
+                        5000
+                );
+
+        if (!latch.await(10, TimeUnit.SECONDS)) {
+            throw new TimeoutException("Timeout waiting for TXG assignments from " + controllerPeer);
+        }
+
+        Exception error = errorHolder.get();
+        if (error != null) {
+            throw error;
+        }
+
+        return responseHolder.get();
+    }
+
+
 
     private void createRaftServers(String group, String dataPath, Configuration configuration) {
         try {
