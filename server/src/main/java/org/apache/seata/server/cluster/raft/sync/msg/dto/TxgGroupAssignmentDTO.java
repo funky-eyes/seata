@@ -6,8 +6,7 @@ import java.util.Map;
 
 public class TxgGroupAssignmentDTO implements Serializable {
 
-    //do we need this term?
-    private static final long serialVersionUID = 6208583637662412658L;
+    private static final long serialVersionUID = 3327902483836983222L;
 
     Map<String, List<String>> groupMemberMap;
 
