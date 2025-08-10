@@ -50,17 +50,17 @@ public class RaftGroupService implements ChangePeersService {
     /**
      * Get all Raft groups
      */
-    public Map<String, Map<String, Object>> getAllRaftGroups() {
-        Map<String, Map<String, Object>> result = new HashMap<>();
+    public Map<String, List<String>> getAllRaftGroups() {
+        Map<String, List<String>> result = new HashMap<>();
 
         try {
-            // Access singleton instance directly
+            // Access singleton instance
             Set<String> groups = RaftTransactionServerManager.groups();
 
             for (String group : groups) {
-                Map<String, Object> groupInfo = buildGroupInfo(group);
-                if (groupInfo != null) {
-                    result.put(group, groupInfo);
+                List<String> memberIPs = getGroupMemberIPs(group);
+                if (memberIPs != null && !memberIPs.isEmpty()) {
+                    result.put(group, memberIPs);
                 }
             }
         } catch (Exception e) {
@@ -74,24 +74,70 @@ public class RaftGroupService implements ChangePeersService {
     /**
      * Get Raft groups that contain the specified IP address
      */
-    public Map<String, Map<String, Object>> getRaftGroupsByIp(String ip) {
+    public Map<String, List<String>> getRaftGroupsByIp(String ip) {
         if (ip == null || ip.trim().isEmpty()) {
             throw new IllegalArgumentException("IP address cannot be null or empty");
         }
 
-        Map<String, Map<String, Object>> allGroups = getAllRaftGroups();
-        Map<String, Map<String, Object>> result = new HashMap<>();
+        Map<String, List<String>> allGroups = getAllRaftGroups();
+        Map<String, List<String>> result = new HashMap<>();
 
-        for (Map.Entry<String, Map<String, Object>> entry : allGroups.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : allGroups.entrySet()) {
             String groupName = entry.getKey();
-            Map<String, Object> groupInfo = entry.getValue();
+            List<String> memberIPs = entry.getValue();
 
-            if (groupContainsIp(groupInfo, ip)) {
-                result.put(groupName, groupInfo);
+            if (memberIPs.contains(ip)) {
+                result.put(groupName, memberIPs);
             }
         }
 
         return result;
+    }
+
+    private List<String> getGroupMemberIPs(String group) {
+        try {
+            RaftTransactionServer raftServer = RaftTransactionServerManager.getInstance().getRaftServer(group);
+
+            if (raftServer == null) {
+                return null;
+            }
+
+            // Get cluster metadata
+            RaftTransactionStateMachine stateMachine =
+                    (RaftTransactionStateMachine) raftServer.getRaftStateMachine();
+            RaftClusterMetadata metadata = stateMachine.getRaftLeaderMetadata();
+
+            List<String> memberIPs = new ArrayList<>();
+
+            // Add leader IP
+            if (metadata.getLeader() != null && metadata.getLeader().getTransaction() != null) {
+                memberIPs.add(metadata.getLeader().getTransaction().getHost());
+            }
+
+            // Add follower IPs
+            if (metadata.getFollowers() != null) {
+                for (Node follower : metadata.getFollowers()) {
+                    if (follower.getTransaction() != null) {
+                        memberIPs.add(follower.getTransaction().getHost());
+                    }
+                }
+            }
+
+            // Add learner IPs
+            if (metadata.getLearner() != null) {
+                for (Node learner : metadata.getLearner()) {
+                    if (learner.getTransaction() != null) {
+                        memberIPs.add(learner.getTransaction().getHost());
+                    }
+                }
+            }
+
+            return memberIPs;
+
+        } catch (Exception e) {
+            LOGGER.error("Error getting member IPs for group {}", group, e);
+            return null;
+        }
     }
 
     /**

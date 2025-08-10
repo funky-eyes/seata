@@ -43,9 +43,9 @@ public class RaftGroupController {
      * Get all Raft groups and their members
      */
     @GetMapping("/groups")
-    public SingleResult<Map<String, Map<String, Object>>> getAllRaftGroups() {
+    public SingleResult<Map<String, List<String>>> getAllRaftGroups() {
         try {
-            Map<String, Map<String, Object>> groups = raftGroupService.getAllRaftGroups();
+            Map<String, List<String>> groups = raftGroupService.getAllRaftGroups();
             return SingleResult.success(groups);
         } catch (Exception e) {
             LOGGER.error("Error retrieving all Raft groups", e);
@@ -57,9 +57,9 @@ public class RaftGroupController {
      * Get Raft groups by IP address
      */
     @GetMapping("/groups/by-ip")
-    public SingleResult<Map<String, Map<String, Object>>> getRaftGroupsByIp(@RequestParam String ip) {
+    public SingleResult<Map<String, List<String>>> getRaftGroupsByIp(@RequestParam String ip) {
         try {
-            Map<String, Map<String, Object>> groups = raftGroupService.getRaftGroupsByIp(ip);
+            Map<String, List<String>> groups = raftGroupService.getRaftGroupsByIp(ip);
             return SingleResult.success(groups);
         } catch (IllegalArgumentException e) {
             return SingleResult.failure("400", e.getMessage());
