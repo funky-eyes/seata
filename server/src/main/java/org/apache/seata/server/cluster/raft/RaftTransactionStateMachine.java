@@ -21,7 +21,6 @@ import com.alipay.sofa.jraft.Iterator;
 import com.alipay.sofa.jraft.RouteTable;
 import com.alipay.sofa.jraft.Status;
 import com.alipay.sofa.jraft.conf.Configuration;
-import com.alipay.sofa.jraft.core.StateMachineAdapter;
 import com.alipay.sofa.jraft.entity.LeaderChangeContext;
 import com.alipay.sofa.jraft.entity.PeerId;
 import com.alipay.sofa.jraft.rpc.InvokeContext;
@@ -64,14 +63,12 @@ import org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType;
 import org.apache.seata.server.cluster.raft.sync.msg.dto.RaftClusterMetadata;
 import org.apache.seata.server.cluster.raft.util.RaftTaskUtil;
 import org.apache.seata.server.session.SessionHolder;
-import org.apache.seata.server.store.StoreConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.env.Environment;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -82,10 +79,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_APPLICATION_CONTEXT;
@@ -108,17 +101,9 @@ public class RaftTransactionStateMachine extends RaftStateMachine {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RaftTransactionStateMachine.class);
 
-    private final String mode;
-
-    private final String group;
-
-    private final List<StoreSnapshotFile> snapshotFiles = new ArrayList<>();
-
     private static final Map<RaftSyncMsgType, RaftMsgExecute<?>> EXECUTES = new HashMap<>();
 
     private volatile RaftClusterMetadata raftClusterMetadata = new RaftClusterMetadata();
-
-    private final Lock lock = new ReentrantLock();
 
     private static final ScheduledThreadPoolExecutor RESYNC_METADATA_POOL =
             new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("reSyncMetadataPool", 1, true));
@@ -126,12 +111,11 @@ public class RaftTransactionStateMachine extends RaftStateMachine {
     private ScheduledFuture<?> scheduledFuture;
 
     public boolean isLeader() {
-        return this.leaderTerm.get() > 0;
+        return super.isLeader();
     }
 
     public RaftTransactionStateMachine(String group) {
-        this.group = group;
-        mode = StoreConfig.getSessionMode().getName();
+        super(group);
         EXECUTES.put(REFRESH_CLUSTER_METADATA, syncMsg -> {
             refreshClusterMetadata(syncMsg);
             return null;
@@ -365,9 +349,9 @@ public class RaftTransactionStateMachine extends RaftStateMachine {
         // replace the leader information
         if (leaderNode == null
                 || (leaderNode.getInternal() != null
-                && !cureentPeerId.equals(new PeerId(
-                leaderNode.getInternal().getHost(),
-                leaderNode.getInternal().getPort())))) {
+                        && !cureentPeerId.equals(new PeerId(
+                                leaderNode.getInternal().getHost(),
+                                leaderNode.getInternal().getPort())))) {
             Node leader = raftClusterMetadata.createNode(
                     cureentPeerId.getIp(),
                     XID.getPort(),
@@ -427,7 +411,7 @@ public class RaftTransactionStateMachine extends RaftStateMachine {
                         XID.getPort(),
                         cureentPeerId.getPort(),
                         Integer.parseInt(((Environment)
-                                ObjectHolder.INSTANCE.getObject(OBJECT_KEY_SPRING_CONFIGURABLE_ENVIRONMENT))
+                                        ObjectHolder.INSTANCE.getObject(OBJECT_KEY_SPRING_CONFIGURABLE_ENVIRONMENT))
                                 .getProperty("server.port", String.valueOf(7091))),
                         group,
                         Collections.emptyMap());
@@ -512,5 +496,4 @@ public class RaftTransactionStateMachine extends RaftStateMachine {
             lock.unlock();
         }
     }
-
 }

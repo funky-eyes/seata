@@ -45,10 +45,27 @@ public class GetTxgGroupsResponse implements Serializable {
     }
 
     // Getters and setters
-    public boolean isSuccess() { return success; }
-    public void setSuccess(boolean success) { this.success = success; }
-    public String getErrorMsg() { return errorMsg; }
-    public void setErrorMsg(String errorMsg) { this.errorMsg = errorMsg; }
-    public TxgGroupAssignmentDTO getTxgAssignments() { return txgAssignments; }
-    public void setTxgAssignments(TxgGroupAssignmentDTO txgAssignments) { this.txgAssignments = txgAssignments; }
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+
+    public String getErrorMsg() {
+        return errorMsg;
+    }
+
+    public void setErrorMsg(String errorMsg) {
+        this.errorMsg = errorMsg;
+    }
+
+    public TxgGroupAssignmentDTO getTxgAssignments() {
+        return txgAssignments;
+    }
+
+    public void setTxgAssignments(TxgGroupAssignmentDTO txgAssignments) {
+        this.txgAssignments = txgAssignments;
+    }
 }

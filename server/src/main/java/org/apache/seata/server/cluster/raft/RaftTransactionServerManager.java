@@ -19,29 +19,19 @@ package org.apache.seata.server.cluster.raft;
 import com.alipay.remoting.serialization.SerializerManager;
 import com.alipay.sofa.jraft.conf.Configuration;
 import com.alipay.sofa.jraft.entity.PeerId;
-import com.alipay.sofa.jraft.option.NodeOptions;
 import com.alipay.sofa.jraft.rpc.CliClientService;
 import com.alipay.sofa.jraft.rpc.InvokeContext;
-import com.alipay.sofa.jraft.rpc.RpcServer;
 import com.alipay.sofa.jraft.rpc.impl.cli.CliClientServiceImpl;
 import org.apache.seata.common.ConfigurationKeys;
 import org.apache.seata.common.XID;
-import org.apache.seata.common.store.SessionMode;
 import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.core.serializer.SerializerType;
-import org.apache.seata.discovery.registry.FileRegistryServiceImpl;
-import org.apache.seata.discovery.registry.MultiRegistryFactory;
-import org.apache.seata.discovery.registry.RegistryService;
-import org.apache.seata.discovery.registry.namingserver.NamingserverRegistryServiceImpl;
 import org.apache.seata.server.cluster.raft.processor.PutNodeInfoRequestProcessor;
 import org.apache.seata.server.cluster.raft.processor.request.GetTxgGroupsRequest;
 import org.apache.seata.server.cluster.raft.processor.response.GetTxgGroupsResponse;
 import org.apache.seata.server.cluster.raft.serializer.JacksonBoltSerializer;
 import org.apache.seata.server.cluster.raft.sync.msg.dto.TxgGroupAssignmentDTO;
-import org.apache.seata.server.store.StoreConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
@@ -51,7 +41,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.io.File.separator;
-import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_PORT_CAMEL;
 import static org.apache.seata.common.DefaultValues.DEFAULT_SEATA_GROUP;
 import static org.apache.seata.common.DefaultValues.DEFAULT_SESSION_STORE_FILE_DIR;
 
@@ -132,7 +121,7 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
             }
         } else {
             // todo: This needs to be modified to obtain the group and address list through TXG.
-            //Retrieve TXG information from CG interface
+            // Retrieve TXG information from CG interface
             dataPath = CONFIG.getConfig(ConfigurationKeys.STORE_FILE_DIR, DEFAULT_SESSION_STORE_FILE_DIR) + separator
                     + "raft" + separator + serverId.getPort();
             initConf = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_SERVER_ADDR);
@@ -147,7 +136,8 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
                 String currentEndpoint = XID.getIpAddress() + ":" + serverId.getPort();
 
                 // Create raft servers for each TXG group assigned to this node
-                for (Map.Entry<String, List<String>> entry : txgAssignments.getGroupMemberMap().entrySet()) {
+                for (Map.Entry<String, List<String>> entry :
+                        txgAssignments.getGroupMemberMap().entrySet()) {
                     String groupName = entry.getKey();
                     List<String> members = entry.getValue();
 
@@ -202,8 +192,7 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
             throws Exception {
 
         InvokeContext invokeContext = new InvokeContext();
-        invokeContext.put(com.alipay.remoting.InvokeContext.BOLT_CUSTOM_SERIALIZER,
-                SerializerType.JACKSON.getCode());
+        invokeContext.put(com.alipay.remoting.InvokeContext.BOLT_CUSTOM_SERIALIZER, SerializerType.JACKSON.getCode());
 
         CliClientService cliClientService = getCliClientServiceInstance();
 
@@ -228,8 +217,7 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
                                 latch.countDown();
                             }
                         },
-                        5000
-                );
+                        5000);
 
         if (!latch.await(10, TimeUnit.SECONDS)) {
             throw new TimeoutException("Timeout waiting for TXG assignments from " + controllerPeer);
@@ -242,8 +230,6 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
 
         return responseHolder.get();
     }
-
-
 
     private void createRaftServers(String group, String dataPath, Configuration configuration) {
         try {

@@ -44,11 +44,11 @@ import static org.apache.seata.common.DefaultValues.DEFAULT_SERVER_RAFT_ELECTION
 /**
  * this is base abstract class for all raft server managers
  */
-public abstract class AbstractRaftServerManager implements  RaftServerManager<RaftServer>  {
+public abstract class AbstractRaftServerManager implements RaftServerManager<RaftServer> {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected static final Map<String /*group*/, RaftServer /*raft-group-cluster*/> RAFT_SERVER_MAP = new HashMap<>();
-    protected static final AtomicBoolean INIT = new AtomicBoolean(false);
+    protected final AtomicBoolean init = new AtomicBoolean(false);
 
     protected static final org.apache.seata.config.Configuration CONFIG = ConfigurationFactory.getInstance();
     protected static volatile boolean RAFT_MODE;
@@ -56,7 +56,7 @@ public abstract class AbstractRaftServerManager implements  RaftServerManager<Ra
     protected PeerId serverId;
 
     public void init(String initConfStr) {
-        if (INIT.compareAndSet(false, true)) {
+        if (init.compareAndSet(false, true)) {
             RAFT_MODE = StoreConfig.getSessionMode().equals(SessionMode.RAFT);
             if (StringUtils.isBlank(initConfStr)) {
                 if (RAFT_MODE) {
@@ -165,7 +165,7 @@ public abstract class AbstractRaftServerManager implements  RaftServerManager<Ra
         RAFT_SERVER_MAP.clear();
         rpcServer = null;
         RAFT_MODE = false;
-        INIT.set(false);
+        init.set(false);
     }
 
     public CliService getCliServiceInstance() {
@@ -174,6 +174,10 @@ public abstract class AbstractRaftServerManager implements  RaftServerManager<Ra
 
     public CliClientService getCliClientServiceInstance() {
         return SingletonHandler.CLI_CLIENT_SERVICE;
+    }
+
+    public AtomicBoolean getInit() {
+        return init;
     }
 
     private static class SingletonHandler {

@@ -21,76 +21,77 @@ import com.alipay.sofa.jraft.RouteTable;
 import com.alipay.sofa.jraft.conf.Configuration;
 import com.alipay.sofa.jraft.entity.PeerId;
 import org.apache.seata.common.metadata.Node;
-import org.apache.seata.server.cluster.raft.RaftServer;
+import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.server.cluster.raft.RaftTransactionServer;
 import org.apache.seata.server.cluster.raft.RaftTransactionServerManager;
 import org.apache.seata.server.cluster.raft.RaftTransactionStateMachine;
 import org.apache.seata.server.cluster.raft.manager.RaftControllerServerManager;
+import org.apache.seata.server.cluster.raft.sync.msg.RaftTxgGroupMsg;
 import org.apache.seata.server.cluster.raft.sync.msg.dto.RaftClusterMetadata;
+import org.apache.seata.server.cluster.raft.util.RaftTaskUtil;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 /**
  * Service for managing Raft groups and cluster operations
  */
 @Service
-public class RaftGroupService implements ChangePeersService {
+public class TransactionGroupServiceManager implements RaftGroupStoreManager {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RaftGroupService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TransactionGroupServiceManager.class);
+
+    private static final Map<String /*group*/, List<Node>> TRANSACTION_GROUPS = new ConcurrentHashMap<>();
 
     // regex Pattern to validate IP:PORT format? or should we remove it?
-    private static final Pattern IP_PORT_PATTERN = Pattern.compile(
-            "^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}:[1-9]\\d{0,4}$"
-    );
+    private static final Pattern IP_PORT_PATTERN =
+            Pattern.compile("^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}:[1-9]\\d{0,4}$");
 
     /**
      * Get all Raft groups
      */
-    public Map<String, Map<String, Object>> getAllRaftGroups() {
-        Map<String, Map<String, Object>> result = new HashMap<>();
-
-        try {
-            // Access singleton instance directly
-            Set<String> groups = RaftTransactionServerManager.groups();
-
-            for (String group : groups) {
-                Map<String, Object> groupInfo = buildGroupInfo(group);
-                if (groupInfo != null) {
-                    result.put(group, groupInfo);
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.error("Error retrieving all Raft groups", e);
-            throw new RuntimeException("Failed to retrieve Raft groups", e);
-        }
-
-        return result;
+    public Map<String, List<Node>> getAllRaftGroups() {
+        return TRANSACTION_GROUPS;
     }
 
     /**
      * Get Raft groups that contain the specified IP address
      */
-    public Map<String, Map<String, Object>> getRaftGroupsByIp(String ip) {
+    public Map<String, List<Node>> getRaftGroupsByIp(String ip) {
+        if (hasChangePeersPermission()) {
+            // todo: If not a CG member, the request should be forwarded to the CG node
+        }
         if (ip == null || ip.trim().isEmpty()) {
             throw new IllegalArgumentException("IP address cannot be null or empty");
         }
 
-        Map<String, Map<String, Object>> allGroups = getAllRaftGroups();
-        Map<String, Map<String, Object>> result = new HashMap<>();
+        return getGroupByIp(ip);
+    }
 
-        for (Map.Entry<String, Map<String, Object>> entry : allGroups.entrySet()) {
-            String groupName = entry.getKey();
-            Map<String, Object> groupInfo = entry.getValue();
-
-            if (groupContainsIp(groupInfo, ip)) {
-                result.put(groupName, groupInfo);
+    @NotNull
+    private Map<String, List<Node>> getGroupByIp(String ip) {
+        Map<String, List<Node>> allGroups = getAllRaftGroups();
+        Map<String, List<Node>> result = new HashMap<>();
+        allGroups.forEach((group, nodes) -> {
+            List<Node> matchedNodes = new ArrayList<>();
+            for (Node node : nodes) {
+                if (ip.equals(node.getTransaction().getHost())) {
+                    matchedNodes.add(node);
+                }
             }
-        }
-
+            if (!matchedNodes.isEmpty()) {
+                result.put(group, matchedNodes);
+            }
+        });
         return result;
     }
 
@@ -114,7 +115,8 @@ public class RaftGroupService implements ChangePeersService {
             }
 
             // Check if peer already exists
-            if (currentConf.getPeers().contains(newPeer) || currentConf.getLearners().contains(newPeer)) {
+            if (currentConf.getPeers().contains(newPeer)
+                    || currentConf.getLearners().contains(newPeer)) {
                 throw new IllegalArgumentException("Peer " + ip + ":" + port + " already exists in group " + group);
             }
 
@@ -123,9 +125,7 @@ public class RaftGroupService implements ChangePeersService {
             newConf.addPeer(newPeer);
 
             // Apply the configuration change through CLI service
-            RaftTransactionServerManager.getInstance()
-                    .getCliServiceInstance()
-                    .changePeers(group, currentConf, newConf);
+            RaftTransactionServerManager.getInstance().getCliServiceInstance().changePeers(group, currentConf, newConf);
 
             // Update local routing table
             routeTable.updateConfiguration(group, newConf);
@@ -156,7 +156,8 @@ public class RaftGroupService implements ChangePeersService {
             }
 
             // Check if peer exists
-            if (!currentConf.getPeers().contains(peerToRemove) && !currentConf.getLearners().contains(peerToRemove)) {
+            if (!currentConf.getPeers().contains(peerToRemove)
+                    && !currentConf.getLearners().contains(peerToRemove)) {
                 throw new IllegalArgumentException("Peer " + ip + ":" + port + " does not exist in group " + group);
             }
 
@@ -166,14 +167,12 @@ public class RaftGroupService implements ChangePeersService {
             }
 
             // do we create new configuration without the peer
-            //is that the correct way?
+            // is that the correct way?
             Configuration newConf = new Configuration(currentConf);
             newConf.removePeer(peerToRemove);
 
             // Apply the configuration change
-            RaftTransactionServerManager.getInstance()
-                    .getCliServiceInstance()
-                    .changePeers(group, currentConf, newConf);
+            RaftTransactionServerManager.getInstance().getCliServiceInstance().changePeers(group, currentConf, newConf);
 
             // Update local routing table
             routeTable.updateConfiguration(group, newConf);
@@ -187,7 +186,7 @@ public class RaftGroupService implements ChangePeersService {
     }
 
     @Override
-    public void changePeers(Map<String, List<String>> groupPeersMap) throws Exception {
+    public void changePeers(Map<String, List<String>> groupPeersMap) {
         validateControlGroupPermission();
         validateChangePeersParameters(groupPeersMap);
 
@@ -203,7 +202,7 @@ public class RaftGroupService implements ChangePeersService {
                 LOGGER.info("Successfully changed peers for group {} to: {}", groupId, newPeers);
             } catch (Exception e) {
                 LOGGER.error("Failed to change peers for group {} to: {}", groupId, newPeers, e);
-                throw new Exception("Failed to change peers for group " + groupId + ": " + e.getMessage(), e);
+                throw new RuntimeException("Failed to change peers for group " + groupId + ": " + e.getMessage(), e);
             }
         }
     }
@@ -214,26 +213,7 @@ public class RaftGroupService implements ChangePeersService {
      * do we also check if node is leader?
      */
     public boolean hasChangePeersPermission() {
-        try {
-            // Check if this node is part of a Control Group
-            RaftControllerServerManager controllerManager = RaftControllerServerManager.getInstance();
-
-            // If controller manager has any groups, check if any of them are controller groups
-            for (String groupId : controllerManager.getRaftGroups()) {
-                RaftServer raftServer = controllerManager.getRaftServer(groupId);
-                if (raftServer != null && raftServer.isController()) {
-                    LOGGER.debug("Node has Control Group membership in group: {}", groupId);
-                    return true;
-                }
-            }
-
-            LOGGER.debug("Node does not have Control Group membership");
-            return false;
-
-        } catch (Exception e) {
-            LOGGER.warn("Error checking Control Group permission", e);
-            return false;
-        }
+        return RaftControllerServerManager.getInstance().getRaftServer("controller") != null;
     }
 
     /**
@@ -242,26 +222,58 @@ public class RaftGroupService implements ChangePeersService {
     private void changePeersForGroup(String groupId, List<String> newPeers) throws Exception {
         // Parse new peer addresses
         List<PeerId> newPeerIds = parsePeerAddresses(newPeers);
-
-        // Get current configuration
-        RouteTable routeTable = RouteTable.getInstance();
-        Configuration currentConf = routeTable.getConfiguration(groupId);
-        if (currentConf == null) {
-            throw new IllegalArgumentException("Group not found: " + groupId);
+        List<Node> list = new ArrayList<>(newPeers.size());
+        List<Node> currentList = TRANSACTION_GROUPS.get(groupId);
+        for (PeerId newPeer : newPeerIds) {
+            boolean exists = false;
+            for (Node node : currentList) {
+                if (newPeer.getIp().equals(node.getInternal().getHost())
+                        && newPeer.getPort() == node.getInternal().getPort()) {
+                    list.add(node);
+                    exists = true;
+                }
+            }
+            if (!exists) {
+                Node node = new Node();
+                node.setInternal(node.createEndpoint(newPeer.getIp(), newPeer.getPort(), "raft"));
+                list.add(node);
+            }
         }
+        Map<String, List<Node>> groupPeersMap = new HashMap<>();
+        groupPeersMap.put(groupId, list);
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+        RaftTxgGroupMsg raftTxgGroupMsg = RaftTxgGroupMsg.create(groupPeersMap);
+        RaftTaskUtil.createTask(
+                status -> {
+                    if (!status.isOk()) {
+                        LOGGER.error("Failed to change peers for group {}: {}", groupId, status.getErrorMsg());
+                        future.completeExceptionally(new RuntimeException(
+                                "Failed to change peers for group " + groupId + ": " + status.getErrorMsg()));
+                        return;
+                    }
+                    // Get current configuration
+                    RouteTable routeTable = RouteTable.getInstance();
+                    Configuration currentConf = routeTable.getConfiguration(groupId);
+                    if (currentConf == null) {
+                        throw new IllegalArgumentException("Group not found: " + groupId);
+                    }
 
-        // Create new configuration
-        Configuration newConf = new Configuration();
-        for (PeerId peerId : newPeerIds) {
-            newConf.addPeer(peerId);
-        }
+                    // Create new configuration
+                    Configuration newConf = new Configuration();
+                    for (PeerId peerId : newPeerIds) {
+                        newConf.addPeer(peerId);
+                    }
 
-        // Apply the configuration change
-        CliService cliService = getCliService(groupId);
-        cliService.changePeers(groupId, currentConf, newConf);
+                    // Apply the configuration change
+                    CliService cliService = getCliService(groupId);
+                    cliService.changePeers(groupId, currentConf, newConf);
 
-        // Update local routing table
-        routeTable.updateConfiguration(groupId, newConf);
+                    // Update local routing table
+                    routeTable.updateConfiguration(groupId, newConf);
+                    future.complete(true);
+                },
+                raftTxgGroupMsg,
+                future);
     }
 
     /**
@@ -300,8 +312,8 @@ public class RaftGroupService implements ChangePeersService {
                 }
 
                 if (!IP_PORT_PATTERN.matcher(peer.trim()).matches()) {
-                    throw new IllegalArgumentException("Invalid peer address format: " + peer +
-                            " in group: " + groupId + ". Expected format: ip:port (e.g., 192.168.1.100:8091)");
+                    throw new IllegalArgumentException("Invalid peer address format: " + peer + " in group: " + groupId
+                            + ". Expected format: ip:port (e.g., 192.168.1.100:8091)");
                 }
             }
         }
@@ -349,7 +361,6 @@ public class RaftGroupService implements ChangePeersService {
         throw new IllegalArgumentException("Group not found in any manager: " + groupId);
     }
 
-
     /**
      * Get the current leader information for a specific group
      */
@@ -359,7 +370,8 @@ public class RaftGroupService implements ChangePeersService {
         Map<String, Object> result = new HashMap<>();
 
         try {
-            RaftTransactionServer raftServer = RaftTransactionServerManager.getInstance().getRaftServer(group);
+            RaftTransactionServer raftServer =
+                    RaftTransactionServerManager.getInstance().getRaftServer(group);
 
             if (raftServer != null) {
                 RaftTransactionStateMachine stateMachine =
@@ -389,7 +401,8 @@ public class RaftGroupService implements ChangePeersService {
      */
     private Map<String, Object> buildGroupInfo(String group) {
         try {
-            RaftTransactionServer raftServer = RaftTransactionServerManager.getInstance().getRaftServer(group);
+            RaftTransactionServer raftServer =
+                    RaftTransactionServerManager.getInstance().getRaftServer(group);
 
             if (raftServer == null) {
                 return null;
@@ -398,8 +411,7 @@ public class RaftGroupService implements ChangePeersService {
             Map<String, Object> groupInfo = new HashMap<>();
 
             // Get cluster metadata
-            RaftTransactionStateMachine stateMachine =
-                    raftServer.getRaftStateMachine();
+            RaftTransactionStateMachine stateMachine = raftServer.getRaftStateMachine();
             RaftClusterMetadata metadata = stateMachine.getRaftLeaderMetadata();
 
             // Get current configuration
@@ -452,8 +464,7 @@ public class RaftGroupService implements ChangePeersService {
             return false;
         }
 
-        return members.stream()
-                .anyMatch(member -> ip.equals(member.get("ip")));
+        return members.stream().anyMatch(member -> ip.equals(member.get("ip")));
     }
 
     /**
@@ -510,5 +521,23 @@ public class RaftGroupService implements ChangePeersService {
         if (port <= 0 || port > 65535) {
             throw new IllegalArgumentException("Port must be between 1 and 65535");
         }
+    }
+
+    @Override
+    public void saveOrUpdate(Map<String, List<Node>> groupPeersMap) {
+        if (CollectionUtils.isEmpty(groupPeersMap)) {
+            return;
+        }
+        TRANSACTION_GROUPS.putAll(groupPeersMap);
+    }
+
+    @Override
+    public void clear() {
+        TRANSACTION_GROUPS.clear();
+    }
+
+    @Override
+    public Map<String, List<Node>> getGroupPeersMap() {
+        return TRANSACTION_GROUPS;
     }
 }

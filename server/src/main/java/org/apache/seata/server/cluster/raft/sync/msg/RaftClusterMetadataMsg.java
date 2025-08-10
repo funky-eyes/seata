@@ -19,7 +19,6 @@ package org.apache.seata.server.cluster.raft.sync.msg;
 import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.server.cluster.raft.sync.msg.dto.RaftClusterMetadata;
 
-
 /**
  */
 public class RaftClusterMetadataMsg extends RaftBaseMsg {

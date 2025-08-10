@@ -25,13 +25,12 @@ import org.apache.seata.server.cluster.raft.AbstractRaftServerManager;
 import org.apache.seata.server.cluster.raft.RaftServer;
 import org.apache.seata.server.cluster.raft.processor.PutNodeInfoRequestProcessor;
 import org.apache.seata.server.cluster.raft.serializer.JacksonBoltSerializer;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;
 
-
 import static java.io.File.separator;
-import static org.apache.seata.common.DefaultValues.DEFAULT_SEATA_GROUP;
 import static org.apache.seata.common.DefaultValues.DEFAULT_SESSION_STORE_FILE_DIR;
 
 /**
@@ -86,14 +85,12 @@ public class RaftControllerServerManager extends AbstractRaftServerManager {
     @Override
     public void init() {
         String dataPath;
-        String group;
+        String group = "controller";
         String controllerInitConf = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_CONTROLLER_SERVER_ADDR);
         String initConf;
         if (StringUtils.isBlank(controllerInitConf)) {
             return;
         } else {
-            // todo: This needs to be modified to obtain the group and address list through TXG.
-            group = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_GROUP, DEFAULT_SEATA_GROUP);
             dataPath = CONFIG.getConfig(ConfigurationKeys.STORE_FILE_DIR, DEFAULT_SESSION_STORE_FILE_DIR) + separator
                     + "raft" + separator + serverId.getPort();
             initConf = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_SERVER_ADDR);

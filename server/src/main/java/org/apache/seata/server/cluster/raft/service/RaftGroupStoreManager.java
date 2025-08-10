@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,28 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.seata.server.cluster.raft.service;
 
-package org.apache.seata.server.cluster.raft.sync.msg;
+import org.apache.seata.common.metadata.Node;
 
+import java.util.List;
 import java.util.Map;
 
-public class RaftGroupMetadataMsg extends RaftBaseMsg {
-    private String groupId;
-    private RaftSyncMsgType msgType;
-    private Map<String, Object> groupMetadata;
+/**
+ * Interface for changing peers in Raft groups
+ * Only accessible to Control Group members
+ */
+public interface RaftGroupStoreManager {
 
-    public RaftGroupMetadataMsg(RaftSyncMsgType msgType, String groupId, Map<String, Object> groupMetadata) {
-        this.msgType = msgType;
-        this.groupId = groupId;
-        this.groupMetadata = groupMetadata;
-    }
+    /**
+     * Change peers for multiple Raft groups
+     * This operation is restricted to Control Group members only validation required
+     */
+    void saveOrUpdate(Map<String, List<Node>> groupPeersMap);
 
-    public String getGroupId() {
-        return groupId;
-    }
+    void clear();
 
-    public Map<String, Object> getGroupMetadata() {
-        return groupMetadata;
-    }
+    Map<String, List<Node>> getGroupPeersMap();
+
+    void changePeers(Map<String, List<String>> groupPeersMap);
 }
-
