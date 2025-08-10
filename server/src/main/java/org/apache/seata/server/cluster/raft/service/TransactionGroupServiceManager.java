@@ -270,6 +270,7 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
 
                     // Update local routing table
                     routeTable.updateConfiguration(groupId, newConf);
+                    TRANSACTION_GROUPS.putAll(groupPeersMap);
                     future.complete(true);
                 },
                 raftTxgGroupMsg,
