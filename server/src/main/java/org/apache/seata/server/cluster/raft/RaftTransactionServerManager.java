@@ -24,6 +24,7 @@ import com.alipay.sofa.jraft.rpc.InvokeContext;
 import com.alipay.sofa.jraft.rpc.impl.cli.CliClientServiceImpl;
 import org.apache.seata.common.ConfigurationKeys;
 import org.apache.seata.common.XID;
+import org.apache.seata.common.metadata.Node;
 import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.core.serializer.SerializerType;
@@ -32,6 +33,7 @@ import org.apache.seata.server.cluster.raft.processor.request.GetTxgGroupsReques
 import org.apache.seata.server.cluster.raft.processor.response.GetTxgGroupsResponse;
 import org.apache.seata.server.cluster.raft.serializer.JacksonBoltSerializer;
 import org.apache.seata.server.cluster.raft.sync.msg.dto.TxgGroupAssignmentDTO;
+import org.checkerframework.checker.units.qual.N;
 
 import java.io.IOException;
 import java.util.*;
@@ -104,13 +106,12 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
     public void init() {
         String dataPath;
         String controllerInitConf = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_CONTROLLER_SERVER_ADDR);
-        String initConf;
         if (StringUtils.isBlank(controllerInitConf)) {
             // It is currently in single-raft mode.
             String group = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_GROUP, DEFAULT_SEATA_GROUP);
             dataPath = CONFIG.getConfig(ConfigurationKeys.STORE_FILE_DIR, DEFAULT_SESSION_STORE_FILE_DIR) + separator
                     + "raft" + separator + serverId.getPort();
-            initConf = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_SERVER_ADDR);
+            String initConf = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_SERVER_ADDR);
             init(initConf);
             Configuration configuration = new Configuration();
             configuration.parse(initConf);
@@ -124,30 +125,29 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
             // Retrieve TXG information from CG interface
             dataPath = CONFIG.getConfig(ConfigurationKeys.STORE_FILE_DIR, DEFAULT_SESSION_STORE_FILE_DIR) + separator
                     + "raft" + separator + serverId.getPort();
-            initConf = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_SERVER_ADDR);
-            init(initConf);
-            Configuration configuration = new Configuration();
-            configuration.parse(initConf);
-
             // Retrieve TXG assignments from CG via RPC
             TxgGroupAssignmentDTO txgAssignments = retrieveTxgAssignmentsFromCG(controllerInitConf);
-
+            // Create raft servers for each TXG group assigned to this node
             if (txgAssignments != null && txgAssignments.getGroupMemberMap() != null) {
-                String currentEndpoint = XID.getIpAddress() + ":" + serverId.getPort();
-
-                // Create raft servers for each TXG group assigned to this node
-                for (Map.Entry<String, List<String>> entry :
-                        txgAssignments.getGroupMemberMap().entrySet()) {
-                    String groupName = entry.getKey();
-                    List<String> members = entry.getValue();
-
-                    if (members.contains(currentEndpoint)) {
-                        logger.info("Creating raft server for TXG group: {} with members: {}", groupName, members);
+                txgAssignments.getGroupMemberMap().forEach((groupName, members) -> {
+                    logger.info("TXG group: {} assigned members: {}", groupName, members);
+                    if (members.stream().anyMatch(node -> node.getInternal().getHost().equals(XID.getIpAddress())
+                        && node.getInternal().getPort() == serverId.getPort())) {
+                        Configuration configuration = new Configuration();
+                        StringJoiner sb = new StringJoiner(",");
+                        for (Node member : members) {
+                            Node.Endpoint endpoint = member.getInternal();
+                            sb.add(endpoint.getHost() + ":" + endpoint.getPort());
+                        }
+                        String initConf = sb.toString();
+                        logger.info("Creating raft server for TXG group: {} with members: {}", groupName, initConf);
+                        configuration.parse(initConf);
                         createRaftServers(groupName, dataPath, configuration);
                     }
-                }
+                });
             } else {
                 logger.warn("No TXG assignments received from controller, no raft groups will be created");
+                throw new RuntimeException("Failed to retrieve TXG assignments from controller: " + controllerInitConf);
             }
         }
     }
@@ -165,20 +165,23 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
             }
 
             // Try to get TXG assignments from each controller peer
-            for (PeerId controllerPeer : controllerPeers) {
-                try {
-                    GetTxgGroupsRequest request = new GetTxgGroupsRequest(XID.getIpAddress());
-                    GetTxgGroupsResponse response = makeRpcCallToController(controllerPeer, request);
+            for (int i = 0; i < 10; i++) {
+                for (PeerId controllerPeer : controllerPeers) {
+                    try {
+                        GetTxgGroupsRequest request = new GetTxgGroupsRequest(XID.getIpAddress());
+                        GetTxgGroupsResponse response = makeRpcCallToController(controllerPeer, request);
 
-                    if (response != null && response.isSuccess()) {
-                        logger.info("Successfully retrieved TXG assignments from controller {}", controllerPeer);
-                        return response.getTxgAssignments();
+                        if (response != null && response.isSuccess()) {
+                            logger.info("Successfully retrieved TXG assignments from controller {}", controllerPeer);
+                            return response.getTxgAssignments();
+                        }
+                    } catch (Exception e) {
+                        logger.warn("Error calling controller {}: {}", controllerPeer, e.getMessage());
                     }
-                } catch (Exception e) {
-                    logger.warn("Error calling controller {}: {}", controllerPeer, e.getMessage());
                 }
+                // Wait before retrying
+                Thread.sleep(1000);
             }
-
             logger.error("Failed to retrieve TXG assignments from any controller");
             return null;
 

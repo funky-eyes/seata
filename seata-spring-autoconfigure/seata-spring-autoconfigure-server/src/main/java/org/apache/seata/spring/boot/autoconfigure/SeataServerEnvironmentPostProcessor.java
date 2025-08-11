@@ -22,6 +22,7 @@ import org.apache.seata.spring.boot.autoconfigure.properties.server.ServerRateLi
 import org.apache.seata.spring.boot.autoconfigure.properties.server.ServerRecoveryProperties;
 import org.apache.seata.spring.boot.autoconfigure.properties.server.ServerUndoProperties;
 import org.apache.seata.spring.boot.autoconfigure.properties.server.filter.ServerHttpFilterProperties;
+import org.apache.seata.spring.boot.autoconfigure.properties.server.raft.ServerRaftControllerProperties;
 import org.apache.seata.spring.boot.autoconfigure.properties.server.raft.ServerRaftProperties;
 import org.apache.seata.spring.boot.autoconfigure.properties.server.raft.ServerRaftSSLClientProperties;
 import org.apache.seata.spring.boot.autoconfigure.properties.server.raft.ServerRaftSSLProperties;
@@ -47,6 +48,7 @@ import static org.apache.seata.spring.boot.autoconfigure.StarterConstants.METRIC
 import static org.apache.seata.spring.boot.autoconfigure.StarterConstants.PROPERTY_BEAN_MAP;
 import static org.apache.seata.spring.boot.autoconfigure.StarterConstants.SERVER_HTTP_FILTER_PREFIX;
 import static org.apache.seata.spring.boot.autoconfigure.StarterConstants.SERVER_PREFIX;
+import static org.apache.seata.spring.boot.autoconfigure.StarterConstants.SERVER_RAFT_CONTROLLER_PREFIX;
 import static org.apache.seata.spring.boot.autoconfigure.StarterConstants.SERVER_RAFT_PREFIX;
 import static org.apache.seata.spring.boot.autoconfigure.StarterConstants.SERVER_RAFT_SSL_CLIENT_KEYSTORE_PREFIX;
 import static org.apache.seata.spring.boot.autoconfigure.StarterConstants.SERVER_RAFT_SSL_PREFIX;

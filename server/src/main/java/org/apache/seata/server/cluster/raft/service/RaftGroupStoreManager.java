@@ -38,4 +38,6 @@ public interface RaftGroupStoreManager {
     Map<String, List<Node>> getGroupPeersMap();
 
     void changePeers(Map<String, List<String>> groupPeersMap);
+
+    Map<String, List<Node>> getRaftGroupsByIp(String ip);
 }
