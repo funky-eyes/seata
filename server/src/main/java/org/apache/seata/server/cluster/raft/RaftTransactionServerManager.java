@@ -33,7 +33,6 @@ import org.apache.seata.server.cluster.raft.processor.request.GetTxgGroupsReques
 import org.apache.seata.server.cluster.raft.processor.response.GetTxgGroupsResponse;
 import org.apache.seata.server.cluster.raft.serializer.JacksonBoltSerializer;
 import org.apache.seata.server.cluster.raft.sync.msg.dto.TxgGroupAssignmentDTO;
-import org.checkerframework.checker.units.qual.N;
 
 import java.io.IOException;
 import java.util.*;
@@ -131,8 +130,9 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
             if (txgAssignments != null && txgAssignments.getGroupMemberMap() != null) {
                 txgAssignments.getGroupMemberMap().forEach((groupName, members) -> {
                     logger.info("TXG group: {} assigned members: {}", groupName, members);
-                    if (members.stream().anyMatch(node -> node.getInternal().getHost().equals(XID.getIpAddress())
-                        && node.getInternal().getPort() == serverId.getPort())) {
+                    if (members.stream()
+                            .anyMatch(node -> node.getInternal().getHost().equals(XID.getIpAddress())
+                                    && node.getInternal().getPort() == serverId.getPort())) {
                         Configuration configuration = new Configuration();
                         StringJoiner sb = new StringJoiner(",");
                         for (Node member : members) {

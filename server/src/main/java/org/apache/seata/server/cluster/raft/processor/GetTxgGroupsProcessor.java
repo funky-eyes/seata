@@ -16,11 +16,10 @@
  */
 package org.apache.seata.server.cluster.raft.processor;
 
-import org.apache.seata.server.cluster.raft.processor.request.GetTxgGroupsRequest;
-import org.apache.seata.server.cluster.raft.processor.response.GetTxgGroupsResponse;
-
 import com.alipay.sofa.jraft.rpc.RpcContext;
 import com.alipay.sofa.jraft.rpc.RpcProcessor;
+import org.apache.seata.server.cluster.raft.processor.request.GetTxgGroupsRequest;
+import org.apache.seata.server.cluster.raft.processor.response.GetTxgGroupsResponse;
 import org.apache.seata.server.cluster.raft.service.RaftGroupStoreManager;
 import org.apache.seata.server.cluster.raft.sync.msg.dto.TxgGroupAssignmentDTO;
 
@@ -36,7 +35,7 @@ public class GetTxgGroupsProcessor implements RpcProcessor<GetTxgGroupsRequest> 
     @Override
     public void handleRequest(RpcContext rpcCtx, GetTxgGroupsRequest request) {
         TxgGroupAssignmentDTO txgGroupAssignmentDTO =
-            new TxgGroupAssignmentDTO(transactionGroupStoreManager.getRaftGroupsByIp(request.getNodeIp()));
+                new TxgGroupAssignmentDTO(transactionGroupStoreManager.getRaftGroupsByIp(request.getNodeIp()));
         rpcCtx.sendResponse(new GetTxgGroupsResponse(true, txgGroupAssignmentDTO));
     }
 
