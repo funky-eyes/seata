@@ -23,6 +23,8 @@ import org.springframework.test.context.DynamicPropertySource;
 import java.io.IOException;
 import java.net.ServerSocket;
 
+import static org.apache.seata.common.ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL;
+
 @TestConfiguration
 public class DynamicPortTestConfig {
     @DynamicPropertySource
@@ -32,13 +34,13 @@ public class DynamicPortTestConfig {
             int servicePort = serverSocket.getLocalPort();
             int exporterPort = exporterSocket.getLocalPort();
 
-            registry.add("server.servicePort", () -> String.valueOf(servicePort));
+            registry.add(SERVER_SERVICE_PORT_CAMEL, () -> String.valueOf(servicePort));
             registry.add("metrics.exporter.prometheus.port", () -> String.valueOf(exporterPort));
 
-            System.clearProperty("server.servicePort");
+            System.clearProperty(SERVER_SERVICE_PORT_CAMEL);
             System.clearProperty("metrics.exporter.prometheus.port");
 
-            System.setProperty("server.servicePort", String.valueOf(servicePort));
+            System.setProperty(SERVER_SERVICE_PORT_CAMEL, String.valueOf(servicePort));
             System.setProperty("metrics.exporter.prometheus.port", String.valueOf(exporterPort));
         }
     }
