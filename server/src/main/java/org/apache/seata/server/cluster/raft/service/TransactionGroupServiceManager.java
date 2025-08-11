@@ -25,6 +25,7 @@ import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.server.cluster.raft.RaftTransactionServer;
 import org.apache.seata.server.cluster.raft.RaftTransactionServerManager;
 import org.apache.seata.server.cluster.raft.RaftTransactionStateMachine;
+import org.apache.seata.server.cluster.raft.manager.RaftControllerServer;
 import org.apache.seata.server.cluster.raft.manager.RaftControllerServerManager;
 import org.apache.seata.server.cluster.raft.sync.msg.RaftTxgGroupMsg;
 import org.apache.seata.server.cluster.raft.sync.msg.dto.RaftClusterMetadata;
@@ -60,6 +61,7 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
      * Get all Raft groups
      */
     public Map<String, List<Node>> getAllRaftGroups() {
+        validateControlGroupPermission();
         return TRANSACTION_GROUPS;
     }
 
@@ -68,8 +70,9 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
      */
     @Override
     public Map<String, List<Node>> getRaftGroupsByIp(String ip) {
-        if (hasChangePeersPermission()) {
-            // todo: If not a CG member, the request should be forwarded to the CG node
+        if (isCGMember()) {
+            // todo: If this API is provided for use by the frontend interface or for queries by operations personnel,
+            // it needs to be forwarded to the CG node for querying.
         }
         if (ip == null || ip.trim().isEmpty()) {
             throw new IllegalArgumentException("IP address cannot be null or empty");
@@ -103,9 +106,12 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
      * also do we use ports or just ips? i know you sent ips but dont we need port for add peer?
      */
     public void addPeer(String group, String ip, int port) throws Exception {
-        validateGroupExists(group);
+        validateControlGroupPermission();
         validatePeerParameters(ip, port);
+        validateGroupExists(group);
 
+        // todo: You need to follow the approach used in changePeersForGroup and submit it to the state machine for
+        // execution.
         try {
             PeerId newPeer = new PeerId(ip, port);
             RouteTable routeTable = RouteTable.getInstance();
@@ -144,9 +150,11 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
      * same as above
      */
     public void removePeer(String group, String ip, int port) throws Exception {
+        validateControlGroupPermission();
         validateGroupExists(group);
         validatePeerParameters(ip, port);
-
+        // todo: You need to follow the approach used in changePeersForGroup and submit it to the state machine for
+        // execution.
         try {
             PeerId peerToRemove = new PeerId(ip, port);
             RouteTable routeTable = RouteTable.getInstance();
@@ -214,7 +222,20 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
      * do we also check if node is leader?
      */
     public boolean hasChangePeersPermission() {
-        return RaftControllerServerManager.getInstance().getRaftServer("controller") != null;
+        RaftControllerServer raftControllerServer =
+                RaftControllerServerManager.getInstance().getRaftServer("controller");
+        return raftControllerServer != null
+                && raftControllerServer.getRaftStateMachine().isLeader();
+    }
+
+    /**
+     * Check if the current node is a member of the Control Group
+     * @return
+     */
+    public boolean isCGMember() {
+        RaftControllerServer raftControllerServer =
+                RaftControllerServerManager.getInstance().getRaftServer("controller");
+        return raftControllerServer != null;
     }
 
     /**
