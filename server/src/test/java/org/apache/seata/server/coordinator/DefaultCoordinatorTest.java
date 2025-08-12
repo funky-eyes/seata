@@ -62,8 +62,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
-import static org.apache.seata.common.ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL;
-
 /**
  * The type DefaultCoordinator test.
  *
@@ -106,11 +104,6 @@ public class DefaultCoordinatorTest extends BaseSpringBootTest {
     @BeforeEach
     public void tearUp() throws IOException {
         deleteAndCreateDataFile();
-    }
-
-    @AfterEach
-    public void down() {
-        System.clearProperty(SERVER_SERVICE_PORT_CAMEL);
     }
 
     @Test
