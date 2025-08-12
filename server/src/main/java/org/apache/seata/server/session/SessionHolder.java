@@ -125,11 +125,11 @@ public class SessionHolder {
                 String vGroupMappingStorePath =
                         CONFIG.getConfig(ConfigurationKeys.STORE_FILE_DIR, DEFAULT_VGROUP_MAPPING_STORE_FILE_DIR)
                                 + separator
-                                + System.getProperty(SERVER_SERVICE_PORT_CAMEL);
+                                + XID.getPort();
                 String sessionStorePath =
                         CONFIG.getConfig(ConfigurationKeys.STORE_FILE_DIR, DEFAULT_SESSION_STORE_FILE_DIR)
                                 + separator
-                                + System.getProperty(SERVER_SERVICE_PORT_CAMEL);
+                                + XID.getPort();
                 if (StringUtils.isBlank(sessionStorePath) || StringUtils.isBlank(vGroupMappingStorePath)) {
                     throw new StoreException("the {store.file.dir} is empty.");
                 }
