@@ -21,7 +21,7 @@ import org.apache.seata.common.ConfigurationKeys;
 import org.apache.seata.common.util.IOUtil;
 import org.apache.seata.config.ConfigurationFactory;
 import org.apache.seata.core.store.LockDO;
-import org.apache.seata.server.RandomPortTest;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.storage.db.lock.LockStoreDataBaseDAO;
 import org.h2.store.fs.FileUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -39,8 +39,7 @@ import java.util.List;
 
 /**
  */
-@RandomPortTest
-public class DataBaseLockStoreDAOTest {
+public class DataBaseLockStoreDAOTest extends BaseSpringBootTest {
 
     static LockStoreDataBaseDAO dataBaseLockStoreDAO = null;
 

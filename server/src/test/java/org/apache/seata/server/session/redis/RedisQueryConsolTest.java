@@ -18,7 +18,7 @@ package org.apache.seata.server.session.redis;
 
 import com.alibaba.fastjson.JSON;
 import org.apache.seata.common.result.PageResult;
-import org.apache.seata.server.RandomPortTest;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.console.entity.param.GlobalLockParam;
 import org.apache.seata.server.console.entity.param.GlobalSessionParam;
 import org.apache.seata.server.console.entity.vo.GlobalLockVO;
@@ -33,8 +33,7 @@ import javax.annotation.Resource;
 /**
  */
 @EnabledIfSystemProperty(named = "redisCaseEnabled", matches = "true")
-@RandomPortTest
-public class RedisQueryConsolTest {
+public class RedisQueryConsolTest extends BaseSpringBootTest {
 
     /**
      *

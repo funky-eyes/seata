@@ -24,7 +24,7 @@ import org.apache.seata.core.exception.TransactionException;
 import org.apache.seata.core.model.GlobalStatus;
 import org.apache.seata.core.rpc.RemotingServer;
 import org.apache.seata.metrics.registry.Registry;
-import org.apache.seata.server.RandomPortTest;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.coordinator.DefaultCoordinator;
 import org.apache.seata.server.coordinator.DefaultCoordinatorTest;
 import org.apache.seata.server.coordinator.DefaultCore;
@@ -50,8 +50,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Test events come from Default Core.
  *
  */
-@RandomPortTest
-public class DefaultCoreForEventBusTest {
+public class DefaultCoreForEventBusTest extends BaseSpringBootTest {
 
     private static final boolean DELAY_HANDLE_SESSION = StoreConfig.getSessionMode() != SessionMode.FILE;
 

@@ -19,7 +19,7 @@ package org.apache.seata.server.session;
 import org.apache.seata.common.XID;
 import org.apache.seata.common.store.SessionMode;
 import org.apache.seata.core.constants.ConfigurationKeys;
-import org.apache.seata.server.RandomPortTest;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,8 +45,7 @@ import static org.apache.seata.server.session.SessionHolder.ROOT_SESSION_MANAGER
  *
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@RandomPortTest
-public class SessionHolderTest {
+public class SessionHolderTest extends BaseSpringBootTest {
     private String pathname;
 
     @BeforeEach

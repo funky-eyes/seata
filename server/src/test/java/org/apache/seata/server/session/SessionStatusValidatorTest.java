@@ -17,7 +17,7 @@
 package org.apache.seata.server.session;
 
 import org.apache.seata.core.model.GlobalStatus;
-import org.apache.seata.server.RandomPortTest;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -25,8 +25,7 @@ import org.junit.jupiter.api.Test;
  * the type change status validator test
  *
  */
-@RandomPortTest
-public class SessionStatusValidatorTest {
+public class SessionStatusValidatorTest extends BaseSpringBootTest {
 
     @Test
     public void testValidateUpdateStatus() {

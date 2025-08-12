@@ -18,7 +18,7 @@ package org.apache.seata.server.lock;
 
 import org.apache.seata.core.store.DefaultDistributedLocker;
 import org.apache.seata.core.store.DistributedLocker;
-import org.apache.seata.server.RandomPortTest;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.lock.distributed.DistributedLockerFactory;
 import org.apache.seata.server.storage.redis.lock.RedisDistributedLocker;
 import org.junit.jupiter.api.AfterEach;
@@ -29,8 +29,7 @@ import org.junit.jupiter.api.Test;
 /**
  * @description Distributed locker factory test
  */
-@RandomPortTest
-public class DistributedLockerFactoryTest {
+public class DistributedLockerFactoryTest extends BaseSpringBootTest {
 
     @BeforeEach
     public void setUp() {

@@ -23,7 +23,7 @@ import org.apache.seata.common.util.UUIDGenerator;
 import org.apache.seata.config.ConfigurationCache;
 import org.apache.seata.core.exception.TransactionException;
 import org.apache.seata.core.model.BranchType;
-import org.apache.seata.server.RandomPortTest;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.cluster.raft.execute.branch.RemoveBranchSessionExecute;
 import org.apache.seata.server.cluster.raft.execute.lock.BranchReleaseLockExecute;
 import org.apache.seata.server.cluster.raft.execute.lock.GlobalReleaseLockExecute;
@@ -50,10 +50,7 @@ import java.util.List;
 
 import static org.apache.seata.common.DefaultValues.DEFAULT_TX_GROUP;
 
-/**
- */
-@RandomPortTest
-class LockExecuteTest {
+class LockExecuteTest extends BaseSpringBootTest {
 
     private static GlobalSession GLOBAL_SESSION;
 

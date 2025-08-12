@@ -22,7 +22,7 @@ import org.apache.seata.core.model.BranchStatus;
 import org.apache.seata.core.model.BranchType;
 import org.apache.seata.core.model.GlobalStatus;
 import org.apache.seata.core.rpc.RemotingServer;
-import org.apache.seata.server.RandomPortTest;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.session.BranchSession;
 import org.apache.seata.server.session.GlobalSession;
 import org.apache.seata.server.session.SessionHelper;
@@ -44,8 +44,7 @@ import java.util.stream.Stream;
  * The type Default core test.
  *
  */
-@RandomPortTest
-public class DefaultCoreTest {
+public class DefaultCoreTest extends BaseSpringBootTest {
 
     private static DefaultCore core;
     private static RemotingServer remotingServer;

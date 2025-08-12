@@ -22,7 +22,7 @@ import org.apache.seata.common.metadata.Node;
 import org.apache.seata.common.store.SessionMode;
 import org.apache.seata.core.exception.TransactionException;
 import org.apache.seata.core.model.BranchType;
-import org.apache.seata.server.RandomPortTest;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.cluster.raft.snapshot.RaftSnapshot;
 import org.apache.seata.server.cluster.raft.snapshot.RaftSnapshotSerializer;
 import org.apache.seata.server.cluster.raft.snapshot.session.RaftSessionSnapshot;
@@ -54,8 +54,7 @@ import java.util.Map;
 
 /**
  */
-@RandomPortTest
-public class RaftSyncMessageTest {
+public class RaftSyncMessageTest extends BaseSpringBootTest {
 
     @BeforeAll
     public static void setUp(ApplicationContext context) {

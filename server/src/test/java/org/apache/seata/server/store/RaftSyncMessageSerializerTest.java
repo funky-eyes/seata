@@ -16,7 +16,7 @@
  */
 package org.apache.seata.server.store;
 
-import org.apache.seata.server.RandomPortTest;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.cluster.raft.sync.RaftSyncMessageSerializer;
 import org.apache.seata.server.cluster.raft.sync.msg.RaftGlobalSessionSyncMsg;
 import org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMessage;
@@ -29,10 +29,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;
 
-/**
- */
-@RandomPortTest
-public class RaftSyncMessageSerializerTest {
+public class RaftSyncMessageSerializerTest extends BaseSpringBootTest {
     @BeforeAll
     public static void setUp(ApplicationContext context) {}
 

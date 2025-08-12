@@ -21,7 +21,7 @@ import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.common.util.IOUtil;
 import org.apache.seata.core.store.BranchTransactionDO;
 import org.apache.seata.core.store.GlobalTransactionDO;
-import org.apache.seata.server.RandomPortTest;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.storage.db.store.LogStoreDataBaseDAO;
 import org.h2.store.fs.FileUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -36,10 +36,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
-/**
- */
-@RandomPortTest
-public class LogStoreDataBaseDAOTest {
+public class LogStoreDataBaseDAOTest extends BaseSpringBootTest {
 
     static LogStoreDataBaseDAO logStoreDataBaseDAO = null;
 

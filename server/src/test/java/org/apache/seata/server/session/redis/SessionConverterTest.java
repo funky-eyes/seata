@@ -21,7 +21,7 @@ import org.apache.seata.core.model.BranchType;
 import org.apache.seata.core.model.GlobalStatus;
 import org.apache.seata.core.store.BranchTransactionDO;
 import org.apache.seata.core.store.GlobalTransactionDO;
-import org.apache.seata.server.RandomPortTest;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.session.BranchSession;
 import org.apache.seata.server.session.GlobalSession;
 import org.apache.seata.server.storage.SessionConverter;
@@ -34,8 +34,7 @@ import java.util.Date;
  * The session converter utils
  *
  */
-@RandomPortTest
-public class SessionConverterTest {
+public class SessionConverterTest extends BaseSpringBootTest {
 
     @Test
     public void testConvertGlobalSessionNotNull() {

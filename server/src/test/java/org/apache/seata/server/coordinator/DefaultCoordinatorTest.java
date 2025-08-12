@@ -36,7 +36,7 @@ import org.apache.seata.core.protocol.transaction.BranchRollbackRequest;
 import org.apache.seata.core.protocol.transaction.BranchRollbackResponse;
 import org.apache.seata.core.rpc.RemotingServer;
 import org.apache.seata.core.rpc.processor.RemotingProcessor;
-import org.apache.seata.server.RandomPortTest;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.metrics.MetricsManager;
 import org.apache.seata.server.session.GlobalSession;
 import org.apache.seata.server.session.SessionHolder;
@@ -66,8 +66,7 @@ import java.util.stream.Stream;
  * The type DefaultCoordinator test.
  *
  */
-@RandomPortTest
-public class DefaultCoordinatorTest {
+public class DefaultCoordinatorTest extends BaseSpringBootTest {
     private static DefaultCoordinator defaultCoordinator;
 
     private static final String applicationId = "demo-child-app";

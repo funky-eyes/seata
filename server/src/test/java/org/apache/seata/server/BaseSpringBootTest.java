@@ -16,16 +16,37 @@
  */
 package org.apache.seata.server;
 
+import org.apache.seata.config.ConfigurationCache;
+import org.apache.seata.config.ConfigurationFactory;
+import org.apache.seata.core.constants.ConfigurationKeys;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
 @SpringBootTest
 @TestPropertySource(properties = {"server.port=${random.int[10000,60000]}"})
-public @interface RandomPortTest {}
+public abstract class BaseSpringBootTest {
+
+    @BeforeAll
+    public static void beforeAll() {
+        ConfigurationCache.clear();
+        System.clearProperty(ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL);
+        System.clearProperty("server.port");
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        ConfigurationCache.clear();
+        System.clearProperty(ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL);
+        System.clearProperty("server.port");
+    }
+
+    @AfterEach
+    public void AfterEach() {
+        ConfigurationFactory.reload();
+        System.clearProperty(ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL);
+        System.clearProperty("server.port");
+    }
+}

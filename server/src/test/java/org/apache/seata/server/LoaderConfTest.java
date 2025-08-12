@@ -25,8 +25,7 @@ import org.springframework.core.env.Environment;
 /**
  *
  */
-@RandomPortTest
-public class LoaderConfTest {
+public class LoaderConfTest extends BaseSpringBootTest {
 
     static Environment environment;
 

@@ -19,7 +19,7 @@ package org.apache.seata.server.store.file;
 import org.apache.seata.common.store.SessionMode;
 import org.apache.seata.common.util.BufferUtils;
 import org.apache.seata.common.util.UUIDGenerator;
-import org.apache.seata.server.RandomPortTest;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.session.BranchSession;
 import org.apache.seata.server.session.GlobalSession;
 import org.apache.seata.server.session.SessionHolder;
@@ -43,10 +43,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-/**
- */
-@RandomPortTest
-public class FileTransactionStoreManagerTest {
+public class FileTransactionStoreManagerTest extends BaseSpringBootTest {
 
     @BeforeEach
     public void setUp() {

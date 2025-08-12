@@ -20,7 +20,7 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.seata.common.util.IOUtil;
 import org.apache.seata.core.exception.TransactionException;
 import org.apache.seata.core.lock.Locker;
-import org.apache.seata.server.RandomPortTest;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.lock.LockManager;
 import org.apache.seata.server.session.BranchSession;
 import org.apache.seata.server.storage.db.lock.DataBaseLocker;
@@ -38,8 +38,7 @@ import java.sql.Statement;
 
 /**
  */
-@RandomPortTest
-public class DataBaseLockManagerImplTest {
+public class DataBaseLockManagerImplTest extends BaseSpringBootTest {
 
     static LockManager lockManager = null;
 

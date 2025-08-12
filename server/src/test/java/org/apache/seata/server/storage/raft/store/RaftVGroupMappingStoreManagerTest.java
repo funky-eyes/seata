@@ -17,7 +17,7 @@
 package org.apache.seata.server.storage.raft.store;
 
 import org.apache.seata.core.store.MappingDO;
-import org.apache.seata.server.RandomPortTest;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,8 +27,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RandomPortTest
-public class RaftVGroupMappingStoreManagerTest {
+public class RaftVGroupMappingStoreManagerTest extends BaseSpringBootTest {
 
     private RaftVGroupMappingStoreManager raftVGroupMappingStoreManager;
 

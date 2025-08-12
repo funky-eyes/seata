@@ -24,7 +24,7 @@ import org.apache.seata.core.constants.ConfigurationKeys;
 import org.apache.seata.core.model.BranchStatus;
 import org.apache.seata.core.model.BranchType;
 import org.apache.seata.core.model.GlobalStatus;
-import org.apache.seata.server.RandomPortTest;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.lock.LockManager;
 import org.apache.seata.server.lock.file.FileLockManagerForTest;
 import org.apache.seata.server.session.BranchSession;
@@ -47,8 +47,7 @@ import static org.apache.seata.common.DefaultValues.DEFAULT_TX_GROUP;
 /**
  * The type Session store test.
  */
-@RandomPortTest
-public class SessionStoreTest {
+public class SessionStoreTest extends BaseSpringBootTest {
 
     @BeforeAll
     public static void setUp(ApplicationContext context) {}

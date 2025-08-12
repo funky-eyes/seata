@@ -17,7 +17,7 @@
 package org.apache.seata.server.ratelimiter;
 
 import org.apache.seata.common.thread.NamedThreadFactory;
-import org.apache.seata.server.RandomPortTest;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.limit.ratelimit.RateLimiter;
 import org.apache.seata.server.limit.ratelimit.TokenBucketLimiter;
 import org.junit.jupiter.api.Assertions;
@@ -35,8 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * TokenBucketLimiterTest
  */
-@RandomPortTest
-public class TokenBucketLimiterTest {
+public class TokenBucketLimiterTest extends BaseSpringBootTest {
 
     /**
      * Logger for TokenBucketLimiterTest

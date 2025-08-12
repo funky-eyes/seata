@@ -22,7 +22,7 @@ import org.apache.seata.common.store.SessionMode;
 import org.apache.seata.common.store.StoreMode;
 import org.apache.seata.core.store.DistributedLockDO;
 import org.apache.seata.core.store.DistributedLocker;
-import org.apache.seata.server.RandomPortTest;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.lock.distributed.DistributedLockerFactory;
 import org.apache.seata.server.session.SessionHolder;
 import org.apache.seata.server.storage.redis.JedisPooledFactory;
@@ -41,8 +41,7 @@ import java.io.IOException;
  *
  */
 @EnabledIfSystemProperty(named = "redisCaseEnabled", matches = "true")
-@RandomPortTest
-public class RedisDistributedLockerTest {
+public class RedisDistributedLockerTest extends BaseSpringBootTest {
 
     private String retryRollbacking = "RetryRollbacking";
     private String retryRollbacking2 = "RetryRollbacking2";

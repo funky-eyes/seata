@@ -19,7 +19,7 @@ package org.apache.seata.server.lock.file;
 import org.apache.seata.common.XID;
 import org.apache.seata.common.util.UUIDGenerator;
 import org.apache.seata.core.model.BranchType;
-import org.apache.seata.server.RandomPortTest;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.lock.LockManager;
 import org.apache.seata.server.session.BranchSession;
 import org.junit.jupiter.api.Assertions;
@@ -38,8 +38,7 @@ import static org.apache.seata.common.DefaultValues.DEFAULT_TX_GROUP;
  *
  * @since 2019 /1/23
  */
-@RandomPortTest
-public class FileLockManagerImplTest {
+public class FileLockManagerImplTest extends BaseSpringBootTest {
 
     private LockManager lockManager = new FileLockManagerForTest();
 

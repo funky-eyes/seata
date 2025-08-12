@@ -18,7 +18,6 @@ package org.apache.seata.server.lock.redis;
 
 import org.apache.seata.common.loader.EnhancedServiceLoader;
 import org.apache.seata.core.lock.Locker;
-import org.apache.seata.server.RandomPortTest;
 import org.apache.seata.server.session.BranchSession;
 import org.apache.seata.server.storage.redis.lock.RedisLockManager;
 import org.apache.seata.server.storage.redis.lock.RedisLuaLocker;
@@ -32,7 +31,6 @@ import java.io.IOException;
  * RedisLocker use lua script
  *
  */
-@RandomPortTest
 @EnabledIfSystemProperty(named = "redisCaseEnabled", matches = "true")
 public class RedisLuaLockManagerTest extends RedisLockManagerTest {
 

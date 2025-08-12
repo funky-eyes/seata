@@ -22,7 +22,7 @@ import org.apache.seata.common.util.NetUtil;
 import org.apache.seata.config.ConfigurationCache;
 import org.apache.seata.core.exception.TransactionException;
 import org.apache.seata.core.model.GlobalStatus;
-import org.apache.seata.server.RandomPortTest;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.cluster.raft.execute.global.AddGlobalSessionExecute;
 import org.apache.seata.server.cluster.raft.execute.global.RemoveGlobalSessionExecute;
 import org.apache.seata.server.cluster.raft.execute.global.UpdateGlobalSessionExecute;
@@ -42,8 +42,7 @@ import org.springframework.context.ApplicationContext;
 
 /**
  */
-@RandomPortTest
-class GlobalSessionExecuteTest {
+class GlobalSessionExecuteTest extends BaseSpringBootTest {
     @BeforeAll
     public static void setUp(ApplicationContext context) {
         System.setProperty("server.raft.serverAddr", NetUtil.getLocalIp() + ":9091");

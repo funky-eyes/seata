@@ -20,7 +20,7 @@ import org.apache.seata.common.exception.StoreException;
 import org.apache.seata.core.exception.TransactionException;
 import org.apache.seata.core.lock.Locker;
 import org.apache.seata.core.model.LockStatus;
-import org.apache.seata.server.RandomPortTest;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.lock.LockManager;
 import org.apache.seata.server.session.BranchSession;
 import org.apache.seata.server.storage.redis.JedisPooledFactory;
@@ -38,8 +38,7 @@ import redis.clients.jedis.JedisPoolConfig;
 import java.io.IOException;
 
 @EnabledIfSystemProperty(named = "redisCaseEnabled", matches = "true")
-@RandomPortTest
-public class RedisLockManagerTest {
+public class RedisLockManagerTest extends BaseSpringBootTest {
     static LockManager lockManager = null;
 
     static Jedis jedis = null;

@@ -25,8 +25,7 @@ import org.junit.jupiter.api.Test;
  * The type parameter parser test
  *
  */
-@RandomPortTest
-public class ParameterParserTest {
+public class ParameterParserTest extends BaseSpringBootTest {
     private static ParameterParser parameterParser = null;
 
     /**

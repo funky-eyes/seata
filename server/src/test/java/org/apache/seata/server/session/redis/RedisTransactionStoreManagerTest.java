@@ -23,7 +23,7 @@ import org.apache.seata.common.util.BeanUtils;
 import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.core.exception.TransactionException;
 import org.apache.seata.core.model.GlobalStatus;
-import org.apache.seata.server.RandomPortTest;
+import org.apache.seata.server.BaseSpringBootTest;
 import org.apache.seata.server.console.entity.param.GlobalSessionParam;
 import org.apache.seata.server.console.entity.vo.GlobalLockVO;
 import org.apache.seata.server.console.entity.vo.GlobalSessionVO;
@@ -54,8 +54,7 @@ import static org.apache.seata.server.storage.SessionConverter.convertToGlobalSe
 /**
  */
 @EnabledIfSystemProperty(named = "redisCaseEnabled", matches = "true")
-@RandomPortTest
-public class RedisTransactionStoreManagerTest {
+public class RedisTransactionStoreManagerTest extends BaseSpringBootTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RedisTransactionStoreManagerTest.class);
 
