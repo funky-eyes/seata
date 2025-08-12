@@ -23,7 +23,7 @@ import org.apache.seata.common.util.UUIDGenerator;
 import org.apache.seata.config.ConfigurationCache;
 import org.apache.seata.core.exception.TransactionException;
 import org.apache.seata.core.model.BranchType;
-import org.apache.seata.server.DynamicPortTestConfig;
+import org.apache.seata.server.RandomPortTest;
 import org.apache.seata.server.cluster.raft.execute.branch.RemoveBranchSessionExecute;
 import org.apache.seata.server.cluster.raft.execute.lock.BranchReleaseLockExecute;
 import org.apache.seata.server.cluster.raft.execute.lock.GlobalReleaseLockExecute;
@@ -43,9 +43,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Import;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,8 +52,7 @@ import static org.apache.seata.common.DefaultValues.DEFAULT_TX_GROUP;
 
 /**
  */
-@SpringBootTest
-@Import(DynamicPortTestConfig.class)
+@RandomPortTest
 class LockExecuteTest {
 
     private static GlobalSession GLOBAL_SESSION;

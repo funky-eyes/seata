@@ -23,15 +23,14 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.protocol.HTTP;
 import org.apache.seata.common.holder.ObjectHolder;
 import org.apache.seata.common.util.HttpClientUtil;
+import org.apache.seata.server.RandomPortTest;
 import org.apache.seata.server.cluster.listener.ClusterChangeEvent;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.test.context.TestPropertySource;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -41,8 +40,7 @@ import java.util.Map;
 import static org.apache.seata.common.ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL;
 import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_APPLICATION_CONTEXT;
 
-@SpringBootTest
-@TestPropertySource(properties = {"server.port=${random.int[10000,20000]}"})
+@RandomPortTest
 class ClusterControllerTest {
 
     @BeforeAll

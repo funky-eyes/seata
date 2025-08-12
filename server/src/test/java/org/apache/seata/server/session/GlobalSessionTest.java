@@ -21,16 +21,14 @@ import org.apache.seata.core.exception.TransactionException;
 import org.apache.seata.core.model.BranchStatus;
 import org.apache.seata.core.model.BranchType;
 import org.apache.seata.core.model.GlobalStatus;
-import org.apache.seata.server.DynamicPortTestConfig;
+import org.apache.seata.server.RandomPortTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Import;
 
 import java.io.IOException;
 import java.util.stream.Stream;
@@ -42,8 +40,7 @@ import static org.apache.seata.common.DefaultValues.DEFAULT_TX_GROUP;
  *
  * @since 2019 /1/23
  */
-@SpringBootTest
-@Import(DynamicPortTestConfig.class)
+@RandomPortTest
 public class GlobalSessionTest {
 
     @BeforeAll

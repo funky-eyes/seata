@@ -20,7 +20,7 @@ import org.apache.seata.common.loader.EnhancedServiceLoader;
 import org.apache.seata.common.loader.EnhancedServiceNotFoundException;
 import org.apache.seata.config.ConfigurationFactory;
 import org.apache.seata.core.store.db.DataSourceProvider;
-import org.apache.seata.server.DynamicPortTestConfig;
+import org.apache.seata.server.RandomPortTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -30,7 +30,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Import;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -40,7 +39,7 @@ import java.sql.SQLException;
  */
 @SpringBootTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@Import(DynamicPortTestConfig.class)
+@RandomPortTest
 public class AbstractDataSourceProviderTest {
 
     private final String dbcpDatasourceType = "dbcp";

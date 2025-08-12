@@ -21,16 +21,14 @@ import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.common.util.IOUtil;
 import org.apache.seata.core.store.BranchTransactionDO;
 import org.apache.seata.core.store.GlobalTransactionDO;
-import org.apache.seata.server.DynamicPortTestConfig;
+import org.apache.seata.server.RandomPortTest;
 import org.apache.seata.server.storage.db.store.LogStoreDataBaseDAO;
 import org.h2.store.fs.FileUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Import;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -40,8 +38,7 @@ import java.util.List;
 
 /**
  */
-@SpringBootTest
-@Import(DynamicPortTestConfig.class)
+@RandomPortTest
 public class LogStoreDataBaseDAOTest {
 
     static LogStoreDataBaseDAO logStoreDataBaseDAO = null;

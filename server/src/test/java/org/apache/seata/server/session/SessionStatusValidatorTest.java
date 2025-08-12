@@ -17,18 +17,15 @@
 package org.apache.seata.server.session;
 
 import org.apache.seata.core.model.GlobalStatus;
-import org.apache.seata.server.DynamicPortTestConfig;
+import org.apache.seata.server.RandomPortTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 
 /**
  * the type change status validator test
  *
  */
-@SpringBootTest
-@Import(DynamicPortTestConfig.class)
+@RandomPortTest
 public class SessionStatusValidatorTest {
 
     @Test
