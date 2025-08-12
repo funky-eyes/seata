@@ -21,6 +21,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.entity.ContentType;
 import org.apache.http.protocol.HTTP;
+import org.apache.seata.common.XID;
 import org.apache.seata.common.holder.ObjectHolder;
 import org.apache.seata.common.util.HttpClientUtil;
 import org.apache.seata.server.BaseSpringBootTest;
@@ -52,7 +53,7 @@ class ClusterControllerTest extends BaseSpringBootTest {
     @BeforeAll
     public static void setUp(ApplicationContext context) {
         environment = context.getEnvironment();
-        port = Integer.parseInt(environment.getProperty(SERVER_SERVICE_PORT_CAMEL, "18091"));
+        port = XID.getPort();
     }
 
     @Test
