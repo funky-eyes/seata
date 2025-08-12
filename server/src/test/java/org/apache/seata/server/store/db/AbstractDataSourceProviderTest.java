@@ -56,7 +56,7 @@ public class AbstractDataSourceProviderTest extends BaseSpringBootTest {
     }
 
     @AfterEach
-    void tearDown() {
+    public void tearDown() {
         EnhancedServiceLoader.unloadAll();
         ConfigurationFactory.reload();
         System.clearProperty("store.db.driverClassName");
