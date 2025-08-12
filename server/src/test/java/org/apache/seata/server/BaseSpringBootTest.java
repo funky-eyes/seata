@@ -23,14 +23,17 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 
-@SpringBootTest
 @TestPropertySource(properties = {"server.port=${random.int[10000,60000]}"})
+@SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 public abstract class BaseSpringBootTest {
 
     @BeforeAll
     public static void beforeAll() {
+        System.setProperty(ConfigurationKeys.SHUTDOWN_WAIT, "1");
         ConfigurationCache.clear();
         System.clearProperty(ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL);
     }
