@@ -33,20 +33,17 @@ public abstract class BaseSpringBootTest {
     public static void beforeAll() {
         ConfigurationCache.clear();
         System.clearProperty(ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL);
-        System.clearProperty("server.port");
     }
 
     @AfterAll
     public static void afterAll() {
         ConfigurationCache.clear();
         System.clearProperty(ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL);
-        System.clearProperty("server.port");
     }
 
     @AfterEach
     public void AfterEach() {
         ConfigurationFactory.reload();
         System.clearProperty(ConfigurationKeys.SERVER_SERVICE_PORT_CAMEL);
-        System.clearProperty("server.port");
     }
 }
