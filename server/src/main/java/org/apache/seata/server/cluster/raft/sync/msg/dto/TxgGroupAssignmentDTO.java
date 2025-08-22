@@ -17,6 +17,8 @@
 
 package org.apache.seata.server.cluster.raft.sync.msg.dto;
 
+import org.apache.seata.common.metadata.Node;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -25,17 +27,17 @@ public class TxgGroupAssignmentDTO implements Serializable {
 
     private static final long serialVersionUID = 3327902483836983222L;
 
-    Map<String, List<String>> groupMemberMap;
+    Map<String, List<Node>> groupMemberMap;
 
-    public TxgGroupAssignmentDTO( Map<String, List<String>> groupMemberMap) {
+    public TxgGroupAssignmentDTO( Map<String, List<Node>> groupMemberMap) {
         this.groupMemberMap = groupMemberMap;
     }
 
-    public Map<String, List<String>> getGroupMemberMap() {
+    public Map<String, List<Node>> getGroupMemberMap() {
         return groupMemberMap;
     }
 
-    public void setGroupMemberMap(Map<String, List<String>> groupMemberMap) {
+    public void setGroupMemberMap(Map<String, List<Node>> groupMemberMap) {
         this.groupMemberMap = groupMemberMap;
     }
 }

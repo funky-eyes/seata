@@ -16,9 +16,10 @@
  */
 package org.apache.seata.server.controller;
 
+import org.apache.seata.common.metadata.Node;
 import org.apache.seata.common.result.Result;
 import org.apache.seata.common.result.SingleResult;
-import org.apache.seata.server.cluster.raft.service.RaftGroupService;
+import org.apache.seata.server.cluster.raft.service.TransactionGroupServiceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
@@ -37,15 +38,15 @@ public class RaftGroupController {
     private static final Logger LOGGER = LoggerFactory.getLogger(RaftGroupController.class);
 
     @Resource
-    private RaftGroupService raftGroupService;
+    private TransactionGroupServiceManager raftGroupService;
 
     /**
      * Get all Raft groups and their members
      */
     @GetMapping("/groups")
-    public SingleResult<Map<String, List<String>>> getAllRaftGroups() {
+    public SingleResult<Map<String, List<Node>>> getAllRaftGroups() {
         try {
-            Map<String, List<String>> groups = raftGroupService.getAllRaftGroups();
+            Map<String, List<Node>> groups = raftGroupService.getAllRaftGroups();
             return SingleResult.success(groups);
         } catch (Exception e) {
             LOGGER.error("Error retrieving all Raft groups", e);
@@ -57,9 +58,9 @@ public class RaftGroupController {
      * Get Raft groups by IP address
      */
     @GetMapping("/groups/by-ip")
-    public SingleResult<Map<String, List<String>>> getRaftGroupsByIp(@RequestParam String ip) {
+    public SingleResult<Map<String, List<Node>>> getRaftGroupsByIp(@RequestParam String ip) {
         try {
-            Map<String, List<String>> groups = raftGroupService.getRaftGroupsByIp(ip);
+            Map<String, List<Node>> groups = raftGroupService.getRaftGroupsByIp(ip);
             return SingleResult.success(groups);
         } catch (IllegalArgumentException e) {
             return SingleResult.failure("400", e.getMessage());

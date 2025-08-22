@@ -18,9 +18,15 @@
 package org.apache.seata.server.cluster.raft;
 
 import com.alipay.sofa.jraft.core.StateMachineAdapter;
+import org.apache.seata.server.cluster.raft.snapshot.StoreSnapshotFile;
+import org.apache.seata.server.store.StoreConfig;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * raft state machine where the lock maps will be saved
@@ -37,6 +43,19 @@ public abstract class RaftStateMachine extends StateMachineAdapter {
     protected final AtomicLong currentTerm = new AtomicLong(-1);
 
     protected final AtomicBoolean initSync = new AtomicBoolean(false);
+
+    protected final Lock lock = new ReentrantLock();
+
+    protected final List<StoreSnapshotFile> snapshotFiles = new ArrayList<>();
+
+    protected final String mode;
+
+    protected final String group;
+
+    protected RaftStateMachine(String group) {
+        this.group = group;
+        this.mode = StoreConfig.getSessionMode().getName();
+    }
 
     public boolean isLeader() {
         return this.leaderTerm.get() > 0;

@@ -19,19 +19,24 @@ package org.apache.seata.server.cluster.raft.manager;
 import com.alipay.remoting.serialization.SerializerManager;
 import com.alipay.sofa.jraft.conf.Configuration;
 import org.apache.seata.common.ConfigurationKeys;
+import org.apache.seata.common.holder.ObjectHolder;
 import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.core.serializer.SerializerType;
 import org.apache.seata.server.cluster.raft.AbstractRaftServerManager;
 import org.apache.seata.server.cluster.raft.RaftServer;
+import org.apache.seata.server.cluster.raft.processor.GetTxgGroupsProcessor;
 import org.apache.seata.server.cluster.raft.processor.PutNodeInfoRequestProcessor;
 import org.apache.seata.server.cluster.raft.serializer.JacksonBoltSerializer;
+import org.apache.seata.server.cluster.raft.service.RaftGroupStoreManager;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.ConfigurableApplicationContext;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;
 
-
 import static java.io.File.separator;
-import static org.apache.seata.common.DefaultValues.DEFAULT_SEATA_GROUP;
+import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_APPLICATION_CONTEXT;
 import static org.apache.seata.common.DefaultValues.DEFAULT_SESSION_STORE_FILE_DIR;
 
 /**
@@ -64,6 +69,10 @@ public class RaftControllerServerManager extends AbstractRaftServerManager {
         });
         if (rpcServer != null) {
             rpcServer.registerProcessor(new PutNodeInfoRequestProcessor());
+            ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext)
+                    ObjectHolder.INSTANCE.getObject(OBJECT_KEY_SPRING_APPLICATION_CONTEXT))
+                    .getBeanFactory();
+            rpcServer.registerProcessor(new GetTxgGroupsProcessor(beanFactory.getBean(RaftGroupStoreManager.class)));
             SerializerManager.addSerializer(SerializerType.JACKSON.getCode(), new JacksonBoltSerializer());
             if (!rpcServer.init(null)) {
                 throw new RuntimeException("start raft node fail!");
@@ -86,14 +95,12 @@ public class RaftControllerServerManager extends AbstractRaftServerManager {
     @Override
     public void init() {
         String dataPath;
-        String group;
+        String group = "controller";
         String controllerInitConf = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_CONTROLLER_SERVER_ADDR);
         String initConf;
         if (StringUtils.isBlank(controllerInitConf)) {
             return;
         } else {
-            // todo: This needs to be modified to obtain the group and address list through TXG.
-            group = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_GROUP, DEFAULT_SEATA_GROUP);
             dataPath = CONFIG.getConfig(ConfigurationKeys.STORE_FILE_DIR, DEFAULT_SESSION_STORE_FILE_DIR) + separator
                     + "raft" + separator + serverId.getPort();
             initConf = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_SERVER_ADDR);

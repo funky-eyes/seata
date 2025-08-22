@@ -17,18 +17,27 @@
 
 package org.apache.seata.server.cluster.raft.sync.msg;
 
+import org.apache.seata.common.metadata.Node;
 import org.apache.seata.server.cluster.raft.sync.msg.dto.TxgGroupAssignmentDTO;
+
+import java.util.List;
+import java.util.Map;
 
 public class RaftTxgGroupMsg extends RaftBaseMsg {
 
     private TxgGroupAssignmentDTO txgAssignments;
 
     public RaftTxgGroupMsg(TxgGroupAssignmentDTO assignments) {
-        this.msgType = RaftSyncMsgType.UPDATE_TXG_GROUP_ASSIGNMENTS;
+        this.msgType = RaftSyncMsgType.SAVE_OR_UPDATE_TXG_GROUP_ASSIGNMENTS;
         this.txgAssignments = assignments;
     }
 
     public TxgGroupAssignmentDTO getTxgAssignments() {
         return txgAssignments;
+    }
+
+    public static RaftTxgGroupMsg create(Map<String, List<Node>> assignments) {
+        TxgGroupAssignmentDTO txgGroupAssignmentDTO = new TxgGroupAssignmentDTO(assignments);
+        return new RaftTxgGroupMsg(txgGroupAssignmentDTO);
     }
 }

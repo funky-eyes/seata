@@ -108,10 +108,6 @@ public class RaftTransactionStateMachine extends RaftStateMachine {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RaftTransactionStateMachine.class);
 
-    private final String mode;
-
-    private final String group;
-
     private final List<StoreSnapshotFile> snapshotFiles = new ArrayList<>();
 
     private static final Map<RaftSyncMsgType, RaftMsgExecute<?>> EXECUTES = new HashMap<>();
@@ -126,12 +122,11 @@ public class RaftTransactionStateMachine extends RaftStateMachine {
     private ScheduledFuture<?> scheduledFuture;
 
     public boolean isLeader() {
-        return this.leaderTerm.get() > 0;
+        return super.isLeader();
     }
 
     public RaftTransactionStateMachine(String group) {
-        this.group = group;
-        mode = StoreConfig.getSessionMode().getName();
+        super(group);
         EXECUTES.put(REFRESH_CLUSTER_METADATA, syncMsg -> {
             refreshClusterMetadata(syncMsg);
             return null;
@@ -154,6 +149,7 @@ public class RaftTransactionStateMachine extends RaftStateMachine {
                     () -> syncCurrentNodeInfo(group), 10, 10, TimeUnit.SECONDS);
         }
     }
+
 
     @Override
     public void onApply(Iterator iterator) {

@@ -43,27 +43,27 @@ import org.apache.seata.server.cluster.raft.context.SeataClusterContext;
 import org.apache.seata.server.cluster.raft.execute.RaftMsgExecute;
 import org.apache.seata.server.cluster.raft.processor.request.PutNodeMetadataRequest;
 import org.apache.seata.server.cluster.raft.processor.response.PutNodeMetadataResponse;
+import org.apache.seata.server.cluster.raft.service.RaftGroupStoreManager;
 import org.apache.seata.server.cluster.raft.snapshot.StoreSnapshotFile;
 import org.apache.seata.server.cluster.raft.snapshot.metadata.LeaderMetadataSnapshotFile;
+import org.apache.seata.server.cluster.raft.snapshot.txg.TransactionGroupSnapshotFile;
 import org.apache.seata.server.cluster.raft.snapshot.vgroup.VGroupSnapshotFile;
 import org.apache.seata.server.cluster.raft.sync.RaftSyncMessageSerializer;
 import org.apache.seata.server.cluster.raft.sync.msg.*;
 import org.apache.seata.server.cluster.raft.sync.msg.dto.RaftClusterMetadata;
 import org.apache.seata.server.cluster.raft.sync.msg.dto.TxgGroupAssignmentDTO;
 import org.apache.seata.server.cluster.raft.util.RaftTaskUtil;
-import org.apache.seata.server.store.StoreConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.Environment;
 
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_CONTROLLER_GROUP;
@@ -74,46 +74,28 @@ public class RaftControllerStateMachine extends RaftStateMachine {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RaftControllerStateMachine.class);
 
-    private final String mode;
-
-    private final String group;
-
-    private final List<StoreSnapshotFile> snapshotFiles = new ArrayList<>();
-
     private static final Map<RaftSyncMsgType, RaftMsgExecute<?>> CONTROLLER_EXECUTES = new HashMap<>();
 
-    // Metadata for all managed raft groups
-    private volatile Map<String, Object> allGroupsMetadata = new ConcurrentHashMap<>();
+    private final RaftGroupStoreManager raftGroupStoreManager;
 
     // Controller-specific cluster metadata
     private volatile RaftClusterMetadata raftClusterMetadata = new RaftClusterMetadata();
 
-    private final Lock lock = new ReentrantLock();
-
     private static final ScheduledThreadPoolExecutor CONTROLLER_METADATA_POOL =
             new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("reSyncControllerMetadataPool", 1, true));
-
-    /**
-     * Leader term
-     */
-    private final AtomicLong leaderTerm = new AtomicLong(-1);
-
-    /**
-     * current term
-     */
-    private final AtomicLong currentTerm = new AtomicLong(-1);
-
-    private final AtomicBoolean initSync = new AtomicBoolean(false);
 
     private ScheduledFuture<?> scheduledFuture;
 
     public boolean isLeader() {
-        return this.leaderTerm.get() > 0;
+        return super.isLeader();
     }
 
     public RaftControllerStateMachine(String group) {
-        this.group = group;
-        mode = StoreConfig.getSessionMode().getName();
+        super(group);
+        ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext)
+                ObjectHolder.INSTANCE.getObject(OBJECT_KEY_SPRING_APPLICATION_CONTEXT))
+                .getBeanFactory();
+        this.raftGroupStoreManager = beanFactory.getBean(RaftGroupStoreManager.class);
 
         // Register controller-specific message handlers
         CONTROLLER_EXECUTES.put(RaftSyncMsgType.REFRESH_CLUSTER_METADATA, syncMsg -> {
@@ -121,25 +103,17 @@ public class RaftControllerStateMachine extends RaftStateMachine {
             return null;
         });
 
-        // Add controller-specific message types for managing multiple groups
-        CONTROLLER_EXECUTES.put(RaftSyncMsgType.ADD_RAFT_GROUP, syncMsg -> {
-            addRaftGroupMetadata(syncMsg);
-            return null;
-        });
-
-        CONTROLLER_EXECUTES.put(RaftSyncMsgType.REMOVE_RAFT_GROUP, syncMsg -> {
-            removeRaftGroupMetadata(syncMsg);
-            return null;
-        });
-
-        CONTROLLER_EXECUTES.put(RaftSyncMsgType.UPDATE_RAFT_GROUP_METADATA, syncMsg -> {
-            updateRaftGroupMetadata(syncMsg);
+        CONTROLLER_EXECUTES.put(RaftSyncMsgType.SAVE_OR_UPDATE_TXG_GROUP_ASSIGNMENTS, syncMsg -> {
+            RaftTxgGroupMsg raftTxgGroupMsg = (RaftTxgGroupMsg) syncMsg;
+            raftGroupStoreManager.saveOrUpdate(
+                    raftTxgGroupMsg.getTxgAssignments().getGroupMemberMap());
             return null;
         });
 
         // Register controller-specific snapshot files
         registryStoreSnapshotFile(new LeaderMetadataSnapshotFile(group));
         registryStoreSnapshotFile(new VGroupSnapshotFile(group));
+        registryStoreSnapshotFile(new TransactionGroupSnapshotFile(group, this.raftGroupStoreManager));
 
         // Start periodic controller metadata sync
         this.scheduledFuture = CONTROLLER_METADATA_POOL.scheduleAtFixedRate(
@@ -219,16 +193,18 @@ public class RaftControllerStateMachine extends RaftStateMachine {
 
         if (!leader) {
             CompletableFuture.runAsync(() -> {
-                LOGGER.info("controller became leader, managing {} raft groups", allGroupsMetadata.size());
-                SeataClusterContext.bindGroup(group);
-                try {
-                    // Reload controller metadata and managed groups
-                    reloadControllerState();
-
-                    // Then, initialize TXG groups based on configuration
-                    initializeTxgGroups();
-                } finally {
-                    SeataClusterContext.unbindGroup();
+                int size = raftGroupStoreManager.getGroupPeersMap().size();
+                if (size == 0) {
+                    LOGGER.info("Begin assigning initial TXG members.");
+                    SeataClusterContext.bindGroup(group);
+                    try {
+                        // Then, initialize TXG groups based on configuration
+                        initializeTxgGroups();
+                    } finally {
+                        SeataClusterContext.unbindGroup();
+                    }
+                } else {
+                    LOGGER.info("controller became leader, managing {} raft groups", size);
                 }
             });
             Configuration conf = RouteTable.getInstance().getConfiguration(group);
@@ -241,12 +217,11 @@ public class RaftControllerStateMachine extends RaftStateMachine {
     private void initializeTxgGroups() {
         try {
             // 1. Read the TXG configuration
-            String txgGroupsConfig = ConfigurationFactory.getInstance()
-                    .getConfig(SERVER_RAFT_CONTROLLER_GROUP);
+            String txgGroupsConfig = ConfigurationFactory.getInstance().getConfig(SERVER_RAFT_CONTROLLER_GROUP);
 
             if (StringUtils.isBlank(txgGroupsConfig)) {
-                LOGGER.warn("No TXG groups configured in {}, skipping TXG initialization",
-                        SERVER_RAFT_CONTROLLER_GROUP);
+                LOGGER.warn(
+                        "No TXG groups configured in {}, skipping TXG initialization", SERVER_RAFT_CONTROLLER_GROUP);
                 return;
             }
 
@@ -269,8 +244,7 @@ public class RaftControllerStateMachine extends RaftStateMachine {
             // 4. Proceed with initialization...
             LOGGER.info("Starting TXG group initialization for: {}", Arrays.toString(groupNames));
 
-            Map<String, List<String>> txgGroupAssignments = createTxgGroupAssignments(
-                    groupNames, controllerMembers);
+            Map<String, List<Node>> txgGroupAssignments = createTxgGroupAssignments(groupNames, controllerMembers);
 
             submitTxgGroupAssignments(txgGroupAssignments);
 
@@ -293,42 +267,45 @@ public class RaftControllerStateMachine extends RaftStateMachine {
         }
 
         // Validate group names are not empty/null
-        for (String groupName : groupNames) {
-            if (groupName == null || StringUtils.isBlank(groupName.trim())) {
-                LOGGER.error("TXG group name cannot be null or empty. Groups: {}", Arrays.toString(groupNames));
-                return false;
-            }
+        boolean isEmpty = Arrays.stream(groupNames).anyMatch(StringUtils::isEmpty);
+        if (isEmpty) {
+            LOGGER.error("TXG group name cannot be null or empty. Groups: {}", Arrays.toString(groupNames));
+            return false;
         }
 
-        LOGGER.info("TXG requirements validation passed: {} groups, {} nodes",
-                groupNames.length, controllerMembers.size());
+        LOGGER.info(
+                "TXG requirements validation passed: {} groups, {} nodes", groupNames.length, controllerMembers.size());
         return true;
     }
 
-    private Map<String, List<String>> createTxgGroupAssignments(String[] groupNames, List<PeerId> members) {
-        Map<String, List<String>> assignments = new HashMap<>();
+    private Map<String, List<Node>> createTxgGroupAssignments(String[] groupNames, List<PeerId> members) {
+        Map<String, List<Node>> assignments = new HashMap<>();
 
         // Convert PeerId list to string list (IP:Port format)
-        List<String> memberEndpoints = members.stream()
-                .map(peerId -> peerId.getIp() + ":" + peerId.getPort())
+        List<Node> memberEndpoints = members.stream()
+                .map(peerId -> {
+                    Node node = new Node();
+                    node.setInternal(node.createEndpoint(peerId.getIp(), peerId.getPort(), "raft"));
+                    return node;
+                })
                 .collect(Collectors.toList());
 
-        //since there are only 3 nodes, assign all nodes to all groups
+        // since there are only 3 nodes, assign all nodes to all groups
         // will need a better algorithm if we need to have dynamic numbers but for now lets keep it simple?
         // TXG-1: 192.168.1.100,192.168.1.101,192.168.1.102
         // TXG-2: 192.168.1.100,192.168.1.101,192.168.1.102
         // TXG-3: 192.168.1.100,192.168.1.101,192.168.1.102
         for (String groupName : groupNames) {
             String trimmedGroupName = groupName.trim();
-            assignments.put(trimmedGroupName, new ArrayList<>(memberEndpoints));
-            LOGGER.info("Assigned all {} nodes to group {}: {}",
-                    memberEndpoints.size(), trimmedGroupName, memberEndpoints);
+            assignments.put(trimmedGroupName, memberEndpoints);
+            LOGGER.info(
+                    "Assigned all {} nodes to group {}: {}", memberEndpoints.size(), trimmedGroupName, memberEndpoints);
         }
 
         return assignments;
     }
 
-    private void submitTxgGroupAssignments(Map<String, List<String>> assignments) {
+    private void submitTxgGroupAssignments(Map<String, List<Node>> assignments) {
         try {
             // Create the DTO
             TxgGroupAssignmentDTO txgAssignments = new TxgGroupAssignmentDTO(assignments);
@@ -343,13 +320,13 @@ public class RaftControllerStateMachine extends RaftStateMachine {
                         if (status.isOk()) {
                             LOGGER.info("TXG group assignments successfully replicated to all controller nodes");
                             // After successful replication, do we need to trigger something?
+                            raftGroupStoreManager.saveOrUpdate(txgAssignments.getGroupMemberMap());
                         } else {
                             LOGGER.error("Failed to replicate TXG assignments: {}", status.getErrorMsg());
                         }
                     },
-                    message,  // The message containing group assignments
-                    null
-            );
+                    message, // The message containing group assignments
+                    null);
 
         } catch (Exception e) {
             LOGGER.error("Failed to submit TXG group assignments", e);
@@ -455,7 +432,7 @@ public class RaftControllerStateMachine extends RaftStateMachine {
     }
 
     public AtomicLong getCurrentTerm() {
-        return currentTerm;
+        return super.getCurrentTerm();
     }
 
     public void registryStoreSnapshotFile(StoreSnapshotFile storeSnapshotFile) {
@@ -468,28 +445,6 @@ public class RaftControllerStateMachine extends RaftStateMachine {
 
     public void setRaftClusterMetadata(RaftClusterMetadata raftClusterMetadata) {
         this.raftClusterMetadata = raftClusterMetadata;
-    }
-
-    public Map<String, Object> getAllGroupsMetadata() {
-        return new HashMap<>(allGroupsMetadata);
-    }
-
-    private void addRaftGroupMetadata(RaftBaseMsg syncMsg) {
-        RaftGroupMetadataMsg msg = (RaftGroupMetadataMsg) syncMsg;
-        allGroupsMetadata.put(msg.getGroupId(), msg.getGroupMetadata());
-        LOGGER.info("Follower added managed group: {}", msg.getGroupId());
-    }
-
-    private void removeRaftGroupMetadata(RaftBaseMsg syncMsg) {
-        RaftGroupMetadataMsg msg = (RaftGroupMetadataMsg) syncMsg;
-        allGroupsMetadata.remove(msg.getGroupId());
-        LOGGER.info("Follower removed managed group: {}", msg.getGroupId());
-    }
-
-    private void updateRaftGroupMetadata(RaftBaseMsg syncMsg) {
-        RaftGroupMetadataMsg msg = (RaftGroupMetadataMsg) syncMsg;
-        allGroupsMetadata.put(msg.getGroupId(), msg.getGroupMetadata());
-        LOGGER.info("Follower updated metadata for group: {}", msg.getGroupId());
     }
 
     public RaftClusterMetadata changeOrInitraftClusterMetadata() {
@@ -651,11 +606,5 @@ public class RaftControllerStateMachine extends RaftStateMachine {
         } finally {
             lock.unlock();
         }
-    }
-
-    private void reloadControllerState() {
-        // Reload controller-specific state
-        LOGGER.info("Reloading controller state for managing {} groups", allGroupsMetadata.size());
-        // Add any controller-specific reload logic here
     }
 }
