@@ -24,10 +24,12 @@ import com.alipay.sofa.jraft.conf.Configuration;
 import com.alipay.sofa.jraft.core.StateMachineAdapter;
 import com.alipay.sofa.jraft.entity.LeaderChangeContext;
 import com.alipay.sofa.jraft.entity.PeerId;
+import com.alipay.sofa.jraft.rpc.CliClientService;
 import com.alipay.sofa.jraft.rpc.InvokeContext;
 import com.alipay.sofa.jraft.rpc.impl.cli.CliClientServiceImpl;
 import com.alipay.sofa.jraft.storage.snapshot.SnapshotReader;
 import com.alipay.sofa.jraft.storage.snapshot.SnapshotWriter;
+import org.apache.seata.common.ConfigurationKeys;
 import org.apache.seata.common.XID;
 import org.apache.seata.common.holder.ObjectHolder;
 import org.apache.seata.common.metadata.ClusterRole;
@@ -90,6 +92,7 @@ import java.util.stream.Collectors;
 
 import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_APPLICATION_CONTEXT;
 import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_CONFIGURABLE_ENVIRONMENT;
+import static org.apache.seata.server.cluster.raft.AbstractRaftServerManager.CONFIG;
 import static org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType.ADD_BRANCH_SESSION;
 import static org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType.ADD_GLOBAL_SESSION;
 import static org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType.ADD_VGROUP_MAPPING;
@@ -239,6 +242,7 @@ public class RaftTransactionStateMachine extends RaftStateMachine {
             // A member change might trigger a leader re-election. At this point, it’s necessary to filter out
             // non-existent members and synchronize again.
             changePeers(conf);
+            CompletableFuture.runAsync(() -> reportToCgLeader(), RESYNC_METADATA_POOL);
         }
     }
 
@@ -508,5 +512,45 @@ public class RaftTransactionStateMachine extends RaftStateMachine {
             lock.unlock();
         }
     }
+
+    private void reportToCgLeader() {
+        try {
+            PeerId cgLeader = getCgLeader();
+            if (cgLeader == null) {
+                LOGGER.warn("No CG leader found, cannot report TXG metadata");
+                return;
+            }
+
+            // Get current TXG metadata (reuse existing method)
+            RaftClusterMetadata metadata = changeOrInitRaftClusterMetadata();
+            Node leaderNode = metadata.getLeader();
+
+            if (leaderNode != null) {
+                // Use existing PutNodeMetadataRequest to send to CG leader
+                PutNodeMetadataRequest request = new PutNodeMetadataRequest(leaderNode);
+
+                InvokeContext invokeContext = new InvokeContext();
+                invokeContext.put(com.alipay.remoting.InvokeContext.BOLT_CUSTOM_SERIALIZER,
+                        SerializerType.JACKSON.getCode());
+
+                CliClientService cliClientService = RaftTransactionServerManager.getInstance()
+                        .getCliClientServiceInstance();
+
+                ((CliClientServiceImpl) cliClientService)
+                        .getRpcClient()
+                        .invokeSync(cgLeader.getEndpoint(), request, invokeContext, 5000);
+
+                LOGGER.info("Reported TXG {} metadata to CG leader: {}", group, cgLeader);
+            }
+        } catch (Exception e) {
+            LOGGER.error("Failed to report to CG leader", e);
+        }
+    }
+
+    private PeerId getCgLeader() {
+        String controllerGroup = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_CONTROLLER_GROUP, "controller-group");
+        return RouteTable.getInstance().selectLeader(controllerGroup);
+    }
+
 
 }
