@@ -157,7 +157,7 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
                     }
                 });
             } else {
-                logger.warn("No TXG assignments received from controller, no raft groups will be created");
+                logger.error("No TXG assignments received from controller, no raft groups will be created");
                 throw new RuntimeException("Failed to retrieve TXG assignments from controller: " + controllerInitConf);
             }
         }
