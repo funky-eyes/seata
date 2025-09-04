@@ -54,7 +54,9 @@ import org.apache.seata.server.cluster.raft.execute.lock.GlobalReleaseLockExecut
 import org.apache.seata.server.cluster.raft.execute.vgroup.VGroupAddExecute;
 import org.apache.seata.server.cluster.raft.execute.vgroup.VGroupRemoveExecute;
 import org.apache.seata.server.cluster.raft.processor.request.PutNodeMetadataRequest;
+import org.apache.seata.server.cluster.raft.processor.request.PutRaftClusterMetadataRequest;
 import org.apache.seata.server.cluster.raft.processor.response.PutNodeMetadataResponse;
+import org.apache.seata.server.cluster.raft.processor.response.PutRaftClusterMetadataResponse;
 import org.apache.seata.server.cluster.raft.snapshot.StoreSnapshotFile;
 import org.apache.seata.server.cluster.raft.snapshot.metadata.LeaderMetadataSnapshotFile;
 import org.apache.seata.server.cluster.raft.snapshot.session.SessionSnapshotFile;
@@ -239,10 +241,9 @@ public class RaftTransactionStateMachine extends RaftStateMachine {
                 }
             });
             Configuration conf = RouteTable.getInstance().getConfiguration(group);
-            // A member change might trigger a leader re-election. At this point, it’s necessary to filter out
+            // A member change might trigger a leader re-election. At this point, it's necessary to filter out
             // non-existent members and synchronize again.
             changePeers(conf);
-            CompletableFuture.runAsync(() -> reportToCgLeader(), RESYNC_METADATA_POOL);
         }
     }
 
@@ -293,6 +294,7 @@ public class RaftTransactionStateMachine extends RaftStateMachine {
             } else {
                 raftClusterMetadata.setLearner(Collections.emptyList());
             }
+            // syncMetadata() now automatically handles reporting to CG leader if needed
             CompletableFuture.runAsync(this::syncMetadata, RESYNC_METADATA_POOL);
         } finally {
             lock.unlock();
@@ -320,6 +322,11 @@ public class RaftTransactionStateMachine extends RaftStateMachine {
                         new RaftClusterMetadataMsg(changeOrInitRaftClusterMetadata());
                 RaftTaskUtil.createTask(
                         status -> refreshClusterMetadata(raftClusterMetadataMsg), raftClusterMetadataMsg, null);
+
+                // After syncing within group, report to CG leader if in multi-raft mode
+                if (hasCgLeader()) {
+                    CompletableFuture.runAsync(this::reportToCgLeader, RESYNC_METADATA_POOL);
+                }
             } catch (Exception e) {
                 LOGGER.error(e.getMessage(), e);
             } finally {
@@ -507,50 +514,89 @@ public class RaftTransactionStateMachine extends RaftStateMachine {
             }
             // add new node node metadata
             list.add(node);
+            // syncMetadata() now automatically handles reporting to CG leader if needed
             syncMetadata();
         } finally {
             lock.unlock();
         }
     }
 
+    /**
+     * Check if there's a CG (Controller Group) leader available for reporting.
+     * This determines if we're in multi-raft mode and should report TXG metadata to CG.
+     */
+    private boolean hasCgLeader() {
+        try {
+            String controllerGroup = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_CONTROLLER_GROUP, "controller-group");
+            // Don't report to CG if this IS the controller group (avoid self-reporting)
+            if (controllerGroup.equals(group)) {
+                return false;
+            }
+            PeerId cgLeader = RouteTable.getInstance().selectLeader(controllerGroup);
+            return cgLeader != null;
+        } catch (Exception e) {
+            LOGGER.debug("No CG leader available for reporting: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Report TXG metadata to the CG (Controller Group) leader.
+     * This method sends the current TXG group's complete metadata to the CG leader
+     * for centralized cluster management in multi-raft mode.
+     *
+     * Now uses proper state machine submission instead of direct RPC calls.
+     */
     private void reportToCgLeader() {
         try {
             PeerId cgLeader = getCgLeader();
             if (cgLeader == null) {
-                LOGGER.warn("No CG leader found, cannot report TXG metadata");
+                LOGGER.warn("No CG leader found, cannot report TXG metadata for group: {}", group);
                 return;
             }
 
-            // Get current TXG metadata (reuse existing method)
+            // Get current TXG metadata (complete cluster information)
             RaftClusterMetadata metadata = changeOrInitRaftClusterMetadata();
-            Node leaderNode = metadata.getLeader();
 
-            if (leaderNode != null) {
-                // Use existing PutNodeMetadataRequest to send to CG leader
-                PutNodeMetadataRequest request = new PutNodeMetadataRequest(leaderNode);
+            // Create the proper request with complete metadata (not just leader node)
+            PutRaftClusterMetadataRequest request = new PutRaftClusterMetadataRequest(group, metadata);
 
-                InvokeContext invokeContext = new InvokeContext();
-                invokeContext.put(com.alipay.remoting.InvokeContext.BOLT_CUSTOM_SERIALIZER,
-                        SerializerType.JACKSON.getCode());
+            InvokeContext invokeContext = new InvokeContext();
+            invokeContext.put(com.alipay.remoting.InvokeContext.BOLT_CUSTOM_SERIALIZER,
+                    SerializerType.JACKSON.getCode());
 
-                CliClientService cliClientService = RaftTransactionServerManager.getInstance()
-                        .getCliClientServiceInstance();
+            CliClientService cliClientService = RaftTransactionServerManager.getInstance()
+                    .getCliClientServiceInstance();
 
-                ((CliClientServiceImpl) cliClientService)
-                        .getRpcClient()
-                        .invokeSync(cgLeader.getEndpoint(), request, invokeContext, 5000);
+            // Send to CG leader - the processor will handle state machine submission
+            PutRaftClusterMetadataResponse response = (PutRaftClusterMetadataResponse)
+                    ((CliClientServiceImpl) cliClientService)
+                            .getRpcClient()
+                            .invokeSync(cgLeader.getEndpoint(), request, invokeContext, 10000);
 
-                LOGGER.info("Reported TXG {} metadata to CG leader: {}", group, cgLeader);
+            if (response.isSuccess()) {
+                LOGGER.info("Successfully reported complete TXG {} metadata to CG leader: {}", group, cgLeader);
+            } else {
+                LOGGER.error("Failed to report TXG {} metadata to CG leader: {}",
+                        group, response.getErrorMessage());
             }
+
         } catch (Exception e) {
-            LOGGER.error("Failed to report to CG leader", e);
+            LOGGER.error("Failed to report TXG {} metadata to CG leader: {}", group, e.getMessage(), e);
         }
     }
 
+    /**
+     * Get the CG (Controller Group) leader PeerId.
+     * Returns null if no CG leader is available.
+     */
     private PeerId getCgLeader() {
-        String controllerGroup = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_CONTROLLER_GROUP, "controller-group");
-        return RouteTable.getInstance().selectLeader(controllerGroup);
+        try {
+            String controllerGroup = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_CONTROLLER_GROUP, "controller");
+            return RouteTable.getInstance().selectLeader(controllerGroup);
+        } catch (Exception e) {
+            LOGGER.debug("Failed to get CG leader: {}", e.getMessage());
+            return null;
+        }
     }
-
-
 }

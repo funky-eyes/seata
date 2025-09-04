@@ -26,6 +26,7 @@ import org.apache.seata.server.cluster.raft.AbstractRaftServerManager;
 import org.apache.seata.server.cluster.raft.RaftServer;
 import org.apache.seata.server.cluster.raft.processor.GetTxgGroupsProcessor;
 import org.apache.seata.server.cluster.raft.processor.PutNodeInfoRequestProcessor;
+import org.apache.seata.server.cluster.raft.processor.PutRaftClusterMetadataProcessor;
 import org.apache.seata.server.cluster.raft.serializer.JacksonBoltSerializer;
 import org.apache.seata.server.cluster.raft.service.RaftGroupStoreManager;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -69,6 +70,7 @@ public class RaftControllerServerManager extends AbstractRaftServerManager {
         });
         if (rpcServer != null) {
             rpcServer.registerProcessor(new PutNodeInfoRequestProcessor());
+            rpcServer.registerProcessor(new PutRaftClusterMetadataProcessor());
             ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext)
                     ObjectHolder.INSTANCE.getObject(OBJECT_KEY_SPRING_APPLICATION_CONTEXT))
                     .getBeanFactory();

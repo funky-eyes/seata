@@ -46,9 +46,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.io.File.separator;
@@ -131,7 +129,6 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
                 throw new IllegalArgumentException("fail init raft cluster:" + e.getMessage(), e);
             }
         } else {
-            // todo: This needs to be modified to obtain the group and address list through TXG.
             // Retrieve TXG information from CG interface
             dataPath = CONFIG.getConfig(ConfigurationKeys.STORE_FILE_DIR, DEFAULT_SESSION_STORE_FILE_DIR) + separator
                     + "raft" + separator + serverId.getPort();
@@ -211,9 +208,7 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
 
         CliClientService cliClientService = getCliClientServiceInstance();
 
-        CountDownLatch latch = new CountDownLatch(1);
-        AtomicReference<GetTxgGroupsResponse> responseHolder = new AtomicReference<>();
-        AtomicReference<Exception> errorHolder = new AtomicReference<>();
+        CompletableFuture<GetTxgGroupsResponse> future = new CompletableFuture<>();
 
         ((CliClientServiceImpl) cliClientService)
                 .getRpcClient()
@@ -222,29 +217,27 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
                         request,
                         invokeContext,
                         (result, err) -> {
-                            try {
-                                if (err == null) {
-                                    responseHolder.set((GetTxgGroupsResponse) result);
-                                } else {
-                                    errorHolder.set(new Exception("RPC error: " + err.getMessage(), err));
-                                }
-                            } finally {
-                                latch.countDown();
+                            if (err == null) {
+                                future.complete((GetTxgGroupsResponse) result);
+                            } else {
+                                future.completeExceptionally(new Exception("RPC error: " + err.getMessage(), err));
                             }
                         },
                         5000
                 );
 
-        if (!latch.await(10, TimeUnit.SECONDS)) {
+        try {
+            return future.get(10, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
             throw new TimeoutException("Timeout waiting for TXG assignments from " + controllerPeer);
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof Exception) {
+                throw (Exception) cause;
+            } else {
+                throw new Exception("Unexpected error", cause);
+            }
         }
-
-        Exception error = errorHolder.get();
-        if (error != null) {
-            throw error;
-        }
-
-        return responseHolder.get();
     }
 
 

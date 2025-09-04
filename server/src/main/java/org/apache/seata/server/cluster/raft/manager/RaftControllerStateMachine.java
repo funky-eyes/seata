@@ -104,9 +104,18 @@ public class RaftControllerStateMachine extends RaftStateMachine {
         });
 
         CONTROLLER_EXECUTES.put(RaftSyncMsgType.SAVE_OR_UPDATE_TXG_GROUP_ASSIGNMENTS, syncMsg -> {
-            RaftTxgGroupMsg raftTxgGroupMsg = (RaftTxgGroupMsg) syncMsg;
-            raftGroupStoreManager.saveOrUpdate(
-                    raftTxgGroupMsg.getTxgAssignments().getGroupMemberMap());
+            RaftTxgClusterMetadataMsg clusterMsg = (RaftTxgClusterMetadataMsg) syncMsg;
+
+            // Update the TransactionGroupServiceManager with the new metadata
+            raftGroupStoreManager.updateTxgClusterMetadata(
+                    clusterMsg.getTxgGroupId(),
+                    clusterMsg.getMetadata()
+            );
+
+            LOGGER.info("Updated TXG cluster metadata for group: {} with term: {}",
+                    clusterMsg.getTxgGroupId(),
+                    clusterMsg.getMetadata().getTerm());
+
             return null;
         });
 
@@ -186,10 +195,13 @@ public class RaftControllerStateMachine extends RaftStateMachine {
     @Override
     public void onLeaderStart(final long term) {
         boolean leader = isLeader();
-        this.leaderTerm.set(term);
-        LOGGER.info("controllerGroup: {}, onLeaderStart: term={}.", group, term);
-        this.currentTerm.set(term);
-        syncControllerMetadata();
+        // Execute the initial setup asynchronously to prevent blocking the state machine
+        CompletableFuture.runAsync(() -> {
+            this.leaderTerm.set(term);
+            LOGGER.info("controllerGroup: {}, onLeaderStart: term={}.", group, term);
+            this.currentTerm.set(term);
+            syncControllerMetadata();
+        });
 
         if (!leader) {
             CompletableFuture.runAsync(() -> {

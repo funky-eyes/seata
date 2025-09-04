@@ -51,18 +51,58 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TransactionGroupServiceManager.class);
 
-    private static final Map<String /*group*/, List<Node>> TRANSACTION_GROUPS = new ConcurrentHashMap<>();
+    // Changed from Map<String, List<Node>> to Map<String, RaftClusterMetadata>
+    private static final Map<String /*group*/, RaftClusterMetadata> TRANSACTION_GROUPS = new ConcurrentHashMap<>();
+
+    // should we keep for backward compatibility in some methods or change in all methods?
+    private static final Map<String /*group*/, List<Node>> LEGACY_TRANSACTION_GROUPS = new ConcurrentHashMap<>();
 
     // regex Pattern to validate IP:PORT format? or should we remove it?
     private static final Pattern IP_PORT_PATTERN =
             Pattern.compile("^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}:[1-9]\\d{0,4}$");
 
     /**
-     * Get all Raft groups
+     * Get all Raft groups metadata
+     */
+    public Map<String, RaftClusterMetadata> getAllRaftGroupsMetadata() {
+        validateControlGroupPermission();
+        return TRANSACTION_GROUPS;
+    }
+
+    /**
+     * Get all Raft groups (legacy format for backward compatibility)
      */
     public Map<String, List<Node>> getAllRaftGroups() {
         validateControlGroupPermission();
-        return TRANSACTION_GROUPS;
+        return LEGACY_TRANSACTION_GROUPS;
+    }
+
+    /**
+     * Update TXG cluster metadata (called by CG state machine)
+     */
+    public void updateTxgClusterMetadata(String groupId, RaftClusterMetadata metadata) {
+        LOGGER.info("Updating TXG cluster metadata for group {}: {}", groupId, metadata);
+        TRANSACTION_GROUPS.put(groupId, metadata);
+
+        // Also update legacy format for backward compatibility
+        List<Node> allNodes = new ArrayList<>();
+        if (metadata.getLeader() != null) {
+            allNodes.add(metadata.getLeader());
+        }
+        if (metadata.getFollowers() != null) {
+            allNodes.addAll(metadata.getFollowers());
+        }
+        if (metadata.getLearner() != null) {
+            allNodes.addAll(metadata.getLearner());
+        }
+        LEGACY_TRANSACTION_GROUPS.put(groupId, allNodes);
+    }
+
+    /**
+     * Get TXG cluster metadata for a specific group
+     */
+    public RaftClusterMetadata getTxgClusterMetadata(String groupId) {
+        return TRANSACTION_GROUPS.get(groupId);
     }
 
     /**
@@ -83,19 +123,40 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
 
     @NotNull
     private Map<String, List<Node>> getGroupByIp(String ip) {
-        Map<String, List<Node>> allGroups = getAllRaftGroups();
+        Map<String, RaftClusterMetadata> allGroups = getAllRaftGroupsMetadata();
         Map<String, List<Node>> result = new HashMap<>();
-        allGroups.forEach((group, nodes) -> {
+
+        allGroups.forEach((group, metadata) -> {
             List<Node> matchedNodes = new ArrayList<>();
-            for (Node node : nodes) {
-                if (ip.equals(node.getTransaction().getHost())) {
-                    matchedNodes.add(node);
+
+            // Check leader
+            if (metadata.getLeader() != null && ip.equals(metadata.getLeader().getTransaction().getHost())) {
+                matchedNodes.add(metadata.getLeader());
+            }
+
+            // Check followers
+            if (metadata.getFollowers() != null) {
+                for (Node node : metadata.getFollowers()) {
+                    if (ip.equals(node.getTransaction().getHost())) {
+                        matchedNodes.add(node);
+                    }
                 }
             }
+
+            // Check learners
+            if (metadata.getLearner() != null) {
+                for (Node node : metadata.getLearner()) {
+                    if (ip.equals(node.getTransaction().getHost())) {
+                        matchedNodes.add(node);
+                    }
+                }
+            }
+
             if (!matchedNodes.isEmpty()) {
                 result.put(group, matchedNodes);
             }
         });
+
         return result;
     }
 
@@ -117,13 +178,8 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
             RouteTable routeTable = RouteTable.getInstance();
             Configuration currentConf = routeTable.getConfiguration(group);
 
-            if (currentConf == null) {
-                throw new IllegalStateException("No configuration found for group: " + group);
-            }
-
             // Check if peer already exists
-            if (currentConf.getPeers().contains(newPeer)
-                    || currentConf.getLearners().contains(newPeer)) {
+            if (currentConf.getPeers().contains(newPeer) || currentConf.getLearners().contains(newPeer)) {
                 throw new IllegalArgumentException("Peer " + ip + ":" + port + " already exists in group " + group);
             }
 
@@ -165,8 +221,7 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
             }
 
             // Check if peer exists
-            if (!currentConf.getPeers().contains(peerToRemove)
-                    && !currentConf.getLearners().contains(peerToRemove)) {
+            if (!currentConf.getPeers().contains(peerToRemove) && !currentConf.getLearners().contains(peerToRemove)) {
                 throw new IllegalArgumentException("Peer " + ip + ":" + port + " does not exist in group " + group);
             }
 
@@ -175,8 +230,7 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
                 throw new IllegalStateException("Cannot remove the last peer from group " + group);
             }
 
-            // do we create new configuration without the peer
-            // is that the correct way?
+            // Create new configuration without the peer
             Configuration newConf = new Configuration(currentConf);
             newConf.removePeer(peerToRemove);
 
@@ -245,7 +299,7 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
         // Parse new peer addresses
         List<PeerId> newPeerIds = parsePeerAddresses(newPeers);
         List<Node> list = new ArrayList<>(newPeers.size());
-        List<Node> currentList = TRANSACTION_GROUPS.get(groupId);
+        List<Node> currentList = LEGACY_TRANSACTION_GROUPS.get(groupId);
         for (PeerId newPeer : newPeerIds) {
             boolean exists = false;
             for (Node node : currentList) {
@@ -292,7 +346,7 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
 
                     // Update local routing table
                     routeTable.updateConfiguration(groupId, newConf);
-                    TRANSACTION_GROUPS.putAll(groupPeersMap);
+                    LEGACY_TRANSACTION_GROUPS.putAll(groupPeersMap);
                     future.complete(true);
                 },
                 raftTxgGroupMsg,
@@ -551,16 +605,16 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
         if (CollectionUtils.isEmpty(groupPeersMap)) {
             return;
         }
-        TRANSACTION_GROUPS.putAll(groupPeersMap);
+        LEGACY_TRANSACTION_GROUPS.putAll(groupPeersMap);
     }
 
     @Override
     public void clear() {
-        TRANSACTION_GROUPS.clear();
+        LEGACY_TRANSACTION_GROUPS.clear();
     }
 
     @Override
     public Map<String, List<Node>> getGroupPeersMap() {
-        return TRANSACTION_GROUPS;
+        return LEGACY_TRANSACTION_GROUPS;
     }
 }

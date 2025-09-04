@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -47,7 +48,7 @@ import static org.apache.seata.common.DefaultValues.DEFAULT_SERVER_RAFT_ELECTION
 public abstract class AbstractRaftServerManager implements  RaftServerManager<RaftServer>  {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    protected static final Map<String /*group*/, RaftServer /*raft-group-cluster*/> RAFT_SERVER_MAP = new HashMap<>();
+    protected static final Map<String /*group*/, RaftServer /*raft-group-cluster*/> RAFT_SERVER_MAP = new ConcurrentHashMap<>();
     protected static final AtomicBoolean init = new AtomicBoolean(false);
 
     protected static final org.apache.seata.config.Configuration CONFIG = ConfigurationFactory.getInstance();
