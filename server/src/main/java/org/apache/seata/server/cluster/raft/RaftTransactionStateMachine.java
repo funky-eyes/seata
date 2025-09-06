@@ -427,7 +427,7 @@ public class RaftTransactionStateMachine extends RaftStateMachine {
             Node leader = raftClusterMetadata.getLeader();
             if (leader != null && StringUtils.isNotBlank(leader.getVersion())) {
                 RaftTransactionServer raftTransactionServer =
-                        RaftTransactionServerManager.getInstance().getInstance().getRaftServer(group);
+                        RaftTransactionServerManager.getInstance().getRaftServer(group);
                 PeerId cureentPeerId = raftTransactionServer.getServerId();
                 Node node = raftClusterMetadata.createNode(
                         cureentPeerId.getIp(),
