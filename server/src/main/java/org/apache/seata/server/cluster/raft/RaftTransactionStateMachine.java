@@ -527,7 +527,7 @@ public class RaftTransactionStateMachine extends RaftStateMachine {
      */
     private boolean hasCgLeader() {
         try {
-            String controllerGroup = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_CONTROLLER_GROUP, "controller-group");
+            String controllerGroup = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_CONTROLLER_GROUP, "controller");
             // Don't report to CG if this IS the controller group (avoid self-reporting)
             if (controllerGroup.equals(group)) {
                 return false;
