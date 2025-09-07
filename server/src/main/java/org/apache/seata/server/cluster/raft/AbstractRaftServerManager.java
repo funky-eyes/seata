@@ -105,7 +105,7 @@ public abstract class AbstractRaftServerManager implements  RaftServerManager<Ra
             }
             // Here you have raft RPC and business RPC using the same RPC server, and you can usually do this
             // separately
-            if (rpcServer != null) {
+            if (rpcServer == null) {
                 rpcServer = RaftRpcServerFactory.createRaftRpcServer(serverId.getEndpoint());
             }
         }
