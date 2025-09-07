@@ -366,7 +366,7 @@ public class RaftTransactionStateMachine extends RaftStateMachine {
         raftClusterMetadata.setTerm(this.currentTerm.get());
         Node leaderNode = raftClusterMetadata.getLeader();
         RaftTransactionServer raftTransactionServer =
-                RaftTransactionServerManager.getInstance().getInstance().getRaftServer(group);
+                RaftTransactionServerManager.getInstance().getRaftServer(group);
         PeerId cureentPeerId = raftTransactionServer.getServerId();
         // After the re-election, the leader information may be different from the latest leader, and you need to
         // replace the leader information
