@@ -404,7 +404,6 @@ public class RaftTransactionStateMachine extends RaftStateMachine {
                 RouteTable.getInstance()
                         .refreshLeader(
                                 RaftTransactionServerManager.getInstance()
-                                        .getInstance()
                                         .getCliClientServiceInstance(),
                                 group,
                                 1000);
