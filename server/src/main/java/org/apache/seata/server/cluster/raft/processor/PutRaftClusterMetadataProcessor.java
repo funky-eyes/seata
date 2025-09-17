@@ -18,16 +18,13 @@ package org.apache.seata.server.cluster.raft.processor;
 
 import com.alipay.sofa.jraft.rpc.RpcContext;
 import com.alipay.sofa.jraft.rpc.RpcProcessor;
-import org.apache.seata.server.cluster.raft.manager.RaftControllerServer;
 import org.apache.seata.server.cluster.raft.manager.RaftControllerServerManager;
-import org.apache.seata.server.cluster.raft.manager.RaftControllerStateMachine;
 import org.apache.seata.server.cluster.raft.processor.request.PutRaftClusterMetadataRequest;
 import org.apache.seata.server.cluster.raft.processor.response.PutRaftClusterMetadataResponse;
 import org.apache.seata.server.cluster.raft.sync.msg.RaftTxgClusterMetadataMsg;
 import org.apache.seata.server.cluster.raft.util.RaftTaskUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -39,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 public class PutRaftClusterMetadataProcessor implements RpcProcessor<PutRaftClusterMetadataRequest> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PutRaftClusterMetadataProcessor.class);
+    final String controllerGroupType = "controller";
 
     @Override
     public void handleRequest(RpcContext rpcCtx, PutRaftClusterMetadataRequest request) {
@@ -46,8 +44,7 @@ public class PutRaftClusterMetadataProcessor implements RpcProcessor<PutRaftClus
 
         try {
             // Check if current node is CG leader
-            String controllerGroup = "controller"; // or get from config
-            if (!RaftControllerServerManager.getInstance().isLeader(controllerGroup)) {
+            if (!RaftControllerServerManager.getInstance().isLeader(controllerGroupType)) {
                 LOGGER.warn("Current node is not CG leader, rejecting TXG metadata update for group: {}",
                         request.getGroupId());
                 rpcCtx.sendResponse(new PutRaftClusterMetadataResponse(false, "Not CG leader"));
