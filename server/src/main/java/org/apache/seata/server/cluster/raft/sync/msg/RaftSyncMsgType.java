@@ -90,5 +90,8 @@ public enum RaftSyncMsgType {
      */
     SAVE_OR_UPDATE_TXG_GROUP_ASSIGNMENTS,
 
-
+    /**
+     * Acquire CG (Centralized Global) locks
+     */
+    ACQUIRE_CG_LOCK,
 }

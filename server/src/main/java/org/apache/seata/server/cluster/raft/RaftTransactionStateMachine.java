@@ -89,6 +89,7 @@ import java.util.stream.Collectors;
 import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_APPLICATION_CONTEXT;
 import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_CONFIGURABLE_ENVIRONMENT;
 import static org.apache.seata.server.cluster.raft.AbstractRaftServerManager.CONFIG;
+import static org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType.ACQUIRE_CG_LOCK;
 import static org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType.ADD_BRANCH_SESSION;
 import static org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType.ADD_GLOBAL_SESSION;
 import static org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType.ADD_VGROUP_MAPPING;
@@ -439,7 +440,7 @@ public class RaftTransactionStateMachine extends RaftStateMachine {
                 invokeContext.put(
                         com.alipay.remoting.InvokeContext.BOLT_CUSTOM_SERIALIZER, SerializerType.JACKSON.getCode());
                 CliClientServiceImpl cliClientService = (CliClientServiceImpl)
-                        RaftTransactionServerManager.getInstance().getInstance().getCliClientServiceInstance();
+                        RaftTransactionServerManager.getInstance().getCliClientServiceInstance();
                 // The previous leader may be an old snapshot or log playback, which is not accurate, and you
                 // need to get the leader again
                 cliClientService

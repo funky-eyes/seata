@@ -18,10 +18,13 @@ package org.apache.seata.server.cluster.raft.processor;
 
 import com.alipay.sofa.jraft.rpc.RpcContext;
 import com.alipay.sofa.jraft.rpc.RpcProcessor;
+import java.util.Objects;
 import org.apache.seata.common.metadata.Node;
 import org.apache.seata.server.cluster.raft.RaftTransactionServer;
 import org.apache.seata.server.cluster.raft.RaftTransactionServerManager;
 import org.apache.seata.server.cluster.raft.RaftTransactionStateMachine;
+import org.apache.seata.server.cluster.raft.manager.RaftControllerServerManager;
+import org.apache.seata.server.cluster.raft.manager.RaftControllerStateMachine;
 import org.apache.seata.server.cluster.raft.processor.request.PutNodeMetadataRequest;
 import org.apache.seata.server.cluster.raft.processor.response.PutNodeMetadataResponse;
 
@@ -35,7 +38,16 @@ public class PutNodeInfoRequestProcessor implements RpcProcessor<PutNodeMetadata
     public void handleRequest(RpcContext rpcCtx, PutNodeMetadataRequest request) {
         Node node = request.getNode();
         String group = node.getGroup();
-        if (RaftTransactionServerManager.getInstance().isLeader(group)) {
+        if (Objects.equals(group, "controller")) {
+            if (RaftControllerServerManager.getInstance().isLeader(group)) {
+                RaftControllerStateMachine raftControllerStateMachine = RaftControllerServerManager.getInstance()
+                        .getRaftServer(group).getRaftStateMachine();
+                raftControllerStateMachine.changeControllerNodeMetadata(node);
+                rpcCtx.sendResponse(new PutNodeMetadataResponse(true));
+            } else {
+                rpcCtx.sendResponse(new PutNodeMetadataResponse(false));
+            }
+        } else if (RaftTransactionServerManager.getInstance().isLeader(group)) {
             RaftTransactionServer raftTransactionServer =
                     RaftTransactionServerManager.getInstance().getRaftServer(group);
             RaftTransactionStateMachine raftTransactionStateMachine = raftTransactionServer.getRaftStateMachine();
