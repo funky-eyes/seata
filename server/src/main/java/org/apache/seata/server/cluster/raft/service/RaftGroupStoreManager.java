@@ -55,14 +55,6 @@ public interface RaftGroupStoreManager {
     }
 
     /**
-     * Get all Raft groups metadata (new method for enhanced metadata support)
-     */
-    default Map<String, RaftClusterMetadata> getAllRaftGroupsMetadata() {
-        // Default implementation for backward compatibility
-        return Map.of();
-    }
-
-    /**
      * Get TXG cluster metadata for a specific group (new method)
      */
     default RaftClusterMetadata getTxgClusterMetadata(String groupId) {
