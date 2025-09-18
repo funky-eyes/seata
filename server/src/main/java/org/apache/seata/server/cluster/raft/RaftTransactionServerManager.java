@@ -109,10 +109,13 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
         if (StringUtils.isBlank(controllerInitConf)) {
             // It is currently in single-raft mode.
             String group = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_GROUP, DEFAULT_SEATA_GROUP);
+            String initConf = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_SERVER_ADDR);
+            init(initConf); // Initialize serverId FIRST
+
+            // Now we can safely use serverId
             dataPath = CONFIG.getConfig(ConfigurationKeys.STORE_FILE_DIR, DEFAULT_SESSION_STORE_FILE_DIR) + separator
                     + "raft" + separator + serverId.getPort();
-            String initConf = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_SERVER_ADDR);
-            init(initConf);
+
             Configuration configuration = new Configuration();
             configuration.parse(initConf);
             try {
@@ -121,9 +124,14 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
                 throw new IllegalArgumentException("fail init raft cluster:" + e.getMessage(), e);
             }
         } else {
-            // Retrieve TXG information from CG interface
+            // Initialize serverId first for controller mode
+            String initConf = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_SERVER_ADDR);
+            init(initConf);
+
+            // Now we can safely use serverId
             dataPath = CONFIG.getConfig(ConfigurationKeys.STORE_FILE_DIR, DEFAULT_SESSION_STORE_FILE_DIR) + separator
                     + "raft" + separator + serverId.getPort();
+
             // Retrieve TXG assignments from CG via RPC
             TxgGroupAssignmentDTO txgAssignments = retrieveTxgAssignmentsFromCG(controllerInitConf);
             // Create raft servers for each TXG group assigned to this node
@@ -139,9 +147,9 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
                             Node.Endpoint endpoint = member.getInternal();
                             sb.add(endpoint.getHost() + ":" + endpoint.getPort());
                         }
-                        String initConf = sb.toString();
-                        logger.info("Creating raft server for TXG group: {} with members: {}", groupName, initConf);
-                        configuration.parse(initConf);
+                        String initConfStr = sb.toString();
+                        logger.info("Creating raft server for TXG group: {} with members: {}", groupName, initConfStr);
+                        configuration.parse(initConfStr);
                         createRaftServers(groupName, dataPath, configuration);
                     }
                 });

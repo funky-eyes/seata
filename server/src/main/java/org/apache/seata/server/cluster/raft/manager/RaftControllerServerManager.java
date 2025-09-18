@@ -103,11 +103,11 @@ public class RaftControllerServerManager extends AbstractRaftServerManager {
         if (StringUtils.isBlank(controllerInitConf)) {
             return;
         } else {
-            dataPath = CONFIG.getConfig(ConfigurationKeys.STORE_FILE_DIR, DEFAULT_SESSION_STORE_FILE_DIR) + separator
-                    + "raft" + separator + serverId.getPort();
             initConf = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_SERVER_ADDR);
         }
         init(initConf);
+        dataPath = CONFIG.getConfig(ConfigurationKeys.STORE_FILE_DIR, DEFAULT_SESSION_STORE_FILE_DIR) + separator
+                + "raft" + separator + serverId.getPort();
         Configuration configuration = new Configuration();
         configuration.parse(initConf);
         try {
