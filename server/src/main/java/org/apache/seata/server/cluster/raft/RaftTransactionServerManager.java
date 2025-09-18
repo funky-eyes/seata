@@ -130,7 +130,7 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
 
             // Now we can safely use serverId
             dataPath = CONFIG.getConfig(ConfigurationKeys.STORE_FILE_DIR, DEFAULT_SESSION_STORE_FILE_DIR) + separator
-                    + "raft" + separator + serverId.getPort();
+                    + "raft" + separator;
 
             // Retrieve TXG assignments from CG via RPC
             TxgGroupAssignmentDTO txgAssignments = retrieveTxgAssignmentsFromCG(controllerInitConf);
