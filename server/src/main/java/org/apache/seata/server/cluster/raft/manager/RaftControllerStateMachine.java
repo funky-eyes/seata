@@ -47,7 +47,6 @@ import org.apache.seata.server.cluster.raft.service.RaftGroupStoreManager;
 import org.apache.seata.server.cluster.raft.snapshot.StoreSnapshotFile;
 import org.apache.seata.server.cluster.raft.snapshot.metadata.LeaderMetadataSnapshotFile;
 import org.apache.seata.server.cluster.raft.snapshot.txg.TransactionGroupSnapshotFile;
-import org.apache.seata.server.cluster.raft.snapshot.vgroup.VGroupSnapshotFile;
 import org.apache.seata.server.cluster.raft.sync.RaftSyncMessageSerializer;
 import org.apache.seata.server.cluster.raft.sync.msg.*;
 import org.apache.seata.server.cluster.raft.sync.msg.dto.RaftClusterMetadata;
@@ -66,7 +65,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_CONTROLLER_GROUP;
+import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_GROUP;
 import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_APPLICATION_CONTEXT;
 import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_CONFIGURABLE_ENVIRONMENT;
 
@@ -112,14 +111,24 @@ public class RaftControllerStateMachine extends RaftStateMachine {
             LOGGER.info(
                     "Updated TXG cluster metadata for group: {} with term: {}",
                     clusterMsg.getTxgGroupId(),
-                    clusterMsg.getMetadata().getTerm());
+                    clusterMsg.getMetadata().getTerm(),
+                    clusterMsg.getMetadata().getFollowers());
+
+            return null;
+        });
+
+        CONTROLLER_EXECUTES.put(RaftSyncMsgType.TXG_META_DATA_CHANGED, syncMsg -> {
+            RaftTxgGroupMsg clusterMsg = (RaftTxgGroupMsg) syncMsg;
+
+            // Update the TransactionGroupServiceManager with the new metadata
+            raftGroupStoreManager.saveOrUpdate(clusterMsg.getTxgAssignments().getGroupMemberMap());
+            LOGGER.info("Updated TXG cluster metadata for group: {} ", clusterMsg.getGroup());
 
             return null;
         });
 
         // Register controller-specific snapshot files
         registryStoreSnapshotFile(new LeaderMetadataSnapshotFile(group));
-        registryStoreSnapshotFile(new VGroupSnapshotFile(group));
         registryStoreSnapshotFile(new TransactionGroupSnapshotFile(group, this.raftGroupStoreManager));
 
         // Start periodic controller metadata sync
@@ -227,11 +236,10 @@ public class RaftControllerStateMachine extends RaftStateMachine {
     private void initializeTxgGroups() {
         try {
             // 1. Read the TXG configuration
-            String txgGroupsConfig = ConfigurationFactory.getInstance().getConfig(SERVER_RAFT_CONTROLLER_GROUP);
+            String txgGroupsConfig = ConfigurationFactory.getInstance().getConfig(SERVER_RAFT_GROUP);
 
             if (StringUtils.isBlank(txgGroupsConfig)) {
-                LOGGER.warn(
-                        "No TXG groups configured in {}, skipping TXG initialization", SERVER_RAFT_CONTROLLER_GROUP);
+                LOGGER.warn("No TXG groups configured in {}, skipping TXG initialization", SERVER_RAFT_GROUP);
                 return;
             }
 
@@ -616,5 +624,9 @@ public class RaftControllerStateMachine extends RaftStateMachine {
         } finally {
             lock.unlock();
         }
+    }
+
+    public RaftClusterMetadata getRaftLeaderMetadata() {
+        return raftClusterMetadata;
     }
 }

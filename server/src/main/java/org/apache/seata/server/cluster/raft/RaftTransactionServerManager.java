@@ -75,11 +75,17 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
             }
             logger.info("started seata server raft cluster, group: {} ", group);
         });
-        if (rpcServer != null) {
-            rpcServer.registerProcessor(new PutNodeInfoRequestProcessor());
-            SerializerManager.addSerializer(SerializerType.JACKSON.getCode(), new JacksonBoltSerializer());
-            if (!rpcServer.init(null)) {
-                throw new RuntimeException("start raft node fail!");
+        if (rpcStarted.compareAndSet(false, true)) {
+            if (rpcServer != null) {
+                try {
+                    rpcServer.registerProcessor(new PutNodeInfoRequestProcessor());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                SerializerManager.addSerializer(SerializerType.JACKSON.getCode(), new JacksonBoltSerializer());
+                if (!rpcServer.init(null)) {
+                    throw new RuntimeException("start raft node fail!");
+                }
             }
         }
     }
@@ -92,7 +98,7 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
         return RAFT_SERVER_MAP.values();
     }
 
-    public static Set<String> groups() {
+    public Set<String> groups() {
         return RAFT_SERVER_MAP.keySet();
     }
 
@@ -132,7 +138,7 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
 
             // Now we can safely use serverId
             dataPath = CONFIG.getConfig(ConfigurationKeys.STORE_FILE_DIR, DEFAULT_SESSION_STORE_FILE_DIR) + separator
-                    + "raft" + separator;
+                    + "raft" + separator + serverId.getPort();
 
             // Retrieve TXG assignments from CG via RPC
             TxgGroupAssignmentDTO txgAssignments = retrieveTxgAssignmentsFromCG(controllerInitConf);
@@ -181,7 +187,11 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
                         GetTxgGroupsRequest request = new GetTxgGroupsRequest(XID.getIpAddress());
                         GetTxgGroupsResponse response = makeRpcCallToController(controllerPeer, request);
 
-                        if (response != null && response.isSuccess()) {
+                        if (response != null
+                                && response.isSuccess()
+                                && !response.getTxgAssignments()
+                                        .getGroupMemberMap()
+                                        .isEmpty()) {
                             logger.info("Successfully retrieved TXG assignments from controller {}", controllerPeer);
                             return response.getTxgAssignments();
                         }
@@ -190,7 +200,7 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
                     }
                 }
                 // Wait before retrying
-                Thread.sleep(1000);
+                Thread.sleep(2000);
             }
             logger.error("Failed to retrieve TXG assignments from any controller");
             return null;

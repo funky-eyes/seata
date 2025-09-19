@@ -28,6 +28,8 @@ import org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType;
 import org.apache.seata.server.cluster.raft.sync.msg.RaftVGroupSyncMsg;
 import org.apache.seata.server.cluster.raft.util.RaftTaskUtil;
 import org.apache.seata.server.store.VGroupMappingStoreManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +41,8 @@ public class RaftVGroupMappingStoreManager implements VGroupMappingStoreManager 
 
     private static final Map<String /*unit(raft group)*/, Map<String /*vgroup*/, MappingDO>> VGROUP_MAPPING =
             new ConcurrentHashMap<>();
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RaftVGroupMappingStoreManager.class);
 
     public boolean localAddVGroup(MappingDO mappingDO) {
         return VGROUP_MAPPING
@@ -129,6 +133,9 @@ public class RaftVGroupMappingStoreManager implements VGroupMappingStoreManager 
     @Override
     public void notifyMapping() {
         Instance instance = Instance.getInstance();
+        if (instance.getTerm() <= 0) {
+            return;
+        }
         Map<String, Object> map = this.readVGroups();
         instance.addMetadata("vGroup", map);
         try {
@@ -144,7 +151,7 @@ public class RaftVGroupMappingStoreManager implements VGroupMappingStoreManager 
                 }
             }
         } catch (Exception e) {
-            throw new RuntimeException("vGroup mapping relationship notified failed! ", e);
+            LOGGER.error("vGroup mapping relationship notified failed! ", e);
         } finally {
             Instance.getInstances().clear();
         }

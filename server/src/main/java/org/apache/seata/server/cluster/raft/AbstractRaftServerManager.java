@@ -49,14 +49,15 @@ import static org.apache.seata.common.DefaultValues.DEFAULT_SERVER_RAFT_ELECTION
 public abstract class AbstractRaftServerManager implements RaftServerManager<RaftServer> {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    protected static final Map<String /*group*/, RaftServer /*raft-group-cluster*/> RAFT_SERVER_MAP =
+    protected final Map<String /*group*/, RaftServer /*raft-group-cluster*/> RAFT_SERVER_MAP =
             new ConcurrentHashMap<>();
     protected static final AtomicBoolean init = new AtomicBoolean(false);
+    protected static final AtomicBoolean rpcStarted = new AtomicBoolean(false);
 
     protected static final org.apache.seata.config.Configuration CONFIG = ConfigurationFactory.getInstance();
     protected static volatile boolean RAFT_MODE;
     protected static volatile RpcServer rpcServer;
-    protected PeerId serverId;
+    protected static volatile PeerId serverId;
 
     public void init(String initConfStr) {
         if (init.compareAndSet(false, true)) {
@@ -113,7 +114,7 @@ public abstract class AbstractRaftServerManager implements RaftServerManager<Raf
         }
     }
 
-    public static boolean isLeader(String group) {
+    public boolean isLeader(String group) {
         AtomicReference<RaftStateMachine> stateMachine = new AtomicReference<>();
         Optional.ofNullable(RAFT_SERVER_MAP.get(group)).ifPresent(raftServer -> {
             stateMachine.set(raftServer.getRaftStateMachine());

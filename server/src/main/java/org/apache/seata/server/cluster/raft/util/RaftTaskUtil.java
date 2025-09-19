@@ -17,12 +17,15 @@
 package org.apache.seata.server.cluster.raft.util;
 
 import com.alipay.sofa.jraft.Closure;
+import com.alipay.sofa.jraft.Node;
 import com.alipay.sofa.jraft.entity.Task;
+import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.core.exception.GlobalTransactionException;
 import org.apache.seata.core.exception.TransactionException;
 import org.apache.seata.core.exception.TransactionExceptionCode;
 import org.apache.seata.server.cluster.raft.RaftTransactionServerManager;
 import org.apache.seata.server.cluster.raft.context.SeataClusterContext;
+import org.apache.seata.server.cluster.raft.manager.RaftControllerServerManager;
 import org.apache.seata.server.cluster.raft.sync.RaftSyncMessageSerializer;
 import org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMessage;
 
@@ -37,6 +40,17 @@ public class RaftTaskUtil {
 
     public static boolean createTask(Closure done, Object data, CompletableFuture<Boolean> completableFuture)
             throws TransactionException {
+        return createTask(done, data, SeataClusterContext.getGroup(), completableFuture);
+    }
+
+    public static boolean createCGTask(Closure done, Object data, CompletableFuture<Boolean> completableFuture)
+            throws TransactionException {
+        return createTask(done, data, "controller", completableFuture);
+    }
+
+    public static boolean createTask(
+            Closure done, Object data, String group, CompletableFuture<Boolean> completableFuture)
+            throws TransactionException {
         final Task task = new Task();
         if (data != null) {
             RaftSyncMessage raftSyncMessage = new RaftSyncMessage();
@@ -48,19 +62,21 @@ public class RaftTaskUtil {
             }
         }
         task.setDone(done == null ? status -> {} : done);
-        RaftTransactionServerManager.getInstance()
-                .getRaftServer(SeataClusterContext.getGroup())
-                .getNode()
-                .apply(task);
+        Node node;
+        if (StringUtils.equalsIgnoreCase("controller", group)) {
+            node = RaftControllerServerManager.getInstance()
+                    .getRaftServer(group)
+                    .getNode();
+        } else {
+            node = RaftTransactionServerManager.getInstance()
+                    .getRaftServer(group)
+                    .getNode();
+        }
+        node.apply(task);
         if (completableFuture != null) {
             return futureGet(completableFuture);
         }
         return true;
-    }
-
-    public static boolean createTask(Closure done, CompletableFuture<Boolean> completableFuture)
-            throws TransactionException {
-        return createTask(done, null, completableFuture);
     }
 
     public static boolean futureGet(CompletableFuture<Boolean> completableFuture) throws TransactionException {

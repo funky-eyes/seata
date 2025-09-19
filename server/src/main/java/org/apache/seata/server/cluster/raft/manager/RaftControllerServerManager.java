@@ -59,25 +59,28 @@ public class RaftControllerServerManager extends AbstractRaftServerManager {
     }
 
     public void start() {
-        RAFT_SERVER_MAP.forEach((group, raftServer) -> {
-            try {
-                raftServer.start();
-            } catch (IOException e) {
-                logger.error("start seata server raft cluster error, group: {} ", group, e);
-                throw new RuntimeException(e);
-            }
-            logger.info("started seata server raft cluster, group: {} ", group);
-        });
-        if (rpcServer != null) {
-            rpcServer.registerProcessor(new PutNodeInfoRequestProcessor());
-            rpcServer.registerProcessor(new PutRaftClusterMetadataProcessor());
-            ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext)
-                            ObjectHolder.INSTANCE.getObject(OBJECT_KEY_SPRING_APPLICATION_CONTEXT))
-                    .getBeanFactory();
-            rpcServer.registerProcessor(new GetTxgGroupsProcessor(beanFactory.getBean(RaftGroupStoreManager.class)));
-            SerializerManager.addSerializer(SerializerType.JACKSON.getCode(), new JacksonBoltSerializer());
-            if (!rpcServer.init(null)) {
-                throw new RuntimeException("start raft node fail!");
+        if (rpcStarted.compareAndSet(false, true)) {
+            RAFT_SERVER_MAP.forEach((group, raftServer) -> {
+                try {
+                    raftServer.start();
+                } catch (IOException e) {
+                    logger.error("start seata server raft cluster error, group: {} ", group, e);
+                    throw new RuntimeException(e);
+                }
+                logger.info("started seata server raft cluster, group: {} ", group);
+            });
+            if (rpcServer != null) {
+                rpcServer.registerProcessor(new PutNodeInfoRequestProcessor());
+                rpcServer.registerProcessor(new PutRaftClusterMetadataProcessor());
+                ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext)
+                                ObjectHolder.INSTANCE.getObject(OBJECT_KEY_SPRING_APPLICATION_CONTEXT))
+                        .getBeanFactory();
+                rpcServer.registerProcessor(
+                        new GetTxgGroupsProcessor(beanFactory.getBean(RaftGroupStoreManager.class)));
+                SerializerManager.addSerializer(SerializerType.JACKSON.getCode(), new JacksonBoltSerializer());
+                if (!rpcServer.init(null)) {
+                    throw new RuntimeException("start raft node fail!");
+                }
             }
         }
     }
@@ -90,7 +93,7 @@ public class RaftControllerServerManager extends AbstractRaftServerManager {
         return RAFT_SERVER_MAP.values();
     }
 
-    public static Set<String> groups() {
+    public Set<String> groups() {
         return RAFT_SERVER_MAP.keySet();
     }
 

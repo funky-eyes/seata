@@ -102,9 +102,9 @@ public class Server {
             ((ConfigurableApplicationContext) ObjectHolder.INSTANCE.getObject(OBJECT_KEY_SPRING_APPLICATION_CONTEXT))
                     .addApplicationListener((ApplicationListener<?>) coordinator);
         }
-        // log store mode : file, db, redis
         RaftControllerServerManager.getInstance().init();
         RaftControllerServerManager.getInstance().start();
+        // log store mode : file, db, redis
         SessionHolder.init();
         LockerManagerFactory.init();
         coordinator.init();

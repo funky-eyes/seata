@@ -20,7 +20,9 @@ import com.alipay.sofa.jraft.Status;
 import com.alipay.sofa.jraft.error.RaftError;
 import com.alipay.sofa.jraft.storage.snapshot.SnapshotReader;
 import com.alipay.sofa.jraft.storage.snapshot.SnapshotWriter;
+import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.server.cluster.raft.RaftTransactionServerManager;
+import org.apache.seata.server.cluster.raft.manager.RaftControllerServerManager;
 import org.apache.seata.server.cluster.raft.snapshot.RaftSnapshot;
 import org.apache.seata.server.cluster.raft.snapshot.StoreSnapshotFile;
 import org.apache.seata.server.cluster.raft.sync.msg.dto.RaftClusterMetadata;
@@ -49,10 +51,18 @@ public class LeaderMetadataSnapshotFile implements Serializable, StoreSnapshotFi
     @Override
     public Status save(SnapshotWriter writer) {
         RaftSnapshot raftSnapshot = new RaftSnapshot();
-        RaftClusterMetadata raftClusterMetadata = RaftTransactionServerManager.getInstance()
-                .getRaftServer(group)
-                .getRaftStateMachine()
-                .getRaftLeaderMetadata();
+        RaftClusterMetadata raftClusterMetadata;
+        if (StringUtils.equalsIgnoreCase("controller", group)) {
+            raftClusterMetadata = RaftControllerServerManager.getInstance()
+                    .getRaftServer(group)
+                    .getRaftStateMachine()
+                    .getRaftLeaderMetadata();
+        } else {
+            raftClusterMetadata = RaftTransactionServerManager.getInstance()
+                    .getRaftServer(group)
+                    .getRaftStateMachine()
+                    .getRaftLeaderMetadata();
+        }
         raftSnapshot.setBody(raftClusterMetadata);
         raftSnapshot.setType(RaftSnapshot.SnapshotType.leader_metadata);
         String path = new StringBuilder(writer.getPath())
@@ -85,10 +95,17 @@ public class LeaderMetadataSnapshotFile implements Serializable, StoreSnapshotFi
                 .toString();
         try {
             RaftClusterMetadata raftClusterMetadata = (RaftClusterMetadata) load(path);
-            RaftTransactionServerManager.getInstance()
-                    .getRaftServer(group)
-                    .getRaftStateMachine()
-                    .setRaftLeaderMetadata(raftClusterMetadata);
+            if (StringUtils.equalsIgnoreCase("controller", group)) {
+                RaftControllerServerManager.getInstance()
+                        .getRaftServer(group)
+                        .getRaftStateMachine()
+                        .setRaftClusterMetadata(raftClusterMetadata);
+            } else {
+                RaftTransactionServerManager.getInstance()
+                        .getRaftServer(group)
+                        .getRaftStateMachine()
+                        .setRaftLeaderMetadata(raftClusterMetadata);
+            }
             return true;
         } catch (final Exception e) {
             LOGGER.error("fail to load snapshot from {}", path, e);

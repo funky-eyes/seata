@@ -61,7 +61,7 @@ public class PutRaftClusterMetadataProcessor implements RpcProcessor<PutRaftClus
             CompletableFuture<Boolean> future = new CompletableFuture<>();
 
             // Submit to CG state machine so all CG members get the update
-            RaftTaskUtil.createTask(
+            RaftTaskUtil.createCGTask(
                     status -> {
                         if (status.isOk()) {
                             LOGGER.info(

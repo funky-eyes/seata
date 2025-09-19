@@ -86,9 +86,14 @@ public enum RaftSyncMsgType {
     UPDATE_RAFT_GROUP_METADATA,
 
     /**
-     * update Transaction raft group meta data
+     * save and update the member allocation of the Transaction raft group
      */
     SAVE_OR_UPDATE_TXG_GROUP_ASSIGNMENTS,
+
+    /**
+     * update Transaction raft group meta data
+     */
+    TXG_META_DATA_CHANGED,
 
     /**
      * Acquire CG (Centralized Global) locks

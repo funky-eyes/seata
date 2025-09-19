@@ -22,9 +22,6 @@ import com.alipay.sofa.jraft.conf.Configuration;
 import com.alipay.sofa.jraft.entity.PeerId;
 import org.apache.seata.common.metadata.Node;
 import org.apache.seata.common.util.CollectionUtils;
-import org.apache.seata.server.cluster.raft.RaftTransactionServer;
-import org.apache.seata.server.cluster.raft.RaftTransactionServerManager;
-import org.apache.seata.server.cluster.raft.RaftTransactionStateMachine;
 import org.apache.seata.server.cluster.raft.manager.RaftControllerServer;
 import org.apache.seata.server.cluster.raft.manager.RaftControllerServerManager;
 import org.apache.seata.server.cluster.raft.sync.msg.RaftTxgGroupMsg;
@@ -65,7 +62,7 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
      * Get all Raft groups metadata
      */
     public Map<String, RaftClusterMetadata> getAllRaftGroupsMetadata() {
-        validateControlGroupPermission();
+        isCGMember();
         return TRANSACTION_GROUPS;
     }
 
@@ -73,7 +70,7 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
      * Get all Raft groups (legacy format for backward compatibility)
      */
     public Map<String, List<Node>> getAllRaftGroups() {
-        validateControlGroupPermission();
+        isCGMember();
         return LEGACY_TRANSACTION_GROUPS;
     }
 
@@ -123,41 +120,20 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
 
     @NotNull
     private Map<String, List<Node>> getGroupByIp(String ip) {
-        Map<String, RaftClusterMetadata> allGroups = getAllRaftGroupsMetadata();
         Map<String, List<Node>> result = new HashMap<>();
-
-        allGroups.forEach((group, metadata) -> {
-            List<Node> matchedNodes = new ArrayList<>();
-
-            // Check leader
-            if (metadata.getLeader() != null
-                    && ip.equals(metadata.getLeader().getTransaction().getHost())) {
-                matchedNodes.add(metadata.getLeader());
-            }
-
-            // Check followers
-            if (metadata.getFollowers() != null) {
-                for (Node node : metadata.getFollowers()) {
-                    if (ip.equals(node.getTransaction().getHost())) {
-                        matchedNodes.add(node);
-                    }
+        LEGACY_TRANSACTION_GROUPS.forEach((group, nodes) -> {
+            boolean contains = false;
+            for (Node node : nodes) {
+                if (ip.equals(node.getInternal().getHost())) {
+                    contains = true;
+                    break;
                 }
             }
-
-            // Check learners
-            if (metadata.getLearner() != null) {
-                for (Node node : metadata.getLearner()) {
-                    if (ip.equals(node.getTransaction().getHost())) {
-                        matchedNodes.add(node);
-                    }
-                }
-            }
-
-            if (!matchedNodes.isEmpty()) {
+            if (contains) {
+                List<Node> matchedNodes = new ArrayList<>(nodes);
                 result.put(group, matchedNodes);
             }
         });
-
         return result;
     }
 
@@ -190,7 +166,7 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
             newConf.addPeer(newPeer);
 
             // Apply the configuration change through CLI service
-            RaftTransactionServerManager.getInstance().getCliServiceInstance().changePeers(group, currentConf, newConf);
+            RaftControllerServerManager.getInstance().getCliServiceInstance().changePeers(group, currentConf, newConf);
 
             // Update local routing table
             routeTable.updateConfiguration(group, newConf);
@@ -238,7 +214,7 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
             newConf.removePeer(peerToRemove);
 
             // Apply the configuration change
-            RaftTransactionServerManager.getInstance().getCliServiceInstance().changePeers(group, currentConf, newConf);
+            RaftControllerServerManager.getInstance().getCliServiceInstance().changePeers(group, currentConf, newConf);
 
             // Update local routing table
             routeTable.updateConfiguration(group, newConf);
@@ -428,8 +404,8 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
      */
     private CliService getCliService(String groupId) {
         // Check if it's a transaction group first
-        if (RaftTransactionServerManager.groups().contains(groupId)) {
-            return RaftTransactionServerManager.getInstance().getCliServiceInstance();
+        if (TRANSACTION_GROUPS.containsKey(groupId)) {
+            return RaftControllerServerManager.getInstance().getCliServiceInstance();
         }
 
         // Check if it's a controller group
@@ -450,18 +426,13 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
         Map<String, Object> result = new HashMap<>();
 
         try {
-            RaftTransactionServer raftServer =
-                    RaftTransactionServerManager.getInstance().getRaftServer(group);
+            RaftClusterMetadata raftClusterMetadata = TRANSACTION_GROUPS.get(group);
 
-            if (raftServer != null) {
-                RaftTransactionStateMachine stateMachine =
-                        (RaftTransactionStateMachine) raftServer.getRaftStateMachine();
-                RaftClusterMetadata metadata = stateMachine.getRaftLeaderMetadata();
-
-                if (metadata.getLeader() != null) {
-                    result = nodeToMap(metadata.getLeader(), "LEADER");
-                    result.put("term", metadata.getTerm());
-                    result.put("isCurrentNodeLeader", stateMachine.isLeader());
+            if (raftClusterMetadata != null) {
+                if (raftClusterMetadata.getLeader() != null) {
+                    result = nodeToMap(raftClusterMetadata.getLeader(), "LEADER");
+                    result.put("term", raftClusterMetadata.getTerm());
+                    result.put("isCurrentNodeLeader", "true");
                 } else {
                     result.put("error", "No leader found for group " + group);
                 }
@@ -481,19 +452,14 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
      */
     private Map<String, Object> buildGroupInfo(String group) {
         try {
-            RaftTransactionServer raftServer =
-                    RaftTransactionServerManager.getInstance().getRaftServer(group);
-
-            if (raftServer == null) {
-                return null;
-            }
 
             Map<String, Object> groupInfo = new HashMap<>();
 
             // Get cluster metadata
-            RaftTransactionStateMachine stateMachine = raftServer.getRaftStateMachine();
-            RaftClusterMetadata metadata = stateMachine.getRaftLeaderMetadata();
-
+            RaftClusterMetadata metadata = TRANSACTION_GROUPS.get(group);
+            if (metadata == null) {
+                return null;
+            }
             // Get current configuration
             Configuration conf = RouteTable.getInstance().getConfiguration(group);
 
@@ -521,7 +487,6 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
 
             groupInfo.put("members", members);
             groupInfo.put("term", metadata.getTerm());
-            groupInfo.put("isLeader", stateMachine.isLeader());
             groupInfo.put("peerCount", conf != null ? conf.getPeers().size() : 0);
             groupInfo.put("learnerCount", conf != null ? conf.getLearners().size() : 0);
 
@@ -585,7 +550,7 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
             throw new IllegalArgumentException("Group name cannot be null or empty");
         }
 
-        if (!RaftTransactionServerManager.groups().contains(group)) {
+        if (!TRANSACTION_GROUPS.containsKey(group)) {
             throw new IllegalArgumentException("Group does not exist: " + group);
         }
     }

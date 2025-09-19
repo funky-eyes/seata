@@ -26,6 +26,7 @@ public class RaftTxgClusterMetadataMsg extends RaftBaseMsg {
     private static final long serialVersionUID = 1L;
 
     private String txgGroupId;
+
     private RaftClusterMetadata metadata;
 
     public RaftTxgClusterMetadataMsg() {

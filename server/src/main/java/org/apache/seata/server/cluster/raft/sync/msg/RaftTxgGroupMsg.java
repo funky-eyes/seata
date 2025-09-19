@@ -27,8 +27,10 @@ public class RaftTxgGroupMsg extends RaftBaseMsg {
 
     private TxgGroupAssignmentDTO txgAssignments;
 
+    public RaftTxgGroupMsg() {}
+
     public RaftTxgGroupMsg(TxgGroupAssignmentDTO assignments) {
-        this.msgType = RaftSyncMsgType.SAVE_OR_UPDATE_TXG_GROUP_ASSIGNMENTS;
+        this.msgType = RaftSyncMsgType.TXG_META_DATA_CHANGED;
         this.txgAssignments = assignments;
     }
 
