@@ -41,17 +41,37 @@ public class ObjectHolder {
     }
 
     // Getters and Setters
-    public String getParent() { return parent; }
-    public void setParent(String parent) { this.parent = parent; }
+    public String getParent() {
+        return parent;
+    }
 
-    public String getOwner() { return owner; }
-    public void setOwner(String owner) { this.owner = owner; }
+    public void setParent(String parent) {
+        this.parent = parent;
+    }
 
-    public long getLockTime() { return lockTime; }
-    public void setLockTime(long lockTime) { this.lockTime = lockTime; }
+    public String getOwner() {
+        return owner;
+    }
 
-    public String getInstance() { return instance; }
-    public void setInstance(String instance) { this.instance = instance; }
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
+    public long getLockTime() {
+        return lockTime;
+    }
+
+    public void setLockTime(long lockTime) {
+        this.lockTime = lockTime;
+    }
+
+    public String getInstance() {
+        return instance;
+    }
+
+    public void setInstance(String instance) {
+        this.instance = instance;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -68,11 +88,10 @@ public class ObjectHolder {
 
     @Override
     public String toString() {
-        return "ObjectHolder{" +
-                "parent='" + parent + '\'' +
-                ", owner='" + owner + '\'' +
-                ", instance='" + instance + '\'' +
-                ", lockTime=" + lockTime +
-                '}';
+        return "ObjectHolder{" + "parent='"
+                + parent + '\'' + ", owner='"
+                + owner + '\'' + ", instance='"
+                + instance + '\'' + ", lockTime="
+                + lockTime + '}';
     }
 }

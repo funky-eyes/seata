@@ -57,9 +57,8 @@ public class PutRaftClusterMetadataResponse implements Serializable {
 
     @Override
     public String toString() {
-        return "PutRaftClusterMetadataResponse{" +
-                "success=" + success +
-                ", errorMessage='" + errorMessage + '\'' +
-                '}';
+        return "PutRaftClusterMetadataResponse{" + "success="
+                + success + ", errorMessage='"
+                + errorMessage + '\'' + '}';
     }
 }

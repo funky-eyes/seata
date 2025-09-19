@@ -93,7 +93,7 @@ public class RaftControllerStateMachine extends RaftStateMachine {
     public RaftControllerStateMachine(String group) {
         super(group);
         ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext)
-                ObjectHolder.INSTANCE.getObject(OBJECT_KEY_SPRING_APPLICATION_CONTEXT))
+                        ObjectHolder.INSTANCE.getObject(OBJECT_KEY_SPRING_APPLICATION_CONTEXT))
                 .getBeanFactory();
         this.raftGroupStoreManager = beanFactory.getBean(RaftGroupStoreManager.class);
 
@@ -107,12 +107,10 @@ public class RaftControllerStateMachine extends RaftStateMachine {
             RaftTxgClusterMetadataMsg clusterMsg = (RaftTxgClusterMetadataMsg) syncMsg;
 
             // Update the TransactionGroupServiceManager with the new metadata
-            raftGroupStoreManager.updateTxgClusterMetadata(
-                    clusterMsg.getTxgGroupId(),
-                    clusterMsg.getMetadata()
-            );
+            raftGroupStoreManager.updateTxgClusterMetadata(clusterMsg.getTxgGroupId(), clusterMsg.getMetadata());
 
-            LOGGER.info("Updated TXG cluster metadata for group: {} with term: {}",
+            LOGGER.info(
+                    "Updated TXG cluster metadata for group: {} with term: {}",
                     clusterMsg.getTxgGroupId(),
                     clusterMsg.getMetadata().getTerm());
 
@@ -470,9 +468,9 @@ public class RaftControllerStateMachine extends RaftStateMachine {
         // replace the leader information
         if (leaderNode == null
                 || (leaderNode.getInternal() != null
-                && !currentPeerId.equals(new PeerId(
-                leaderNode.getInternal().getHost(),
-                leaderNode.getInternal().getPort())))) {
+                        && !currentPeerId.equals(new PeerId(
+                                leaderNode.getInternal().getHost(),
+                                leaderNode.getInternal().getPort())))) {
             Node leader = raftClusterMetadata.createNode(
                     currentPeerId.getIp(),
                     XID.getPort(),
@@ -532,7 +530,7 @@ public class RaftControllerStateMachine extends RaftStateMachine {
                         XID.getPort(),
                         currentPeerId.getPort(),
                         Integer.parseInt(((Environment)
-                                ObjectHolder.INSTANCE.getObject(OBJECT_KEY_SPRING_CONFIGURABLE_ENVIRONMENT))
+                                        ObjectHolder.INSTANCE.getObject(OBJECT_KEY_SPRING_CONFIGURABLE_ENVIRONMENT))
                                 .getProperty("server.port", String.valueOf(7091))),
                         group,
                         Collections.emptyMap());

@@ -18,7 +18,6 @@ package org.apache.seata.server.cluster.raft.processor;
 
 import com.alipay.sofa.jraft.rpc.RpcContext;
 import com.alipay.sofa.jraft.rpc.RpcProcessor;
-import java.util.Objects;
 import org.apache.seata.common.metadata.Node;
 import org.apache.seata.server.cluster.raft.RaftTransactionServer;
 import org.apache.seata.server.cluster.raft.RaftTransactionServerManager;
@@ -27,6 +26,8 @@ import org.apache.seata.server.cluster.raft.manager.RaftControllerServerManager;
 import org.apache.seata.server.cluster.raft.manager.RaftControllerStateMachine;
 import org.apache.seata.server.cluster.raft.processor.request.PutNodeMetadataRequest;
 import org.apache.seata.server.cluster.raft.processor.response.PutNodeMetadataResponse;
+
+import java.util.Objects;
 
 public class PutNodeInfoRequestProcessor implements RpcProcessor<PutNodeMetadataRequest> {
 
@@ -41,7 +42,8 @@ public class PutNodeInfoRequestProcessor implements RpcProcessor<PutNodeMetadata
         if (Objects.equals(group, "controller")) {
             if (RaftControllerServerManager.getInstance().isLeader(group)) {
                 RaftControllerStateMachine raftControllerStateMachine = RaftControllerServerManager.getInstance()
-                        .getRaftServer(group).getRaftStateMachine();
+                        .getRaftServer(group)
+                        .getRaftStateMachine();
                 raftControllerStateMachine.changeControllerNodeMetadata(node);
                 rpcCtx.sendResponse(new PutNodeMetadataResponse(true));
             } else {

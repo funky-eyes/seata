@@ -130,7 +130,8 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
             List<Node> matchedNodes = new ArrayList<>();
 
             // Check leader
-            if (metadata.getLeader() != null && ip.equals(metadata.getLeader().getTransaction().getHost())) {
+            if (metadata.getLeader() != null
+                    && ip.equals(metadata.getLeader().getTransaction().getHost())) {
                 matchedNodes.add(metadata.getLeader());
             }
 
@@ -179,7 +180,8 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
             Configuration currentConf = routeTable.getConfiguration(group);
 
             // Check if peer already exists
-            if (currentConf.getPeers().contains(newPeer) || currentConf.getLearners().contains(newPeer)) {
+            if (currentConf.getPeers().contains(newPeer)
+                    || currentConf.getLearners().contains(newPeer)) {
                 throw new IllegalArgumentException("Peer " + ip + ":" + port + " already exists in group " + group);
             }
 
@@ -221,7 +223,8 @@ public class TransactionGroupServiceManager implements RaftGroupStoreManager {
             }
 
             // Check if peer exists
-            if (!currentConf.getPeers().contains(peerToRemove) && !currentConf.getLearners().contains(peerToRemove)) {
+            if (!currentConf.getPeers().contains(peerToRemove)
+                    && !currentConf.getLearners().contains(peerToRemove)) {
                 throw new IllegalArgumentException("Peer " + ip + ":" + port + " does not exist in group " + group);
             }
 

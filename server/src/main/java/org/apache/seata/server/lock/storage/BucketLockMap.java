@@ -1,7 +1,7 @@
 package org.apache.seata.server.lock.storage;
 
-
 import org.apache.seata.server.lock.holder.ObjectHolder;
+
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -15,5 +15,4 @@ public class BucketLockMap {
     public ConcurrentHashMap<String, ObjectHolder> get() {
         return bucketLockMap;
     }
-
 }

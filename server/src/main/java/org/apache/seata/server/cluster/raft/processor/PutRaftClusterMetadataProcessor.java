@@ -25,6 +25,7 @@ import org.apache.seata.server.cluster.raft.sync.msg.RaftTxgClusterMetadataMsg;
 import org.apache.seata.server.cluster.raft.util.RaftTaskUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -45,17 +46,16 @@ public class PutRaftClusterMetadataProcessor implements RpcProcessor<PutRaftClus
         try {
             // Check if current node is CG leader
             if (!RaftControllerServerManager.getInstance().isLeader(controllerGroupType)) {
-                LOGGER.warn("Current node is not CG leader, rejecting TXG metadata update for group: {}",
+                LOGGER.warn(
+                        "Current node is not CG leader, rejecting TXG metadata update for group: {}",
                         request.getGroupId());
                 rpcCtx.sendResponse(new PutRaftClusterMetadataResponse(false, "Not CG leader"));
                 return;
             }
 
             // Create message to be processed by CG state machine
-            RaftTxgClusterMetadataMsg message = new RaftTxgClusterMetadataMsg(
-                    request.getGroupId(),
-                    request.getMetadata()
-            );
+            RaftTxgClusterMetadataMsg message =
+                    new RaftTxgClusterMetadataMsg(request.getGroupId(), request.getMetadata());
 
             // Use CompletableFuture to handle the async state machine processing
             CompletableFuture<Boolean> future = new CompletableFuture<>();
@@ -64,27 +64,27 @@ public class PutRaftClusterMetadataProcessor implements RpcProcessor<PutRaftClus
             RaftTaskUtil.createTask(
                     status -> {
                         if (status.isOk()) {
-                            LOGGER.info("Successfully processed TXG metadata update for group: {}",
-                                    request.getGroupId());
+                            LOGGER.info(
+                                    "Successfully processed TXG metadata update for group: {}", request.getGroupId());
                             future.complete(true);
                         } else {
-                            LOGGER.error("Failed to process TXG metadata update for group {}: {}",
-                                    request.getGroupId(), status.getErrorMsg());
-                            future.completeExceptionally(new RuntimeException(
-                                    "State machine processing failed: " + status.getErrorMsg()));
+                            LOGGER.error(
+                                    "Failed to process TXG metadata update for group {}: {}",
+                                    request.getGroupId(),
+                                    status.getErrorMsg());
+                            future.completeExceptionally(
+                                    new RuntimeException("State machine processing failed: " + status.getErrorMsg()));
                         }
                     },
                     message,
-                    future
-            );
+                    future);
 
             // Wait for state machine processing to complete
             Boolean success = future.get(10, TimeUnit.SECONDS);
             rpcCtx.sendResponse(new PutRaftClusterMetadataResponse(success));
 
         } catch (Exception e) {
-            LOGGER.error("Error processing TXG cluster metadata update for group: {}",
-                    request.getGroupId(), e);
+            LOGGER.error("Error processing TXG cluster metadata update for group: {}", request.getGroupId(), e);
             rpcCtx.sendResponse(new PutRaftClusterMetadataResponse(false, e.getMessage()));
         }
     }

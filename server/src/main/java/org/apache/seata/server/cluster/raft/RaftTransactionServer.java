@@ -43,5 +43,4 @@ public class RaftTransactionServer extends AbstractRaftServer {
     public boolean isController() {
         return false;
     }
-
 }

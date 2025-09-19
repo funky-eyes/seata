@@ -20,6 +20,7 @@ package org.apache.seata.server.cluster.raft;
 import com.alipay.sofa.jraft.CliService;
 import com.alipay.sofa.jraft.conf.Configuration;
 import com.alipay.sofa.jraft.rpc.CliClientService;
+
 import java.io.IOException;
 import java.util.Collection;
 

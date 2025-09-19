@@ -13,6 +13,7 @@ import org.apache.seata.server.lock.storage.CGLockStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentMap;
 
@@ -69,18 +70,18 @@ public class CGLockManagerImpl implements CGLockManager {
                 String pk = lock.getPk();
 
                 ConcurrentMap<String, ConcurrentMap<Integer, BucketLockMap>> resourceLockMap =
-                        CollectionUtils.computeIfAbsent(CGLockStorage.getLockMap(), resourceId,
+                        CollectionUtils.computeIfAbsent(
+                                CGLockStorage.getLockMap(),
+                                resourceId,
                                 key -> new java.util.concurrent.ConcurrentHashMap<>());
 
                 String instance = request.getInstance() != null ? request.getInstance() : "default";
-                ConcurrentMap<Integer, BucketLockMap> instanceLockMap =
-                        CollectionUtils.computeIfAbsent(resourceLockMap, instance,
-                                key -> new java.util.concurrent.ConcurrentHashMap<>());
+                ConcurrentMap<Integer, BucketLockMap> instanceLockMap = CollectionUtils.computeIfAbsent(
+                        resourceLockMap, instance, key -> new java.util.concurrent.ConcurrentHashMap<>());
 
                 int bucketId = pk.hashCode() % CGLockStorage.getBucketPerTable();
                 BucketLockMap bucketLockMap =
-                        CollectionUtils.computeIfAbsent(instanceLockMap, bucketId,
-                                key -> new BucketLockMap());
+                        CollectionUtils.computeIfAbsent(instanceLockMap, bucketId, key -> new BucketLockMap());
 
                 ObjectHolder previousLockHolder = bucketLockMap.get().putIfAbsent(pk, holder);
 
@@ -93,8 +94,12 @@ public class CGLockManagerImpl implements CGLockManager {
                     LOGGER.debug("Lock already held by same holder for key: {}", pk);
                 } else {
                     // Lock conflict
-                    LOGGER.info("Global lock on [{}:{}] is holding by parent {} owner {}",
-                            tableName, pk, previousLockHolder.getParent(), previousLockHolder.getOwner());
+                    LOGGER.info(
+                            "Global lock on [{}:{}] is holding by parent {} owner {}",
+                            tableName,
+                            pk,
+                            previousLockHolder.getParent(),
+                            previousLockHolder.getOwner());
 
                     // Release partially acquired locks
                     releaseSpecificLocks(holder, acquiredLocks);
@@ -170,8 +175,12 @@ public class CGLockManagerImpl implements CGLockManager {
 
                 ObjectHolder lockingHolder = bucketLockMap.get().get(pk);
                 if (lockingHolder != null && !lockingHolder.equals(holder)) {
-                    LOGGER.info("Global lock on [{}:{}] is holding by parent {} owner {}",
-                            tableName, pk, lockingHolder.getParent(), lockingHolder.getOwner());
+                    LOGGER.info(
+                            "Global lock on [{}:{}] is holding by parent {} owner {}",
+                            tableName,
+                            pk,
+                            lockingHolder.getParent(),
+                            lockingHolder.getOwner());
                     return LockResult.NOT_LOCKABLE;
                 }
             }
@@ -202,8 +211,8 @@ public class CGLockManagerImpl implements CGLockManager {
             resourceMap.forEach((instance, instanceMap) -> {
                 instanceMap.forEach((bucketId, bucketLockMap) -> {
                     // Remove all locks held by this holder
-                    bucketLockMap.get().entrySet().removeIf(entry ->
-                            entry.getValue().equals(holder));
+                    bucketLockMap.get().entrySet().removeIf(entry -> entry.getValue()
+                            .equals(holder));
                 });
             });
         });

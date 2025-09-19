@@ -29,8 +29,6 @@ import java.util.Map;
  */
 public interface RaftGroupStoreManager {
 
-
-
     /**
      * Change peers for multiple Raft groups
      * This operation is restricted to Control Group members only validation required
@@ -61,6 +59,4 @@ public interface RaftGroupStoreManager {
         // Default implementation for backward compatibility
         return null;
     }
-
-
 }

@@ -56,9 +56,6 @@ public class PutRaftClusterMetadataRequest implements Serializable {
 
     @Override
     public String toString() {
-        return "PutRaftClusterMetadataRequest{" +
-                "groupId='" + groupId + '\'' +
-                ", metadata=" + metadata +
-                '}';
+        return "PutRaftClusterMetadataRequest{" + "groupId='" + groupId + '\'' + ", metadata=" + metadata + '}';
     }
 }

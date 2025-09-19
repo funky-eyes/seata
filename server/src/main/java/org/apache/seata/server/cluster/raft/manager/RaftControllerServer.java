@@ -21,8 +21,6 @@ import com.alipay.sofa.jraft.option.NodeOptions;
 import com.alipay.sofa.jraft.rpc.RpcServer;
 import org.apache.seata.core.rpc.Disposable;
 import org.apache.seata.server.cluster.raft.AbstractRaftServer;
-import java.util.Optional;
-
 
 /**
  * Controller Raft Server for managing metadata of multiple raft groups

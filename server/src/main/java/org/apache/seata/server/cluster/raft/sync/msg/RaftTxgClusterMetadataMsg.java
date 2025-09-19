@@ -56,11 +56,10 @@ public class RaftTxgClusterMetadataMsg extends RaftBaseMsg {
 
     @Override
     public String toString() {
-        return "RaftTxgClusterMetadataMsg{" +
-                "txgGroupId='" + txgGroupId + '\'' +
-                ", metadata=" + metadata +
-                ", msgType=" + getMsgType() +
-                ", group='" + getGroup() + '\'' +
-                '}';
+        return "RaftTxgClusterMetadataMsg{" + "txgGroupId='"
+                + txgGroupId + '\'' + ", metadata="
+                + metadata + ", msgType="
+                + getMsgType() + ", group='"
+                + getGroup() + '\'' + '}';
     }
 }

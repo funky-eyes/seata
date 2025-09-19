@@ -100,4 +100,3 @@ public class TransactionGroupSnapshotFile implements Serializable, StoreSnapshot
         }
     }
 }
-

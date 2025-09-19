@@ -15,9 +15,9 @@ public class CGLockStorage {
      * resourceId -> instance -> bucketId -> BucketLockMap
      */
     private static final ConcurrentMap<
-            String /* resource */,
-            ConcurrentMap<String /* instance */, ConcurrentMap<Integer /* bucketId */, BucketLockMap>>
-            > LOCK_MAP = new ConcurrentHashMap<>();
+                    String /* resource */,
+                    ConcurrentMap<String /* instance */, ConcurrentMap<Integer /* bucketId */, BucketLockMap>>>
+            LOCK_MAP = new ConcurrentHashMap<>();
 
     public static ConcurrentMap<String, ConcurrentMap<String, ConcurrentMap<Integer, BucketLockMap>>> getLockMap() {
         return LOCK_MAP;
@@ -31,4 +31,3 @@ public class CGLockStorage {
         LOCK_MAP.clear();
     }
 }
-

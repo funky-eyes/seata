@@ -20,6 +20,7 @@ package org.apache.seata.server.cluster.raft;
 import com.alipay.sofa.jraft.core.StateMachineAdapter;
 import org.apache.seata.server.cluster.raft.snapshot.StoreSnapshotFile;
 import org.apache.seata.server.store.StoreConfig;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;

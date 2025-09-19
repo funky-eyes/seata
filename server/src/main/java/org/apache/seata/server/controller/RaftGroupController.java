@@ -22,9 +22,6 @@ import org.apache.seata.common.result.SingleResult;
 import org.apache.seata.server.cluster.raft.service.TransactionGroupServiceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import javax.annotation.Resource;
-import java.util.List;
-import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,6 +29,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.Map;
 
 /**
  * REST Controller for Raft group management operations
@@ -79,9 +80,7 @@ public class RaftGroupController {
      * Add a peer to a Raft group
      */
     @PostMapping("/groups/{group}/add-peer")
-    public Result<?> addPeer(@PathVariable String group,
-                             @RequestParam String ip,
-                             @RequestParam int port) {
+    public Result<?> addPeer(@PathVariable String group, @RequestParam String ip, @RequestParam int port) {
         Result<?> result = new Result<>();
 
         try {
@@ -103,9 +102,7 @@ public class RaftGroupController {
      * Remove a peer from a Raft group
      */
     @PostMapping("/groups/{group}/remove-peer")
-    public Result<?> removePeer(@PathVariable String group,
-                                @RequestParam String ip,
-                                @RequestParam int port) {
+    public Result<?> removePeer(@PathVariable String group, @RequestParam String ip, @RequestParam int port) {
         Result<?> result = new Result<>();
 
         try {
@@ -122,7 +119,6 @@ public class RaftGroupController {
 
         return result;
     }
-
 
     /**
      * Get the current leader of a specific group

@@ -28,16 +28,35 @@ public class CGLockResponse {
     }
 
     // Getters and Setters
-    public String getRequestId() { return requestId; }
-    public void setRequestId(String requestId) { this.requestId = requestId; }
+    public String getRequestId() {
+        return requestId;
+    }
 
-    public LockResult getResult() { return result; }
-    public void setResult(LockResult result) { this.result = result; }
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
+    }
 
-    public String getErrorMessage() { return errorMessage; }
-    public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
+    public LockResult getResult() {
+        return result;
+    }
 
-    public long getProcessTime() { return processTime; }
-    public void setProcessTime(long processTime) { this.processTime = processTime; }
+    public void setResult(LockResult result) {
+        this.result = result;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+
+    public long getProcessTime() {
+        return processTime;
+    }
+
+    public void setProcessTime(long processTime) {
+        this.processTime = processTime;
+    }
 }
-

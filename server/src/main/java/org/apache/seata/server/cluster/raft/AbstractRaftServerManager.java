@@ -24,6 +24,7 @@ import org.apache.seata.discovery.registry.namingserver.NamingserverRegistryServ
 import org.apache.seata.server.store.StoreConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
 import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_APPLY_BATCH;
 import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_DISRUPTOR_BUFFER_SIZE;
 import static org.apache.seata.common.ConfigurationKeys.SERVER_RAFT_ELECTION_TIMEOUT_MS;
@@ -44,10 +46,11 @@ import static org.apache.seata.common.DefaultValues.DEFAULT_SERVER_RAFT_ELECTION
 /**
  * this is base abstract class for all raft server managers
  */
-public abstract class AbstractRaftServerManager implements  RaftServerManager<RaftServer>  {
+public abstract class AbstractRaftServerManager implements RaftServerManager<RaftServer> {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    protected static final Map<String /*group*/, RaftServer /*raft-group-cluster*/> RAFT_SERVER_MAP = new ConcurrentHashMap<>();
+    protected static final Map<String /*group*/, RaftServer /*raft-group-cluster*/> RAFT_SERVER_MAP =
+            new ConcurrentHashMap<>();
     protected static final AtomicBoolean init = new AtomicBoolean(false);
 
     protected static final org.apache.seata.config.Configuration CONFIG = ConfigurationFactory.getInstance();

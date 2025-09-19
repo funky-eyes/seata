@@ -32,27 +32,67 @@ public class CGLockRequest {
     }
 
     // Getters and Setters
-    public String getRequestId() { return requestId; }
-    public void setRequestId(String requestId) { this.requestId = requestId; }
+    public String getRequestId() {
+        return requestId;
+    }
 
-    public String getParent() { return parent; }
-    public void setParent(String parent) { this.parent = parent; }
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
+    }
 
-    public String getOwner() { return owner; }
-    public void setOwner(String owner) { this.owner = owner; }
+    public String getParent() {
+        return parent;
+    }
 
-    public String getInstance() { return instance; }
-    public void setInstance(String instance) { this.instance = instance; }
+    public void setParent(String parent) {
+        this.parent = parent;
+    }
 
-    public List<RowLock> getRowLocks() { return rowLocks; }
-    public void setRowLocks(List<RowLock> rowLocks) { this.rowLocks = rowLocks; }
+    public String getOwner() {
+        return owner;
+    }
 
-    public boolean isAutoCommit() { return autoCommit; }
-    public void setAutoCommit(boolean autoCommit) { this.autoCommit = autoCommit; }
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
 
-    public boolean isSkipCheckLock() { return skipCheckLock; }
-    public void setSkipCheckLock(boolean skipCheckLock) { this.skipCheckLock = skipCheckLock; }
+    public String getInstance() {
+        return instance;
+    }
 
-    public long getTimeout() { return timeout; }
-    public void setTimeout(long timeout) { this.timeout = timeout; }
+    public void setInstance(String instance) {
+        this.instance = instance;
+    }
+
+    public List<RowLock> getRowLocks() {
+        return rowLocks;
+    }
+
+    public void setRowLocks(List<RowLock> rowLocks) {
+        this.rowLocks = rowLocks;
+    }
+
+    public boolean isAutoCommit() {
+        return autoCommit;
+    }
+
+    public void setAutoCommit(boolean autoCommit) {
+        this.autoCommit = autoCommit;
+    }
+
+    public boolean isSkipCheckLock() {
+        return skipCheckLock;
+    }
+
+    public void setSkipCheckLock(boolean skipCheckLock) {
+        this.skipCheckLock = skipCheckLock;
+    }
+
+    public long getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(long timeout) {
+        this.timeout = timeout;
+    }
 }

@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -38,7 +37,8 @@ public class CGLockController {
         long startTime = System.currentTimeMillis();
         LOGGER.debug("Received acquire lock request: {}", request.getRequestId());
 
-        return cgLockManager.acquireLock(request)
+        return cgLockManager
+                .acquireLock(request)
                 .thenApply(result -> {
                     long processTime = System.currentTimeMillis() - startTime;
                     CGLockResponse response;
@@ -50,8 +50,11 @@ public class CGLockController {
                     }
 
                     response.setProcessTime(processTime);
-                    LOGGER.debug("Lock acquire request {} processed in {}ms with result: {}",
-                            request.getRequestId(), processTime, result);
+                    LOGGER.debug(
+                            "Lock acquire request {} processed in {}ms with result: {}",
+                            request.getRequestId(),
+                            processTime,
+                            result);
 
                     return ResponseEntity.ok(response);
                 })
@@ -59,8 +62,8 @@ public class CGLockController {
                     long processTime = System.currentTimeMillis() - startTime;
                     LOGGER.error("Failed to process acquire lock request: {}", request.getRequestId(), throwable);
 
-                    CGLockResponse response = CGLockResponse.failure(request.getRequestId(),
-                            "Internal error: " + throwable.getMessage());
+                    CGLockResponse response =
+                            CGLockResponse.failure(request.getRequestId(), "Internal error: " + throwable.getMessage());
                     response.setProcessTime(processTime);
 
                     return ResponseEntity.internalServerError().body(response);
@@ -75,7 +78,8 @@ public class CGLockController {
         long startTime = System.currentTimeMillis();
         LOGGER.debug("Received release lock request: {}", request.getRequestId());
 
-        return cgLockManager.releaseLock(request)
+        return cgLockManager
+                .releaseLock(request)
                 .thenApply(result -> {
                     long processTime = System.currentTimeMillis() - startTime;
                     CGLockResponse response;
@@ -87,8 +91,11 @@ public class CGLockController {
                     }
 
                     response.setProcessTime(processTime);
-                    LOGGER.debug("Lock release request {} processed in {}ms with result: {}",
-                            request.getRequestId(), processTime, result);
+                    LOGGER.debug(
+                            "Lock release request {} processed in {}ms with result: {}",
+                            request.getRequestId(),
+                            processTime,
+                            result);
 
                     return ResponseEntity.ok(response);
                 })
@@ -96,8 +103,8 @@ public class CGLockController {
                     long processTime = System.currentTimeMillis() - startTime;
                     LOGGER.error("Failed to process release lock request: {}", request.getRequestId(), throwable);
 
-                    CGLockResponse response = CGLockResponse.failure(request.getRequestId(),
-                            "Internal error: " + throwable.getMessage());
+                    CGLockResponse response =
+                            CGLockResponse.failure(request.getRequestId(), "Internal error: " + throwable.getMessage());
                     response.setProcessTime(processTime);
 
                     return ResponseEntity.internalServerError().body(response);
@@ -112,7 +119,8 @@ public class CGLockController {
         long startTime = System.currentTimeMillis();
         LOGGER.debug("Received lockable check request: {}", request.getRequestId());
 
-        return cgLockManager.isLockable(request)
+        return cgLockManager
+                .isLockable(request)
                 .thenApply(result -> {
                     long processTime = System.currentTimeMillis() - startTime;
                     CGLockResponse response;
@@ -126,8 +134,11 @@ public class CGLockController {
                     }
 
                     response.setProcessTime(processTime);
-                    LOGGER.debug("Lockable check request {} processed in {}ms with result: {}",
-                            request.getRequestId(), processTime, result);
+                    LOGGER.debug(
+                            "Lockable check request {} processed in {}ms with result: {}",
+                            request.getRequestId(),
+                            processTime,
+                            result);
 
                     return ResponseEntity.ok(response);
                 })
@@ -135,8 +146,8 @@ public class CGLockController {
                     long processTime = System.currentTimeMillis() - startTime;
                     LOGGER.error("Failed to process lockable check request: {}", request.getRequestId(), throwable);
 
-                    CGLockResponse response = CGLockResponse.failure(request.getRequestId(),
-                            "Internal error: " + throwable.getMessage());
+                    CGLockResponse response =
+                            CGLockResponse.failure(request.getRequestId(), "Internal error: " + throwable.getMessage());
                     response.setProcessTime(processTime);
 
                     return ResponseEntity.internalServerError().body(response);
@@ -152,7 +163,8 @@ public class CGLockController {
         String requestId = "clean_" + System.currentTimeMillis();
         LOGGER.info("Received clean all locks request: {}", requestId);
 
-        return cgLockManager.cleanAllLocks()
+        return cgLockManager
+                .cleanAllLocks()
                 .thenApply(result -> {
                     long processTime = System.currentTimeMillis() - startTime;
                     CGLockResponse response;
@@ -172,8 +184,8 @@ public class CGLockController {
                     long processTime = System.currentTimeMillis() - startTime;
                     LOGGER.error("Failed to process clean all locks request", throwable);
 
-                    CGLockResponse response = CGLockResponse.failure(requestId,
-                            "Internal error: " + throwable.getMessage());
+                    CGLockResponse response =
+                            CGLockResponse.failure(requestId, "Internal error: " + throwable.getMessage());
                     response.setProcessTime(processTime);
 
                     return ResponseEntity.internalServerError().body(response);

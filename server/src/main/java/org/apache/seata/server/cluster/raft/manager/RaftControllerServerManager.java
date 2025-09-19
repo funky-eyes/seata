@@ -72,7 +72,7 @@ public class RaftControllerServerManager extends AbstractRaftServerManager {
             rpcServer.registerProcessor(new PutNodeInfoRequestProcessor());
             rpcServer.registerProcessor(new PutRaftClusterMetadataProcessor());
             ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext)
-                    ObjectHolder.INSTANCE.getObject(OBJECT_KEY_SPRING_APPLICATION_CONTEXT))
+                            ObjectHolder.INSTANCE.getObject(OBJECT_KEY_SPRING_APPLICATION_CONTEXT))
                     .getBeanFactory();
             rpcServer.registerProcessor(new GetTxgGroupsProcessor(beanFactory.getBean(RaftGroupStoreManager.class)));
             SerializerManager.addSerializer(SerializerType.JACKSON.getCode(), new JacksonBoltSerializer());

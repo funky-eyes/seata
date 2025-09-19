@@ -22,14 +22,6 @@ import com.alipay.sofa.jraft.entity.PeerId;
 import com.alipay.sofa.jraft.rpc.CliClientService;
 import com.alipay.sofa.jraft.rpc.InvokeContext;
 import com.alipay.sofa.jraft.rpc.impl.cli.CliClientServiceImpl;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.StringJoiner;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import org.apache.seata.common.ConfigurationKeys;
 import org.apache.seata.common.XID;
 import org.apache.seata.common.metadata.Node;
@@ -41,7 +33,17 @@ import org.apache.seata.server.cluster.raft.processor.request.GetTxgGroupsReques
 import org.apache.seata.server.cluster.raft.processor.response.GetTxgGroupsResponse;
 import org.apache.seata.server.cluster.raft.serializer.JacksonBoltSerializer;
 import org.apache.seata.server.cluster.raft.sync.msg.dto.TxgGroupAssignmentDTO;
+
 import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.StringJoiner;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import static java.io.File.separator;
 import static org.apache.seata.common.DefaultValues.DEFAULT_SEATA_GROUP;
 import static org.apache.seata.common.DefaultValues.DEFAULT_SESSION_STORE_FILE_DIR;
@@ -203,8 +205,7 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
             throws Exception {
 
         InvokeContext invokeContext = new InvokeContext();
-        invokeContext.put(com.alipay.remoting.InvokeContext.BOLT_CUSTOM_SERIALIZER,
-                SerializerType.JACKSON.getCode());
+        invokeContext.put(com.alipay.remoting.InvokeContext.BOLT_CUSTOM_SERIALIZER, SerializerType.JACKSON.getCode());
 
         CliClientService cliClientService = getCliClientServiceInstance();
 
@@ -223,8 +224,7 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
                                 future.completeExceptionally(new Exception("RPC error: " + err.getMessage(), err));
                             }
                         },
-                        5000
-                );
+                        5000);
 
         try {
             return future.get(10, TimeUnit.SECONDS);
@@ -239,8 +239,6 @@ public class RaftTransactionServerManager extends AbstractRaftServerManager {
             }
         }
     }
-
-
 
     private void createRaftServers(String group, String dataPath, Configuration configuration) {
         try {

@@ -71,6 +71,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.env.Environment;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -86,10 +87,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
+
 import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_APPLICATION_CONTEXT;
 import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_CONFIGURABLE_ENVIRONMENT;
 import static org.apache.seata.server.cluster.raft.AbstractRaftServerManager.CONFIG;
-import static org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType.ACQUIRE_CG_LOCK;
 import static org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType.ADD_BRANCH_SESSION;
 import static org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType.ADD_GLOBAL_SESSION;
 import static org.apache.seata.server.cluster.raft.sync.msg.RaftSyncMsgType.ADD_VGROUP_MAPPING;
@@ -149,7 +150,6 @@ public class RaftTransactionStateMachine extends RaftStateMachine {
                     () -> syncCurrentNodeInfo(group), 10, 10, TimeUnit.SECONDS);
         }
     }
-
 
     @Override
     public void onApply(Iterator iterator) {
@@ -367,9 +367,9 @@ public class RaftTransactionStateMachine extends RaftStateMachine {
         // replace the leader information
         if (leaderNode == null
                 || (leaderNode.getInternal() != null
-                && !cureentPeerId.equals(new PeerId(
-                leaderNode.getInternal().getHost(),
-                leaderNode.getInternal().getPort())))) {
+                        && !cureentPeerId.equals(new PeerId(
+                                leaderNode.getInternal().getHost(),
+                                leaderNode.getInternal().getPort())))) {
             Node leader = raftClusterMetadata.createNode(
                     cureentPeerId.getIp(),
                     XID.getPort(),
@@ -398,10 +398,7 @@ public class RaftTransactionStateMachine extends RaftStateMachine {
             try {
                 RouteTable.getInstance()
                         .refreshLeader(
-                                RaftTransactionServerManager.getInstance()
-                                        .getCliClientServiceInstance(),
-                                group,
-                                1000);
+                                RaftTransactionServerManager.getInstance().getCliClientServiceInstance(), group, 1000);
                 PeerId peerId = RouteTable.getInstance().selectLeader(group);
                 if (peerId != null) {
                     syncCurrentNodeInfo(peerId);
@@ -428,7 +425,7 @@ public class RaftTransactionStateMachine extends RaftStateMachine {
                         XID.getPort(),
                         cureentPeerId.getPort(),
                         Integer.parseInt(((Environment)
-                                ObjectHolder.INSTANCE.getObject(OBJECT_KEY_SPRING_CONFIGURABLE_ENVIRONMENT))
+                                        ObjectHolder.INSTANCE.getObject(OBJECT_KEY_SPRING_CONFIGURABLE_ENVIRONMENT))
                                 .getProperty("server.port", String.valueOf(7091))),
                         group,
                         Collections.emptyMap());
@@ -556,23 +553,22 @@ public class RaftTransactionStateMachine extends RaftStateMachine {
             PutRaftClusterMetadataRequest request = new PutRaftClusterMetadataRequest(group, metadata);
 
             InvokeContext invokeContext = new InvokeContext();
-            invokeContext.put(com.alipay.remoting.InvokeContext.BOLT_CUSTOM_SERIALIZER,
-                    SerializerType.JACKSON.getCode());
+            invokeContext.put(
+                    com.alipay.remoting.InvokeContext.BOLT_CUSTOM_SERIALIZER, SerializerType.JACKSON.getCode());
 
-            CliClientService cliClientService = RaftTransactionServerManager.getInstance()
-                    .getCliClientServiceInstance();
+            CliClientService cliClientService =
+                    RaftTransactionServerManager.getInstance().getCliClientServiceInstance();
 
             // Send to CG leader - the processor will handle state machine submission
-            PutRaftClusterMetadataResponse response = (PutRaftClusterMetadataResponse)
-                    ((CliClientServiceImpl) cliClientService)
+            PutRaftClusterMetadataResponse response =
+                    (PutRaftClusterMetadataResponse) ((CliClientServiceImpl) cliClientService)
                             .getRpcClient()
                             .invokeSync(cgLeader.getEndpoint(), request, invokeContext, 10000);
 
             if (response.isSuccess()) {
                 LOGGER.info("Successfully reported complete TXG {} metadata to CG leader: {}", group, cgLeader);
             } else {
-                LOGGER.error("Failed to report TXG {} metadata to CG leader: {}",
-                        group, response.getErrorMessage());
+                LOGGER.error("Failed to report TXG {} metadata to CG leader: {}", group, response.getErrorMessage());
             }
 
         } catch (Exception e) {
