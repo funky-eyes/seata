@@ -49,8 +49,6 @@ seata:
   server:
     raft:
       election-timeout-ms: 20000
-      controller:
-        server-addr: 10.56.8.123:9091,10.56.8.123:9092,10.56.8.123:9093
   config:
     # support: nacos, consul, apollo, zk, etcd3
     type: file
