@@ -17,6 +17,7 @@
 package org.apache.seata.serializer.protobuf.convertor;
 
 import org.apache.seata.core.model.GlobalStatus;
+import org.apache.seata.core.protocol.ResultCode;
 import org.apache.seata.core.protocol.transaction.GlobalReportResponse;
 import org.apache.seata.serializer.protobuf.generated.GlobalReportResponseProto;
 import org.junit.jupiter.api.Test;
@@ -30,11 +31,13 @@ public class GlobalReportResponseConvertorTest {
 
         GlobalReportResponse globalReportResponse = new GlobalReportResponse();
         globalReportResponse.setGlobalStatus(GlobalStatus.Committed);
+        globalReportResponse.setResultCode(ResultCode.Success);
 
         GlobalReportResponseConvertor convertor = new GlobalReportResponseConvertor();
         GlobalReportResponseProto proto = convertor.convert2Proto(globalReportResponse);
         GlobalReportResponse real = convertor.convert2Model(proto);
         assertThat((real.getTypeCode())).isEqualTo(globalReportResponse.getTypeCode());
         assertThat((real.getGlobalStatus())).isEqualTo(globalReportResponse.getGlobalStatus());
+        assertThat((real.getResultCode())).isEqualTo(globalReportResponse.getResultCode());
     }
 }

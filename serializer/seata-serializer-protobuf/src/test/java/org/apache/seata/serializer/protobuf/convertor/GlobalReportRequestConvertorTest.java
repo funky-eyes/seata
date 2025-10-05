@@ -16,6 +16,7 @@
  */
 package org.apache.seata.serializer.protobuf.convertor;
 
+import org.apache.seata.core.model.GlobalStatus;
 import org.apache.seata.core.protocol.transaction.GlobalReportRequest;
 import org.apache.seata.serializer.protobuf.generated.GlobalReportRequestProto;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,7 @@ public class GlobalReportRequestConvertorTest {
         GlobalReportRequest globalReportRequest = new GlobalReportRequest();
         globalReportRequest.setExtraData("extraData");
         globalReportRequest.setXid("xid");
+        globalReportRequest.setGlobalStatus(GlobalStatus.Committed);
 
         GlobalReportRequestConvertor convertor = new GlobalReportRequestConvertor();
         GlobalReportRequestProto proto = convertor.convert2Proto(globalReportRequest);
@@ -37,5 +39,6 @@ public class GlobalReportRequestConvertorTest {
         assertThat((real.getTypeCode())).isEqualTo(globalReportRequest.getTypeCode());
         assertThat((real.getXid())).isEqualTo(globalReportRequest.getXid());
         assertThat((real.getExtraData())).isEqualTo(globalReportRequest.getExtraData());
+        assertThat((real.getGlobalStatus())).isEqualTo(globalReportRequest.getGlobalStatus());
     }
 }
