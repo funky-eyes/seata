@@ -48,12 +48,4 @@ public abstract class BaseHttpChannelHandler<T> extends SimpleChannelInboundHand
     static {
         Runtime.getRuntime().addShutdownHook(new Thread(HTTP_HANDLER_THREADS::shutdown));
     }
-
-    /**
-     * The filter has a unified entry point and is called by subclasses at an appropriate time
-     */
-    protected final void doFilterInternal(HttpFilterContext<?> context) throws HttpRequestFilterException {
-        HttpRequestFilterChain filterChain = HttpRequestFilterManager.getFilterChain();
-        filterChain.doFilter(context);
-    }
 }
