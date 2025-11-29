@@ -78,6 +78,9 @@ class HttpDispatchHandlerTest {
     @AfterEach
     void after() throws Exception {
         clearControllerManager();
+        Field field2 = HttpRequestFilterManager.class.getDeclaredField("initialized");
+        field2.setAccessible(true);
+        field2.setAccessible(false);
     }
 
     @Test

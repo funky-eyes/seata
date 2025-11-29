@@ -371,5 +371,8 @@ class Http2HttpHandlerTest {
         field.setAccessible(true);
         Map<String, HttpInvocation> map = (Map<String, HttpInvocation>) field.get(null);
         map.clear();
+        Field field2 = HttpRequestFilterManager.class.getDeclaredField("initialized");
+        field2.setAccessible(true);
+        field2.setAccessible(false);
     }
 }

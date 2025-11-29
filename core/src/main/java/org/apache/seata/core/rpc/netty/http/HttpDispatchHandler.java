@@ -22,6 +22,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
@@ -29,12 +30,10 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.handler.codec.http.multipart.Attribute;
-import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
-import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import org.apache.seata.common.rpc.http.HttpContext;
 import org.apache.seata.core.exception.HttpRequestFilterException;
+import org.apache.seata.core.rpc.netty.http.RequestParseUtils.BodyParseResult;
+import org.apache.seata.core.rpc.netty.http.RequestParseUtils.QueryParseResult;
 import org.apache.seata.core.rpc.netty.http.filter.HttpFilterContext;
 import org.apache.seata.core.rpc.netty.http.filter.HttpRequestFilterChain;
 import org.apache.seata.core.rpc.netty.http.filter.HttpRequestFilterManager;
@@ -43,6 +42,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A Netty HTTP request handler that dispatches incoming requests to corresponding controller methods
@@ -53,17 +54,24 @@ public class HttpDispatchHandler extends BaseHttpChannelHandler<HttpRequest> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpRequest httpRequest) {
+        FullHttpRequest fullHttpRequest = httpRequest instanceof FullHttpRequest ? (FullHttpRequest) httpRequest : null;
+        QueryParseResult queryParseResult = RequestParseUtils.parseQuery(httpRequest.uri());
+        String path = queryParseResult.getPath();
+        Map<String, List<String>> queryParams = queryParseResult.getParameters();
+        Map<String, List<String>> headerParams = RequestParseUtils.copyHeaders(httpRequest.headers());
+        BodyParseResult bodyParseResult = fullHttpRequest != null
+                ? RequestParseUtils.parseBody(OBJECT_MAPPER, fullHttpRequest)
+                : RequestParseUtils.BodyParseResult.empty();
+
         HttpFilterContext<HttpRequest> context = new HttpFilterContext<>(
                 httpRequest,
                 ctx,
                 HttpUtil.isKeepAlive(httpRequest)
                         && httpRequest.protocolVersion().isKeepAliveDefault(),
                 HttpContext.HTTP_1_1,
-                () -> new HttpRequestParamWrapper(httpRequest));
+                () -> new HttpRequestParamWrapper(
+                        queryParams, bodyParseResult.getFormParams(), headerParams, bodyParseResult.getJsonParams()));
 
-        // Parse request
-        QueryStringDecoder queryStringDecoder = new QueryStringDecoder(httpRequest.uri());
-        String path = queryStringDecoder.path();
         HttpInvocation httpInvocation = ControllerManager.getHttpInvocation(path);
 
         if (httpInvocation == null) {
@@ -76,25 +84,9 @@ public class HttpDispatchHandler extends BaseHttpChannelHandler<HttpRequest> {
         context.setAttribute("handleMethod", httpInvocation.getMethod());
 
         ObjectNode requestDataNode = OBJECT_MAPPER.createObjectNode();
-        requestDataNode.set("param", ParameterParser.convertParamMap(queryStringDecoder.parameters()));
-
-        if (httpRequest.method() == HttpMethod.POST) {
-            try {
-                HttpPostRequestDecoder httpPostRequestDecoder = new HttpPostRequestDecoder(httpRequest);
-                ObjectNode bodyDataNode = OBJECT_MAPPER.createObjectNode();
-                for (InterfaceHttpData interfaceHttpData : httpPostRequestDecoder.getBodyHttpDatas()) {
-                    if (interfaceHttpData.getHttpDataType() != InterfaceHttpData.HttpDataType.Attribute) {
-                        continue;
-                    }
-                    Attribute attribute = (Attribute) interfaceHttpData;
-                    bodyDataNode.put(attribute.getName(), attribute.getValue());
-                }
-                requestDataNode.putIfAbsent("body", bodyDataNode);
-                httpPostRequestDecoder.destroy();
-            } catch (Exception e) {
-                LOGGER.warn("Failed to parse POST body: {}", e.getMessage());
-                // Continue without body, no error response needed
-            }
+        requestDataNode.set("param", ParameterParser.convertParamMap(queryParams));
+        if (httpRequest.method() == HttpMethod.POST && bodyParseResult.getBodyNode() != null) {
+            requestDataNode.set("body", bodyParseResult.getBodyNode());
         }
 
         Object[] args;

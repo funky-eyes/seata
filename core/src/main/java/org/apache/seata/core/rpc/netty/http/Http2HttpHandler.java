@@ -23,7 +23,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
@@ -33,6 +32,8 @@ import io.netty.handler.codec.http2.Http2HeadersFrame;
 import io.netty.handler.codec.http2.Http2StreamFrame;
 import org.apache.seata.common.rpc.http.HttpContext;
 import org.apache.seata.core.exception.HttpRequestFilterException;
+import org.apache.seata.core.rpc.netty.http.RequestParseUtils.BodyParseResult;
+import org.apache.seata.core.rpc.netty.http.RequestParseUtils.QueryParseResult;
 import org.apache.seata.core.rpc.netty.http.filter.HttpFilterContext;
 import org.apache.seata.core.rpc.netty.http.filter.HttpRequestFilterChain;
 import org.apache.seata.core.rpc.netty.http.filter.HttpRequestFilterManager;
@@ -41,9 +42,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
-import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -93,14 +93,37 @@ public class Http2HttpHandler extends BaseHttpChannelHandler<Http2StreamFrame> {
             HttpMethod method = HttpMethod.valueOf(http2Headers.method().toString());
             String path = http2Headers.path().toString();
             String body = bodyBuffer != null ? bodyBuffer.toString(StandardCharsets.UTF_8) : "";
-            SimpleHttp2Request request = new SimpleHttp2Request(method, path, http2Headers, body);
+
+            Map<String, List<String>> headerParams = RequestParseUtils.copyHeaders(http2Headers);
+            QueryParseResult queryParseResult = RequestParseUtils.parseQuery(path);
+            String requestPath = queryParseResult.getPath();
+            Map<String, List<String>> queryParams = queryParseResult.getParameters();
+            BodyParseResult bodyParseResult = RequestParseUtils.parseBody(OBJECT_MAPPER, body, http2Headers);
+
+            SimpleHttp2Request request = new SimpleHttp2Request(
+                    method,
+                    path,
+                    http2Headers,
+                    body,
+                    queryParams,
+                    bodyParseResult.getFormParams(),
+                    headerParams,
+                    bodyParseResult.getJsonParams(),
+                    bodyParseResult.getBodyNode());
 
             HttpFilterContext<SimpleHttp2Request> context = new HttpFilterContext<>(
-                    request, ctx, true, HttpContext.HTTP_2_0, () -> new HttpRequestParamWrapper(request));
+                    request,
+                    ctx,
+                    true,
+                    HttpContext.HTTP_2_0,
+                    () -> new HttpRequestParamWrapper(
+                            queryParams,
+                            bodyParseResult.getFormParams(),
+                            headerParams,
+                            bodyParseResult.getJsonParams()));
 
             // Parse request
-            QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.getPath());
-            String requestPath = queryStringDecoder.path();
+            // queryStringDecoder already computed path/params above
             HttpInvocation httpInvocation = ControllerManager.getHttpInvocation(requestPath);
             if (httpInvocation == null) {
                 sendErrorResponse(ctx, HttpResponseStatus.NOT_FOUND);
@@ -112,33 +135,9 @@ public class Http2HttpHandler extends BaseHttpChannelHandler<Http2StreamFrame> {
             context.setAttribute("handleMethod", httpInvocation.getMethod());
 
             ObjectNode requestDataNode = OBJECT_MAPPER.createObjectNode();
-            requestDataNode.set("param", ParameterParser.convertParamMap(queryStringDecoder.parameters()));
-            if (request.getMethod() == HttpMethod.POST
-                    && request.getBody() != null
-                    && !request.getBody().isEmpty()) {
-                CharSequence contentTypeSeq = request.getHeaders().get(HttpHeaderNames.CONTENT_TYPE);
-                String contentType = contentTypeSeq != null ? contentTypeSeq.toString() : "";
-                try {
-                    if (contentType.contains("application/json")) {
-                        ObjectNode bodyDataNode = (ObjectNode) OBJECT_MAPPER.readTree(request.getBody());
-                        requestDataNode.set("body", bodyDataNode);
-                    } else if (contentType.contains("application/x-www-form-urlencoded")) {
-                        Map<String, String> formParams = new HashMap<>();
-                        String[] pairs = request.getBody().split("&");
-                        for (String pair : pairs) {
-                            String[] kv = pair.split("=", 2);
-                            if (kv.length == 2) {
-                                String key = URLDecoder.decode(kv[0], StandardCharsets.UTF_8.name());
-                                String value = URLDecoder.decode(kv[1], StandardCharsets.UTF_8.name());
-                                formParams.put(key, value);
-                            }
-                        }
-                        ObjectNode formDataNode = OBJECT_MAPPER.valueToTree(formParams);
-                        requestDataNode.set("body", formDataNode);
-                    }
-                } catch (Exception e) {
-                    LOGGER.warn("Failed to parse http2 body: {}", e.getMessage());
-                }
+            requestDataNode.set("param", ParameterParser.convertParamMap(queryParams));
+            if (request.getMethod() == HttpMethod.POST && request.getBodyNode() != null) {
+                requestDataNode.set("body", request.getBodyNode());
             }
             Method handleMethod = httpInvocation.getMethod();
             Object[] args;
