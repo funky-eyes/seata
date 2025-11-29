@@ -87,11 +87,7 @@ public class RaftRequestFilter implements HttpRequestFilter, ApplicationListener
         if (unitParams != null && !unitParams.isEmpty()) {
             return unitParams.get(0);
         }
-        // Try to get from headers
-        // Assuming HttpRequest has headers, but for SimpleHttp2Request, headers are in request.getHeaders()
-        // For simplicity, since it's HTTP, we can cast or handle differently
-        // But to keep it simple, perhaps add a method to get header
-        // For now, assume it's HttpRequest
+        // Try to get the group header from HttpRequest or SimpleHttp2Request
         if (context.getRequest() instanceof io.netty.handler.codec.http.HttpRequest) {
             io.netty.handler.codec.http.HttpRequest httpRequest =
                     (io.netty.handler.codec.http.HttpRequest) context.getRequest();
