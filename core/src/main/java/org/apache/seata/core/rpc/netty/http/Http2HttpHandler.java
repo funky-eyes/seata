@@ -140,7 +140,6 @@ public class Http2HttpHandler extends BaseHttpChannelHandler<Http2StreamFrame> {
                     LOGGER.warn("Failed to parse http2 body: {}", e.getMessage());
                 }
             }
-            Object httpController = httpInvocation.getController();
             Method handleMethod = httpInvocation.getMethod();
             Object[] args;
             try {
@@ -154,10 +153,9 @@ public class Http2HttpHandler extends BaseHttpChannelHandler<Http2StreamFrame> {
             context.setAttribute("args", args);
 
             // Execute filter chain in HTTP thread pool
+            HttpRequestFilterChain filterChain = HttpRequestFilterManager.getFilterChain(this::executeFinalAction);
             HTTP_HANDLER_THREADS.execute(() -> {
                 try {
-                    HttpRequestFilterChain filterChain =
-                            HttpRequestFilterManager.getFilterChain(this::executeFinalAction);
                     filterChain.doFilter(context);
                 } catch (HttpRequestFilterException e) {
                     LOGGER.warn("Request blocked by filter while processing HTTP2 request: {}", e.getMessage());

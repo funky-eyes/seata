@@ -109,9 +109,9 @@ public class HttpDispatchHandler extends BaseHttpChannelHandler<HttpRequest> {
         context.setAttribute("args", args);
 
         // Execute filter chain in HTTP thread pool
+        HttpRequestFilterChain filterChain = HttpRequestFilterManager.getFilterChain(this::executeFinalAction);
         HTTP_HANDLER_THREADS.execute(() -> {
             try {
-                HttpRequestFilterChain filterChain = HttpRequestFilterManager.getFilterChain(this::executeFinalAction);
                 filterChain.doFilter(context);
             } catch (HttpRequestFilterException e) {
                 LOGGER.warn("Request blocked by filter: {}", e.getMessage());
