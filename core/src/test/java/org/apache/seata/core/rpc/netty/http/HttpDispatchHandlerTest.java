@@ -80,7 +80,7 @@ class HttpDispatchHandlerTest {
         clearControllerManager();
         Field field2 = HttpRequestFilterManager.class.getDeclaredField("initialized");
         field2.setAccessible(true);
-        field2.setAccessible(false);
+        field2.set(null, false);
     }
 
     @Test
