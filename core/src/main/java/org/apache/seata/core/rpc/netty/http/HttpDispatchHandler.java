@@ -16,7 +16,6 @@
  */
 package org.apache.seata.core.rpc.netty.http;
 
-import java.lang.reflect.Method;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.buffer.Unpooled;
@@ -43,6 +42,8 @@ import org.apache.seata.core.rpc.netty.http.filter.HttpRequestParamWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Method;
+
 /**
  * A Netty HTTP request handler that dispatches incoming requests to corresponding controller methods
  */
@@ -53,8 +54,12 @@ public class HttpDispatchHandler extends BaseHttpChannelHandler<HttpRequest> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpRequest httpRequest) {
         HttpFilterContext<HttpRequest> context = new HttpFilterContext<>(
-                httpRequest, ctx, HttpUtil.isKeepAlive(httpRequest) && httpRequest.protocolVersion().isKeepAliveDefault(),
-                HttpContext.HTTP_1_1, () -> new HttpRequestParamWrapper(httpRequest));
+                httpRequest,
+                ctx,
+                HttpUtil.isKeepAlive(httpRequest)
+                        && httpRequest.protocolVersion().isKeepAliveDefault(),
+                HttpContext.HTTP_1_1,
+                () -> new HttpRequestParamWrapper(httpRequest));
 
         // Parse request
         QueryStringDecoder queryStringDecoder = new QueryStringDecoder(httpRequest.uri());

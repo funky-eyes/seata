@@ -156,7 +156,8 @@ public class Http2HttpHandler extends BaseHttpChannelHandler<Http2StreamFrame> {
             // Execute filter chain in HTTP thread pool
             HTTP_HANDLER_THREADS.execute(() -> {
                 try {
-                    HttpRequestFilterChain filterChain = HttpRequestFilterManager.getFilterChain(this::executeFinalAction);
+                    HttpRequestFilterChain filterChain =
+                            HttpRequestFilterManager.getFilterChain(this::executeFinalAction);
                     filterChain.doFilter(context);
                 } catch (HttpRequestFilterException e) {
                     LOGGER.warn("Request blocked by filter while processing HTTP2 request: {}", e.getMessage());

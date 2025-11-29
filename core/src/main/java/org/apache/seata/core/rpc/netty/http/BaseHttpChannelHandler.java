@@ -19,11 +19,7 @@ package org.apache.seata.core.rpc.netty.http;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.apache.seata.common.thread.NamedThreadFactory;
-import org.apache.seata.core.exception.HttpRequestFilterException;
 import org.apache.seata.core.rpc.netty.NettyServerConfig;
-import org.apache.seata.core.rpc.netty.http.filter.HttpFilterContext;
-import org.apache.seata.core.rpc.netty.http.filter.HttpRequestFilterChain;
-import org.apache.seata.core.rpc.netty.http.filter.HttpRequestFilterManager;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;

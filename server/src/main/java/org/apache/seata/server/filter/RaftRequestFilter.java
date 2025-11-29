@@ -62,10 +62,10 @@ public class RaftRequestFilter implements HttpRequestFilter, ApplicationListener
         try {
             String method;
             if (context.getRequest() instanceof SimpleHttp2Request) {
-                SimpleHttp2Request request = (SimpleHttp2Request)context.getRequest();
+                SimpleHttp2Request request = (SimpleHttp2Request) context.getRequest();
                 method = request.getMethod().name();
             } else {
-                HttpRequest request = (HttpRequest)context.getRequest();
+                HttpRequest request = (HttpRequest) context.getRequest();
                 method = request.method().name();
             }
             if (!"GET".equalsIgnoreCase(method)) {
@@ -93,7 +93,8 @@ public class RaftRequestFilter implements HttpRequestFilter, ApplicationListener
         // But to keep it simple, perhaps add a method to get header
         // For now, assume it's HttpRequest
         if (context.getRequest() instanceof io.netty.handler.codec.http.HttpRequest) {
-            io.netty.handler.codec.http.HttpRequest httpRequest = (io.netty.handler.codec.http.HttpRequest) context.getRequest();
+            io.netty.handler.codec.http.HttpRequest httpRequest =
+                    (io.netty.handler.codec.http.HttpRequest) context.getRequest();
             return httpRequest.headers().get(RAFT_GROUP_HEADER);
         } else if (context.getRequest() instanceof SimpleHttp2Request) {
             Http2Headers http2Headers = ((SimpleHttp2Request) context.getRequest()).getHeaders();
@@ -130,7 +131,8 @@ public class RaftRequestFilter implements HttpRequestFilter, ApplicationListener
         // But to keep it simple, perhaps add a method to get uri
         // For now, assume it's HttpRequest
         if (context.getRequest() instanceof io.netty.handler.codec.http.HttpRequest) {
-            io.netty.handler.codec.http.HttpRequest httpRequest = (io.netty.handler.codec.http.HttpRequest) context.getRequest();
+            io.netty.handler.codec.http.HttpRequest httpRequest =
+                    (io.netty.handler.codec.http.HttpRequest) context.getRequest();
             return httpRequest.uri();
         } else if (context.getRequest() instanceof SimpleHttp2Request) {
             return ((SimpleHttp2Request) context.getRequest()).getPath();
