@@ -130,7 +130,6 @@ public class RaftRequestFilter implements HttpRequestFilter, ApplicationListener
         } else if (context.getRequest() instanceof SimpleHttp2Request) {
             return ((SimpleHttp2Request) context.getRequest()).getPath();
         }
-        // For HTTP/2, similar
         return null;
     }
 
