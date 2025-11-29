@@ -123,10 +123,7 @@ public class RaftRequestFilter implements HttpRequestFilter, ApplicationListener
     }
 
     private String getUri(HttpFilterContext<?> context) {
-        // Assuming HttpRequest has uri, but for SimpleHttp2Request, uri is in request.getUri()
-        // For simplicity, since it's HTTP, we can cast or handle differently
-        // But to keep it simple, perhaps add a method to get uri
-        // For now, assume it's HttpRequest
+        // Extract URI from HttpRequest or path from SimpleHttp2Request
         if (context.getRequest() instanceof io.netty.handler.codec.http.HttpRequest) {
             io.netty.handler.codec.http.HttpRequest httpRequest =
                     (io.netty.handler.codec.http.HttpRequest) context.getRequest();
