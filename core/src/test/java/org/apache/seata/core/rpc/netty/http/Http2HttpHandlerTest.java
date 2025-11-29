@@ -373,6 +373,6 @@ class Http2HttpHandlerTest {
         map.clear();
         Field field2 = HttpRequestFilterManager.class.getDeclaredField("initialized");
         field2.setAccessible(true);
-        field2.setAccessible(false);
+        field2.set(null, false);
     }
 }
