@@ -98,7 +98,8 @@ public class RaftRequestFilter implements HttpRequestFilter, ApplicationListener
             return httpRequest.headers().get(RAFT_GROUP_HEADER);
         } else if (context.getRequest() instanceof SimpleHttp2Request) {
             Http2Headers http2Headers = ((SimpleHttp2Request) context.getRequest()).getHeaders();
-            return http2Headers.get(RAFT_GROUP_HEADER).toString();
+            CharSequence headerValue = http2Headers.get(RAFT_GROUP_HEADER);
+            return headerValue != null ? headerValue.toString() : null;
         }
         // For HTTP/2, similar
         return null;
