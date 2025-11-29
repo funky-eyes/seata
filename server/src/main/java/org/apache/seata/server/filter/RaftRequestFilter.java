@@ -97,7 +97,6 @@ public class RaftRequestFilter implements HttpRequestFilter, ApplicationListener
             CharSequence headerValue = http2Headers.get(RAFT_GROUP_HEADER);
             return headerValue != null ? headerValue.toString() : null;
         }
-        // For HTTP/2, similar
         return null;
     }
 
