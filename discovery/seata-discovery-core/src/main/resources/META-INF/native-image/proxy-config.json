@@ -39,6 +39,9 @@
     "interfaces":["net.bytebuddy.description.type.TypeDescription$Generic$AnnotationReader$ForComponentType$AnnotatedParameterizedType"]
   },
   {
+    "interfaces":["net.bytebuddy.description.type.TypeDescription$Generic$AnnotationReader$ForOwnerType$AnnotatedType"]
+  },
+  {
     "interfaces":["net.bytebuddy.description.type.TypeDescription$Generic$AnnotationReader$ForTypeArgument$AnnotatedParameterizedType"]
   },
   {
