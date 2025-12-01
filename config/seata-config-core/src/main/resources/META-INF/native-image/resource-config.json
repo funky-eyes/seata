@@ -15,6 +15,8 @@
   }, {
     "pattern":"\\QMETA-INF/seata/org.apache.seata.config.processor.Processor\\E"
   }, {
+    "pattern":"\\QMETA-INF/services/com.alibaba.nacos.api.config.filter.IConfigFilter\\E"
+  }, {
     "pattern":"\\QMETA-INF/services/com.ctrip.framework.apollo.internals.Injector\\E"
   }, {
     "pattern":"\\QMETA-INF/services/com.ctrip.framework.apollo.spi.ApolloInjectorCustomizer\\E"
@@ -31,6 +33,8 @@
   }, {
     "pattern":"\\QMETA-INF/services/java.net.spi.URLStreamHandlerProvider\\E"
   }, {
+    "pattern":"\\QMETA-INF/services/java.nio.channels.spi.SelectorProvider\\E"
+  }, {
     "pattern":"\\QMETA-INF/services/java.time.zone.ZoneRulesProvider\\E"
   }, {
     "pattern":"\\QMETA-INF/services/org.apache.seata.config.ConfigurationProvider\\E"
@@ -40,6 +44,8 @@
     "pattern":"\\QMETA-INF/services/org.apache.seata.config.file.FileConfig\\E"
   }, {
     "pattern":"\\QMETA-INF/services/org.apache.seata.config.processor.Processor\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.assertj.core.presentation.Representation\\E"
   }, {
     "pattern":"\\QMETA-INF/services/org.junit.platform.engine.TestEngine\\E"
   }, {
@@ -61,11 +67,19 @@
   }, {
     "pattern":"\\Qapplication.properties\\E"
   }, {
+    "pattern":"\\Qcustom_for_test.properties\\E"
+  }, {
     "pattern":"\\Qfile-test-pro.conf\\E"
   }, {
     "pattern":"\\Qfile-test-yaml.conf\\E"
   }, {
     "pattern":"\\Qfile-test.conf\\E"
+  }, {
+    "pattern":"\\Qfile.conf.conf\\E"
+  }, {
+    "pattern":"\\Qfile.conf.properties\\E"
+  }, {
+    "pattern":"\\Qfile.conf.yml\\E"
   }, {
     "pattern":"\\Qfile.conf\\E"
   }, {
@@ -93,6 +107,8 @@
   }, {
     "pattern":"\\Qmockito-extensions/org.mockito.plugins.StackTraceCleanerProvider\\E"
   }, {
+    "pattern":"\\Qnacos-version.txt\\E"
+  }, {
     "pattern":"\\Qorg/mockito/internal/creation/bytebuddy/MockMethodAdvice$ForEquals.class\\E"
   }, {
     "pattern":"\\Qorg/mockito/internal/creation/bytebuddy/MockMethodAdvice$ForHashCode.class\\E"
@@ -113,6 +129,14 @@
   }, {
     "pattern":"\\Qregistry.conf\\E"
   }, {
+    "pattern":"\\Qregistry.properties\\E"
+  }, {
+    "pattern":"\\Qregistry.yml\\E"
+  }, {
+    "pattern":"\\Qregistry\\E"
+  }, {
+    "pattern":"\\Qspas.properties\\E"
+  }, {
     "pattern":"java.base:\\Qjava/lang/reflect/AccessibleObject.class\\E"
   }, {
     "pattern":"java.base:\\Qjdk/internal/icu/impl/data/icudt72b/nfc.nrm\\E"
@@ -120,6 +144,8 @@
     "pattern":"java.base:\\Qjdk/internal/icu/impl/data/icudt72b/uprops.icu\\E"
   }, {
     "pattern":"java.base:\\Qsun/net/idn/uidna.spp\\E"
+  }, {
+    "pattern":"jdk.jfr:\\Qjdk/jfr/internal/query/view.ini\\E"
   }]},
   "bundles":[]
 }

@@ -1,12 +1,49 @@
 [
 {
+  "name":"[B"
+},
+{
+  "name":"[C"
+},
+{
+  "name":"[D"
+},
+{
+  "name":"[F"
+},
+{
+  "name":"[I"
+},
+{
+  "name":"[J"
+},
+{
+  "name":"[Ljava.lang.String;"
+},
+{
   "name":"[Ljava.lang.constant.ClassDesc;"
 },
 {
   "name":"[Ljava.lang.constant.ConstantDesc;"
 },
 {
+  "name":"[Ljavax.management.openmbean.CompositeData;"
+},
+{
   "name":"[Lnet.bytebuddy.description.enumeration.EnumerationDescription;"
+},
+{
+  "name":"[S"
+},
+{
+  "name":"[Z"
+},
+{
+  "name":"ch.qos.logback.classic.Logger"
+},
+{
+  "name":"com.alibaba.nacos.client.config.NacosConfigService",
+  "methods":[{"name":"<init>","parameterTypes":["java.util.Properties"] }]
 },
 {
   "name":"com.ctrip.framework.apollo.core.dto.ApolloConfig",
@@ -153,6 +190,92 @@
   "name":"com.dianping.cat.Cat"
 },
 {
+  "name":"com.ecwid.consul.v1.ConsulClient",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.String"] }, {"name":"getKVValue","parameterTypes":["java.lang.String","java.lang.String"] }, {"name":"getKVValue","parameterTypes":["java.lang.String","java.lang.String","com.ecwid.consul.v1.QueryParams"] }, {"name":"setKVValue","parameterTypes":["java.lang.String","java.lang.String","java.lang.String","com.ecwid.consul.v1.kv.model.PutParams"] }]
+},
+{
+  "name":"com.ecwid.consul.v1.acl.AclClient",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"com.ecwid.consul.v1.agent.AgentClient",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"com.ecwid.consul.v1.catalog.CatalogClient",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"com.ecwid.consul.v1.coordinate.CoordinateClient",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"com.ecwid.consul.v1.event.EventClient",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"com.ecwid.consul.v1.health.HealthClient",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"com.ecwid.consul.v1.kv.KeyValueClient",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"com.ecwid.consul.v1.kv.model.GetValue",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"getDecodedValue","parameterTypes":[] }]
+},
+{
+  "name":"com.ecwid.consul.v1.query.QueryClient",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"com.ecwid.consul.v1.session.SessionClient",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"com.ecwid.consul.v1.status.StatusClient",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
   "name":"com.fasterxml.jackson.databind.ext.Java7SupportImpl",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
@@ -200,7 +323,62 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
+  "name":"com.sun.management.GarbageCollectorMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"com.sun.management.GcInfo",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"com.sun.management.HotSpotDiagnosticMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"com.sun.management.ThreadMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"com.sun.management.UnixOperatingSystemMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"com.sun.management.VMOption",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"com.sun.management.internal.GarbageCollectorExtImpl",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"com.sun.management.internal.HotSpotDiagnostic",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"com.sun.management.internal.HotSpotThreadImpl",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"com.sun.management.internal.OperatingSystemImpl",
+  "queryAllPublicConstructors":true
+},
+{
   "name":"com.sun.tools.attach.VirtualMachine"
+},
+{
+  "name":"io.prometheus.client.Striped64",
+  "fields":[{"name":"base"}, {"name":"busy"}]
+},
+{
+  "name":"io.seata.config.AbstractConfiguration",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"io.seata.config.Configuration",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
 },
 {
   "name":"io.seata.config.ConfigurationChangeListener",
@@ -208,10 +386,35 @@
   "queryAllPublicMethods":true
 },
 {
-  "name":"io.seata.config.ConfigurationProvider"
+  "name":"io.seata.config.ConfigurationProvider",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
 },
 {
   "name":"io.seata.config.ExtConfigurationProvider"
+},
+{
+  "name":"io.seata.config.extend.NacosConfiguration",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"io.seata.config.extend.NacosConfiguration$NacosListener"
+},
+{
+  "name":"io.seata.config.extend.NacosConfigurationProvider",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"io.seata.config.extend.TestConfigFromExtendSPI",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true
 },
 {
   "name":"io.seata.config.file.FileConfig"
@@ -226,11 +429,17 @@
 },
 {
   "name":"java.lang.Boolean",
+  "fields":[{"name":"TYPE"}],
   "methods":[{"name":"parseBoolean","parameterTypes":["java.lang.String"] }]
 },
 {
   "name":"java.lang.Byte",
+  "fields":[{"name":"TYPE"}],
   "methods":[{"name":"parseByte","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"java.lang.Character",
+  "fields":[{"name":"TYPE"}]
 },
 {
   "name":"java.lang.Class",
@@ -246,11 +455,19 @@
 },
 {
   "name":"java.lang.Comparable",
+  "allDeclaredFields":true,
   "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.lang.Deprecated",
   "queryAllPublicMethods":true
 },
 {
   "name":"java.lang.Double",
+  "fields":[{"name":"TYPE"}],
   "methods":[{"name":"parseDouble","parameterTypes":["java.lang.String"] }]
 },
 {
@@ -267,14 +484,17 @@
 },
 {
   "name":"java.lang.Float",
+  "fields":[{"name":"TYPE"}],
   "methods":[{"name":"parseFloat","parameterTypes":["java.lang.String"] }]
 },
 {
   "name":"java.lang.Integer",
+  "fields":[{"name":"TYPE"}],
   "methods":[{"name":"parseInt","parameterTypes":["java.lang.String"] }]
 },
 {
   "name":"java.lang.Long",
+  "fields":[{"name":"TYPE"}],
   "methods":[{"name":"parseLong","parameterTypes":["java.lang.String"] }]
 },
 {
@@ -287,7 +507,7 @@
   "allDeclaredClasses":true,
   "queryAllDeclaredMethods":true,
   "queryAllDeclaredConstructors":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"getClass","parameterTypes":[] }, {"name":"toString","parameterTypes":[] }]
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"clone","parameterTypes":[] }, {"name":"getClass","parameterTypes":[] }, {"name":"toString","parameterTypes":[] }]
 },
 {
   "name":"java.lang.ProcessHandle",
@@ -313,7 +533,12 @@
 },
 {
   "name":"java.lang.Short",
+  "fields":[{"name":"TYPE"}],
   "methods":[{"name":"parseShort","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"java.lang.StackTraceElement",
+  "queryAllPublicMethods":true
 },
 {
   "name":"java.lang.StackWalker",
@@ -325,6 +550,10 @@
 {
   "name":"java.lang.StackWalker$StackFrame",
   "methods":[{"name":"getClassName","parameterTypes":[] }, {"name":"getDeclaringClass","parameterTypes":[] }, {"name":"getFileName","parameterTypes":[] }, {"name":"getLineNumber","parameterTypes":[] }, {"name":"getMethodName","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.String",
+  "fields":[{"name":"TYPE"}]
 },
 {
   "name":"java.lang.System",
@@ -339,6 +568,10 @@
   "allDeclaredClasses":true,
   "queryAllDeclaredMethods":true,
   "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.Void",
+  "fields":[{"name":"TYPE"}]
 },
 {
   "name":"java.lang.WeakPairMap"
@@ -413,6 +646,59 @@
   "methods":[{"name":"methodType","parameterTypes":["java.lang.Class","java.lang.Class[]"] }]
 },
 {
+  "name":"java.lang.management.BufferPoolMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.management.ClassLoadingMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.management.CompilationMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.management.LockInfo",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.management.ManagementPermission",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"java.lang.management.MemoryMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.management.MemoryManagerMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.management.MemoryPoolMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.management.MemoryUsage",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.management.MonitorInfo",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.management.PlatformLoggingMXBean",
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"getLoggerLevel","parameterTypes":["java.lang.String"] }, {"name":"getLoggerNames","parameterTypes":[] }, {"name":"getParentLoggerName","parameterTypes":["java.lang.String"] }, {"name":"setLoggerLevel","parameterTypes":["java.lang.String","java.lang.String"] }]
+},
+{
+  "name":"java.lang.management.RuntimeMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.management.ThreadInfo",
+  "queryAllPublicMethods":true
+},
+{
   "name":"java.lang.reflect.AccessibleObject",
   "allDeclaredFields":true,
   "allDeclaredClasses":true,
@@ -471,6 +757,12 @@
   "methods":[{"name":"getAnnotatedBounds","parameterTypes":[] }]
 },
 {
+  "name":"java.math.BigDecimal"
+},
+{
+  "name":"java.math.BigInteger"
+},
+{
   "name":"java.security.AccessController",
   "methods":[{"name":"doPrivileged","parameterTypes":["java.security.PrivilegedAction"] }, {"name":"doPrivileged","parameterTypes":["java.security.PrivilegedExceptionAction"] }]
 },
@@ -484,8 +776,15 @@
   "name":"java.sql.Timestamp"
 },
 {
+  "name":"java.util.Date"
+},
+{
   "name":"java.util.HashMap",
   "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"java.util.PropertyPermission",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.String","java.lang.String"] }]
 },
 {
   "name":"java.util.concurrent.CompletableFuture",
@@ -526,9 +825,67 @@
   "fields":[{"name":"base"}, {"name":"cellsBusy"}]
 },
 {
+  "name":"java.util.logging.LogManager",
+  "methods":[{"name":"getLoggingMXBean","parameterTypes":[] }]
+},
+{
+  "name":"java.util.logging.LoggingMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"javax.management.MBeanOperationInfo",
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"getSignature","parameterTypes":[] }]
+},
+{
+  "name":"javax.management.MBeanServerBuilder",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"javax.management.ObjectName"
+},
+{
+  "name":"javax.management.StandardEmitterMBean",
+  "methods":[{"name":"cacheMBeanInfo","parameterTypes":["javax.management.MBeanInfo"] }, {"name":"getCachedMBeanInfo","parameterTypes":[] }, {"name":"getMBeanInfo","parameterTypes":[] }]
+},
+{
+  "name":"javax.management.openmbean.CompositeData"
+},
+{
+  "name":"javax.management.openmbean.OpenMBeanOperationInfoSupport"
+},
+{
+  "name":"javax.management.openmbean.TabularData"
+},
+{
   "name":"jdk.internal.misc.Unsafe",
   "fields":[{"name":"theUnsafe"}],
   "methods":[{"name":"defineClass","parameterTypes":["java.lang.String","byte[]","int","int","java.lang.ClassLoader","java.security.ProtectionDomain"] }]
+},
+{
+  "name":"jdk.management.jfr.ConfigurationInfo",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"jdk.management.jfr.EventTypeInfo",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"jdk.management.jfr.FlightRecorderMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"jdk.management.jfr.FlightRecorderMXBeanImpl",
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"cacheMBeanInfo","parameterTypes":["javax.management.MBeanInfo"] }, {"name":"getCachedMBeanInfo","parameterTypes":[] }, {"name":"getMBeanInfo","parameterTypes":[] }, {"name":"getNotificationInfo","parameterTypes":[] }]
+},
+{
+  "name":"jdk.management.jfr.RecordingInfo",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"jdk.management.jfr.SettingDescriptorInfo",
+  "queryAllPublicMethods":true
 },
 {
   "name":"kotlin.jvm.JvmInline"
@@ -689,17 +1046,23 @@
 {
   "name":"net.bytebuddy.implementation.bind.annotation.AllArguments",
   "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"includeSelf","parameterTypes":[] }, {"name":"nullIfEmpty","parameterTypes":[] }, {"name":"value","parameterTypes":[] }]
 },
 {
   "name":"net.bytebuddy.implementation.bind.annotation.Argument",
   "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"bindingMechanic","parameterTypes":[] }, {"name":"value","parameterTypes":[] }]
+},
+{
+  "name":"net.bytebuddy.implementation.bind.annotation.Argument$BindingMechanic"
 },
 {
   "name":"net.bytebuddy.implementation.bind.annotation.BindingPriority",
   "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"value","parameterTypes":[] }]
 },
 {
   "name":"net.bytebuddy.implementation.bind.annotation.Default",
@@ -739,10 +1102,17 @@
 {
   "name":"net.bytebuddy.implementation.bind.annotation.FieldValue",
   "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"declaringType","parameterTypes":[] }, {"name":"value","parameterTypes":[] }]
 },
 {
   "name":"net.bytebuddy.implementation.bind.annotation.Origin",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"cache","parameterTypes":[] }, {"name":"privileged","parameterTypes":[] }]
+},
+{
+  "name":"net.bytebuddy.implementation.bind.annotation.StubValue",
   "queryAllDeclaredMethods":true,
   "queryAllDeclaredConstructors":true
 },
@@ -754,7 +1124,8 @@
 {
   "name":"net.bytebuddy.implementation.bind.annotation.SuperCall",
   "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"fallbackToDefault","parameterTypes":[] }, {"name":"nullIfImpossible","parameterTypes":[] }, {"name":"serializableProxy","parameterTypes":[] }]
 },
 {
   "name":"net.bytebuddy.implementation.bind.annotation.SuperCallHandle",
@@ -774,7 +1145,8 @@
 {
   "name":"net.bytebuddy.implementation.bind.annotation.This",
   "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"optional","parameterTypes":[] }]
 },
 {
   "name":"net.bytebuddy.mirror.AccessibleObject",
@@ -823,6 +1195,27 @@
 {
   "name":"net.bytebuddy.utility.JavaModule$Resolver",
   "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.curator.framework.recipes.cache.ChildData",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.String","org.apache.zookeeper.data.Stat","byte[]"] }, {"name":"getData","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.curator.framework.recipes.cache.CuratorCacheListener",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.common.util.NetUtil",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"toInetSocketAddress","parameterTypes":["java.lang.String"] }]
 },
 {
   "name":"org.apache.seata.config.AbstractConfiguration",
@@ -882,9 +1275,17 @@
 },
 {
   "name":"org.apache.seata.config.Configuration",
+  "allDeclaredFields":true,
   "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
   "queryAllPublicMethods":true,
-  "methods":[{"name":"addConfigListener","parameterTypes":["java.lang.String","org.apache.seata.config.ConfigurationChangeListener"] }, {"name":"getBoolean","parameterTypes":["java.lang.String"] }, {"name":"getBoolean","parameterTypes":["java.lang.String","boolean"] }, {"name":"getConfig","parameterTypes":["java.lang.String"] }, {"name":"getConfig","parameterTypes":["java.lang.String","java.lang.String"] }, {"name":"getDuration","parameterTypes":["java.lang.String","java.time.Duration"] }, {"name":"getInt","parameterTypes":["java.lang.String","int"] }, {"name":"getLatestConfig","parameterTypes":["java.lang.String","java.lang.String","long"] }, {"name":"getLong","parameterTypes":["java.lang.String","long"] }, {"name":"getShort","parameterTypes":["java.lang.String","short"] }]
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"addConfigListener","parameterTypes":["java.lang.String","org.apache.seata.config.ConfigurationChangeListener"] }, {"name":"getBoolean","parameterTypes":["java.lang.String"] }, {"name":"getBoolean","parameterTypes":["java.lang.String","boolean"] }, {"name":"getBoolean","parameterTypes":["java.lang.String","boolean","long"] }, {"name":"getConfig","parameterTypes":["java.lang.String"] }, {"name":"getConfig","parameterTypes":["java.lang.String","long"] }, {"name":"getConfig","parameterTypes":["java.lang.String","java.lang.String"] }, {"name":"getConfig","parameterTypes":["java.lang.String","java.lang.String","long"] }, {"name":"getConfigListeners","parameterTypes":["java.lang.String"] }, {"name":"getDuration","parameterTypes":["java.lang.String"] }, {"name":"getDuration","parameterTypes":["java.lang.String","java.time.Duration"] }, {"name":"getDuration","parameterTypes":["java.lang.String","java.time.Duration","long"] }, {"name":"getInt","parameterTypes":["java.lang.String"] }, {"name":"getInt","parameterTypes":["java.lang.String","int"] }, {"name":"getInt","parameterTypes":["java.lang.String","int","long"] }, {"name":"getLatestConfig","parameterTypes":["java.lang.String","java.lang.String","long"] }, {"name":"getLong","parameterTypes":["java.lang.String"] }, {"name":"getLong","parameterTypes":["java.lang.String","long"] }, {"name":"getLong","parameterTypes":["java.lang.String","long","long"] }, {"name":"getShort","parameterTypes":["java.lang.String"] }, {"name":"getShort","parameterTypes":["java.lang.String","short"] }, {"name":"getShort","parameterTypes":["java.lang.String","short","long"] }, {"name":"putConfig","parameterTypes":["java.lang.String","java.lang.String"] }, {"name":"putConfig","parameterTypes":["java.lang.String","java.lang.String","long"] }, {"name":"putConfigIfAbsent","parameterTypes":["java.lang.String","java.lang.String"] }, {"name":"putConfigIfAbsent","parameterTypes":["java.lang.String","java.lang.String","long"] }, {"name":"removeConfig","parameterTypes":["java.lang.String"] }, {"name":"removeConfig","parameterTypes":["java.lang.String","long"] }, {"name":"removeConfigListener","parameterTypes":["java.lang.String","org.apache.seata.config.ConfigurationChangeListener"] }]
+},
+{
+  "name":"org.apache.seata.config.Configuration$MockitoMock$9OcT9iNX",
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
   "name":"org.apache.seata.config.ConfigurationCache",
@@ -974,6 +1375,37 @@
   "name":"org.apache.seata.config.ConfigurationProvider",
   "allDeclaredClasses":true,
   "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.config.ConfigurationTest",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"test_getConfig_Methods","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.config.CustomConfigurationForTest",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.config.CustomConfigurationProviderForTest",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.config.CustomConfigurationTest",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"testCustomConfigLoad","parameterTypes":[] }]
 },
 {
   "name":"org.apache.seata.config.Dispose"
@@ -1080,6 +1512,41 @@
   "name":"org.apache.seata.config.apollo.ApolloMockServer$1"
 },
 {
+  "name":"org.apache.seata.config.consul.ConsulConfiguration",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "fields":[{"name":"client"}]
+},
+{
+  "name":"org.apache.seata.config.consul.ConsulConfiguration$ConsulListener",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.config.consul.ConsulConfigurationProvider",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.config.consul.ConsulConfigurationTest",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setUp","parameterTypes":[] }, {"name":"tearDown","parameterTypes":[] }, {"name":"testGetLatestConfig","parameterTypes":[] }, {"name":"testInitSeataConfig","parameterTypes":[] }, {"name":"testOnChangeEvent_skipWhenValueIsBlank","parameterTypes":[] }, {"name":"testPutConfigIfAbsent","parameterTypes":[] }, {"name":"testSingletonInstance","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.config.custom.CustomConfigurationProvider",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "name":"org.apache.seata.config.exception.ConfigNotFoundException",
   "allDeclaredClasses":true,
   "queryAllDeclaredMethods":true,
@@ -1096,7 +1563,7 @@
   "allDeclaredClasses":true,
   "queryAllDeclaredMethods":true,
   "queryAllPublicMethods":true,
-  "methods":[{"name":"<init>","parameterTypes":["java.io.File","java.lang.String"] }, {"name":"suite","parameterTypes":[] }]
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"<init>","parameterTypes":["java.io.File","java.lang.String"] }, {"name":"suite","parameterTypes":[] }]
 },
 {
   "name":"org.apache.seata.config.file.SimpleFileConfigTest",
@@ -1124,6 +1591,38 @@
   "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"getString","parameterTypes":[] }]
 },
 {
+  "name":"org.apache.seata.config.nacos.NacosConfiguration",
+  "fields":[{"name":"CONFIG_LISTENERS_MAP"}, {"name":"seataConfig"}],
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"getConfigProperties","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.config.nacos.NacosConfiguration$NacosListener",
+  "methods":[{"name":"<init>","parameterTypes":["org.apache.seata.config.nacos.NacosConfiguration","java.lang.String","org.apache.seata.config.ConfigurationChangeListener"] }]
+},
+{
+  "name":"org.apache.seata.config.nacos.NacosConfigurationProvider"
+},
+{
+  "name":"org.apache.seata.config.nacos.NacosConfigurationTest",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setup","parameterTypes":[] }, {"name":"testGetConfigProperties","parameterTypes":[] }, {"name":"testInnerReceiveEmptyPushShouldNotUpdateConfig","parameterTypes":[] }, {"name":"testInnerReceiveShouldReturn","parameterTypes":[] }, {"name":"testInnerReceiveThrowException","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.config.nacos.NacosConfigurationTest$TestListener"
+},
+{
+  "name":"org.apache.seata.config.nacos.NacosMockTest",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
   "name":"org.apache.seata.config.processor.ConfigDataType",
   "allDeclaredClasses":true,
   "queryAllDeclaredMethods":true,
@@ -1141,10 +1640,12 @@
 },
 {
   "name":"org.apache.seata.config.processor.ConfigProcessor",
+  "allDeclaredFields":true,
   "allDeclaredClasses":true,
   "queryAllDeclaredMethods":true,
   "queryAllPublicMethods":true,
-  "methods":[{"name":"suite","parameterTypes":[] }]
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"processConfig","parameterTypes":["java.lang.String","java.lang.String"] }, {"name":"resolverConfigDataType","parameterTypes":["java.lang.String"] }, {"name":"suite","parameterTypes":[] }]
 },
 {
   "name":"org.apache.seata.config.processor.ConfigProcessorTest",
@@ -1165,7 +1666,7 @@
   "allDeclaredClasses":true,
   "queryAllDeclaredMethods":true,
   "queryAllPublicMethods":true,
-  "methods":[{"name":"suite","parameterTypes":[] }]
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"suite","parameterTypes":[] }]
 },
 {
   "name":"org.apache.seata.config.processor.ProcessorPropertiesTest",
@@ -1193,6 +1694,70 @@
   "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"testProcessor_EmptyYaml","parameterTypes":[] }, {"name":"testProcessor_InvalidYaml_ShouldThrowException","parameterTypes":[] }, {"name":"testProcessor_NormalYaml","parameterTypes":[] }]
 },
 {
+  "name":"org.apache.seata.config.zk.ZkConfigurationTest",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"adAfterClass","parameterTypes":[] }, {"name":"adBeforeClass","parameterTypes":[] }, {"name":"testCheckExist","parameterTypes":[] }, {"name":"testEvent_pathEqualsConfigPath_blankValue","parameterTypes":[] }, {"name":"testEvent_pathEqualsConfigPath_throwException","parameterTypes":[] }, {"name":"testPutConfig","parameterTypes":[] }, {"name":"testRemoveConfig","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.config.zk.ZkConfigurationTest$1"
+},
+{
+  "name":"org.apache.seata.config.zk.ZkConfigurationTest$2"
+},
+{
+  "name":"org.apache.seata.config.zk.ZookeeperConfiguration",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"getConfigPath","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.config.zk.ZookeeperConfiguration$NodeCacheListenerImpl",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.config.zk.ZookeeperConfigurationProvider",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.zookeeper.AddWatchMode"
+},
+{
+  "name":"org.apache.zookeeper.ClientCnxnSocketNIO",
+  "methods":[{"name":"<init>","parameterTypes":["org.apache.zookeeper.client.ZKClientConfig"] }]
+},
+{
+  "name":"org.apache.zookeeper.jmx.MBeanRegistry",
+  "fields":[{"name":"instance"}]
+},
+{
+  "name":"org.apache.zookeeper.metrics.impl.DefaultMetricsProvider"
+},
+{
+  "name":"org.apache.zookeeper.server.NIOServerCnxnFactory",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.zookeeper.server.quorum.MultipleAddresses",
+  "methods":[{"name":"getReachableOrOne","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.zookeeper.server.quorum.QuorumPeer$QuorumServer",
+  "fields":[{"name":"addr"}]
+},
+{
+  "name":"org.apache.zookeeper.server.watch.WatchManager",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "name":"org.apiguardian.api.API",
   "queryAllPublicMethods":true
 },
@@ -1200,7 +1765,31 @@
   "name":"org.junit.internal.AssumptionViolatedException"
 },
 {
+  "name":"org.junit.jupiter.api.MethodOrderer$OrderAnnotation",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.junit.jupiter.api.Order",
+  "queryAllPublicMethods":true
+},
+{
   "name":"org.junit.jupiter.api.Test",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.junit.jupiter.api.TestMethodOrder",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.junit.jupiter.api.condition.EnabledIfSystemProperty",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.junit.jupiter.api.condition.EnabledIfSystemPropertyCondition",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.junit.jupiter.api.extension.ExtendWith",
   "queryAllPublicMethods":true
 },
 {
@@ -1227,6 +1816,11 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
+  "name":"org.mockito.internal.creation.bytebuddy.MockAccess",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
   "name":"org.mockito.internal.creation.bytebuddy.MockMethodAdvice",
   "queryAllDeclaredMethods":true,
   "queryAllDeclaredConstructors":true
@@ -1248,6 +1842,11 @@
 },
 {
   "name":"org.mockito.internal.creation.bytebuddy.MockMethodAdvice$ForStatic",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"org.mockito.internal.creation.bytebuddy.MockMethodAdvice$Identifier",
   "queryAllDeclaredMethods":true,
   "queryAllDeclaredConstructors":true
 },
@@ -1287,7 +1886,15 @@
   "queryAllPublicMethods":true
 },
 {
+  "name":"org.mockito.internal.matchers.Equals",
+  "queryAllPublicMethods":true
+},
+{
   "name":"org.mockito.internal.matchers.InstanceOf",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.mockito.internal.matchers.InstanceOf$VarArgAware",
   "queryAllPublicMethods":true
 },
 {
@@ -1300,12 +1907,60 @@
   "queryAllDeclaredConstructors":true
 },
 {
+  "name":"org.mockito.internal.util.reflection.InstrumentationMemberAccessor$Dispatcher$ByteBuddy$45F0qW08",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.mockito.internal.util.reflection.InstrumentationMemberAccessor$Dispatcher$ByteBuddy$asFo0s9P",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "name":"org.mockito.internal.util.reflection.InstrumentationMemberAccessor$Dispatcher$ByteBuddy$hBypnIzf",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.mockito.internal.util.reflection.InstrumentationMemberAccessor$Dispatcher$ByteBuddy$oUke0CQ1",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.mockito.internal.util.reflection.InstrumentationMemberAccessor$Dispatcher$ByteBuddy$tSM171Vt",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
   "name":"org.mockito.internal.util.reflection.ModuleMemberAccessor",
   "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.management.ClassLoadingImpl",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"sun.management.CompilationImpl",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"sun.management.ManagementFactoryHelper$1",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"sun.management.ManagementFactoryHelper$PlatformLoggingImpl",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"sun.management.MemoryImpl",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"sun.management.MemoryManagerImpl",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"sun.management.MemoryPoolImpl",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"sun.management.RuntimeImpl",
+  "queryAllPublicConstructors":true
 },
 {
   "name":"sun.misc.SharedSecrets"
@@ -1318,6 +1973,14 @@
 {
   "name":"sun.reflect.ReflectionFactory",
   "methods":[{"name":"getReflectionFactory","parameterTypes":[] }, {"name":"newConstructorForSerialization","parameterTypes":["java.lang.Class","java.lang.reflect.Constructor"] }]
+},
+{
+  "name":"sun.security.provider.ConfigFile",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.MD5",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
   "name":"sun.security.provider.NativePRNG",
