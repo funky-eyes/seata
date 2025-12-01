@@ -1,5 +1,33 @@
 [
 {
+  "name":"[B"
+},
+{
+  "name":"[C"
+},
+{
+  "name":"[D"
+},
+{
+  "name":"[F"
+},
+{
+  "name":"[I"
+},
+{
+  "name":"[J"
+},
+{
+  "name":"[Ljava.lang.StackTraceElement;",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"[Ljava.lang.StackTraceElement;HessianSerializer"
+},
+{
+  "name":"[Ljava.lang.String;"
+},
+{
   "name":"[Ljava.lang.constant.ClassDesc;"
 },
 {
@@ -9,11 +37,26 @@
   "name":"[Ljava.util.HashMap$Node;"
 },
 {
+  "name":"[Ljavax.management.openmbean.CompositeData;"
+},
+{
   "name":"[Lnet.bytebuddy.description.enumeration.EnumerationDescription;"
+},
+{
+  "name":"[S"
+},
+{
+  "name":"[Z"
+},
+{
+  "name":"android.app.Application"
 },
 {
   "name":"ch.qos.logback.classic.BasicConfigurator",
   "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"ch.qos.logback.classic.LoggerContext"
 },
 {
   "name":"ch.qos.logback.classic.joran.SerializedModelConfigurator",
@@ -24,6 +67,25 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
+  "name":"com.alibaba.dubbo.common.Node",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"com.alibaba.dubbo.rpc.Filter",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"com.alibaba.dubbo.rpc.Invoker",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"com.alibaba.fastjson.parser.deserializer.FastjsonASMDeserializer_1_Person",
+  "methods":[{"name":"<init>","parameterTypes":["com.alibaba.fastjson.parser.ParserConfig","com.alibaba.fastjson.util.JavaBeanInfo"] }]
+},
+{
   "name":"com.alibaba.fastjson.parser.deserializer.FastjsonASMDeserializer_1_RpcMessage",
   "methods":[{"name":"<init>","parameterTypes":["com.alibaba.fastjson.parser.ParserConfig","com.alibaba.fastjson.util.JavaBeanInfo"] }]
 },
@@ -32,12 +94,450 @@
   "methods":[{"name":"<init>","parameterTypes":["com.alibaba.fastjson.parser.ParserConfig","com.alibaba.fastjson.util.JavaBeanInfo"] }]
 },
 {
+  "name":"com.alibaba.fastjson.serializer.ASMSerializer_1_Person",
+  "methods":[{"name":"<init>","parameterTypes":["com.alibaba.fastjson.serializer.SerializeBeanInfo"] }]
+},
+{
   "name":"com.alibaba.fastjson.serializer.ASMSerializer_1_RpcMessage",
   "methods":[{"name":"<init>","parameterTypes":["com.alibaba.fastjson.serializer.SerializeBeanInfo"] }]
 },
 {
   "name":"com.alibaba.fastjson.serializer.ASMSerializer_2_MessageFuture",
   "methods":[{"name":"<init>","parameterTypes":["com.alibaba.fastjson.serializer.SerializeBeanInfo"] }]
+},
+{
+  "name":"com.alipay.disruptor.AbstractSequencer",
+  "fields":[{"name":"gatingSequences"}]
+},
+{
+  "name":"com.alipay.disruptor.Value",
+  "fields":[{"name":"value"}]
+},
+{
+  "name":"com.alipay.lookout.spi.MetricsImporterLocator"
+},
+{
+  "name":"com.alipay.remoting.ConnectionEventHandler",
+  "methods":[{"name":"channelActive","parameterTypes":["io.netty.channel.ChannelHandlerContext"] }, {"name":"channelInactive","parameterTypes":["io.netty.channel.ChannelHandlerContext"] }, {"name":"channelRegistered","parameterTypes":["io.netty.channel.ChannelHandlerContext"] }, {"name":"channelUnregistered","parameterTypes":["io.netty.channel.ChannelHandlerContext"] }, {"name":"close","parameterTypes":["io.netty.channel.ChannelHandlerContext","io.netty.channel.ChannelPromise"] }, {"name":"connect","parameterTypes":["io.netty.channel.ChannelHandlerContext","java.net.SocketAddress","java.net.SocketAddress","io.netty.channel.ChannelPromise"] }, {"name":"disconnect","parameterTypes":["io.netty.channel.ChannelHandlerContext","io.netty.channel.ChannelPromise"] }, {"name":"exceptionCaught","parameterTypes":["io.netty.channel.ChannelHandlerContext","java.lang.Throwable"] }, {"name":"userEventTriggered","parameterTypes":["io.netty.channel.ChannelHandlerContext","java.lang.Object"] }]
+},
+{
+  "name":"com.alipay.remoting.ServerIdleHandler",
+  "methods":[{"name":"userEventTriggered","parameterTypes":["io.netty.channel.ChannelHandlerContext","java.lang.Object"] }]
+},
+{
+  "name":"com.alipay.remoting.codec.AbstractBatchDecoder",
+  "methods":[{"name":"channelInactive","parameterTypes":["io.netty.channel.ChannelHandlerContext"] }, {"name":"channelRead","parameterTypes":["io.netty.channel.ChannelHandlerContext","java.lang.Object"] }, {"name":"channelReadComplete","parameterTypes":["io.netty.channel.ChannelHandlerContext"] }]
+},
+{
+  "name":"com.alipay.remoting.codec.ProtocolCodeBasedEncoder"
+},
+{
+  "name":"com.alipay.remoting.connection.AbstractConnectionFactory$1"
+},
+{
+  "name":"com.alipay.remoting.exception.RemotingException",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"com.alipay.remoting.rpc.HeartbeatHandler",
+  "methods":[{"name":"userEventTriggered","parameterTypes":["io.netty.channel.ChannelHandlerContext","java.lang.Object"] }]
+},
+{
+  "name":"com.alipay.remoting.rpc.RpcConnectionEventHandler",
+  "methods":[{"name":"channelInactive","parameterTypes":["io.netty.channel.ChannelHandlerContext"] }]
+},
+{
+  "name":"com.alipay.remoting.rpc.RpcHandler",
+  "methods":[{"name":"channelRead","parameterTypes":["io.netty.channel.ChannelHandlerContext","java.lang.Object"] }]
+},
+{
+  "name":"com.alipay.remoting.rpc.RpcServer$1"
+},
+{
+  "name":"com.alipay.remoting.rpc.exception.RpcServerException",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "unsafeAllocated":true
+},
+{
+  "name":"com.alipay.remoting.rpc.exception.RpcServerExceptionHessianDeserializer"
+},
+{
+  "name":"com.alipay.remoting.rpc.exception.RpcServerExceptionHessianSerializer"
+},
+{
+  "name":"com.alipay.remoting.rpc.protocol.RpcProtocolDecoder"
+},
+{
+  "name":"com.alipay.sofa.common.boot.logging.Mark"
+},
+{
+  "name":"com.alipay.sofa.rpc.bootstrap.DefaultConsumerBootstrap"
+},
+{
+  "name":"com.alipay.sofa.rpc.bootstrap.DefaultProviderBootstrap",
+  "methods":[{"name":"<init>","parameterTypes":["com.alipay.sofa.rpc.config.ProviderConfig"] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.bootstrap.bolt.BoltConsumerBootstrap",
+  "methods":[{"name":"<init>","parameterTypes":["com.alipay.sofa.rpc.config.ConsumerConfig"] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.bootstrap.bolt.BoltProviderBootstrap"
+},
+{
+  "name":"com.alipay.sofa.rpc.bootstrap.dubbo.DubboConsumerBootstrap"
+},
+{
+  "name":"com.alipay.sofa.rpc.bootstrap.dubbo.DubboProviderBootstrap"
+},
+{
+  "name":"com.alipay.sofa.rpc.bootstrap.grpc.GrpcConsumerBootstrap"
+},
+{
+  "name":"com.alipay.sofa.rpc.bootstrap.grpc.GrpcProviderBootstrap"
+},
+{
+  "name":"com.alipay.sofa.rpc.bootstrap.http.Http2ClearTextConsumerBootstrap"
+},
+{
+  "name":"com.alipay.sofa.rpc.bootstrap.http.Http2ClearTextProviderBootstrap"
+},
+{
+  "name":"com.alipay.sofa.rpc.bootstrap.rest.RestConsumerBootstrap"
+},
+{
+  "name":"com.alipay.sofa.rpc.bootstrap.rest.RestProviderBootstrap"
+},
+{
+  "name":"com.alipay.sofa.rpc.client.AllConnectConnectionHolder",
+  "methods":[{"name":"<init>","parameterTypes":["com.alipay.sofa.rpc.bootstrap.ConsumerBootstrap"] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.client.ElasticConnectionHolder"
+},
+{
+  "name":"com.alipay.sofa.rpc.client.FailFastCluster"
+},
+{
+  "name":"com.alipay.sofa.rpc.client.FailoverCluster",
+  "methods":[{"name":"<init>","parameterTypes":["com.alipay.sofa.rpc.bootstrap.ConsumerBootstrap"] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.client.SingleGroupAddressHolder",
+  "methods":[{"name":"<init>","parameterTypes":["com.alipay.sofa.rpc.bootstrap.ConsumerBootstrap"] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.client.aft.impl.LogPrintDegradeStrategy"
+},
+{
+  "name":"com.alipay.sofa.rpc.client.aft.impl.ServiceHorizontalMeasureStrategy",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.client.aft.impl.ServiceHorizontalRegulationStrategy",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.client.aft.impl.TimeWindowRegulator",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.client.aft.impl.WeightDegradeStrategy",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.client.aft.impl.WeightRecoverStrategy",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.client.lb.AutoLoadBalancer",
+  "methods":[{"name":"<init>","parameterTypes":["com.alipay.sofa.rpc.bootstrap.ConsumerBootstrap"] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.client.lb.ConsistentHashLoadBalancer"
+},
+{
+  "name":"com.alipay.sofa.rpc.client.lb.LocalPreferenceLoadBalancer"
+},
+{
+  "name":"com.alipay.sofa.rpc.client.lb.RandomLoadBalancer"
+},
+{
+  "name":"com.alipay.sofa.rpc.client.lb.RoundRobinLoadBalancer"
+},
+{
+  "name":"com.alipay.sofa.rpc.client.lb.WeightConsistentHashLoadBalancer"
+},
+{
+  "name":"com.alipay.sofa.rpc.client.lb.WeightRoundRobinLoadBalancer"
+},
+{
+  "name":"com.alipay.sofa.rpc.client.router.DirectUrlRouter",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.client.router.MeshRouter",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.client.router.RegistryRouter",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.codec.jackson.JacksonSerializer",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.codec.msgpack.MsgPackSerializer",
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.codec.protobuf.ProtobufSerializer",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.codec.protostuff.ProtostuffSerializer",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.codec.sofahessian.SofaHessianSerializer",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.config.AbstractIdConfig",
+  "methods":[{"name":"getId","parameterTypes":[] }, {"name":"setId","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.config.AbstractInterfaceConfig",
+  "methods":[{"name":"getApplication","parameterTypes":[] }, {"name":"getCacheRef","parameterTypes":[] }, {"name":"getCompress","parameterTypes":[] }, {"name":"getConfigListener","parameterTypes":[] }, {"name":"getFilter","parameterTypes":[] }, {"name":"getFilterRef","parameterTypes":[] }, {"name":"getGroup","parameterTypes":[] }, {"name":"getInterfaceId","parameterTypes":[] }, {"name":"getMethods","parameterTypes":[] }, {"name":"getMockMode","parameterTypes":[] }, {"name":"getMockRef","parameterTypes":[] }, {"name":"getParameters","parameterTypes":[] }, {"name":"getProxy","parameterTypes":[] }, {"name":"getRegistry","parameterTypes":[] }, {"name":"getSerialization","parameterTypes":[] }, {"name":"getUniqueId","parameterTypes":[] }, {"name":"getVersion","parameterTypes":[] }, {"name":"isCache","parameterTypes":[] }, {"name":"isMock","parameterTypes":[] }, {"name":"isRegister","parameterTypes":[] }, {"name":"isSubscribe","parameterTypes":[] }, {"name":"isValidation","parameterTypes":[] }, {"name":"setApplication","parameterTypes":["com.alipay.sofa.rpc.config.ApplicationConfig"] }, {"name":"setCache","parameterTypes":["boolean"] }, {"name":"setCacheRef","parameterTypes":["com.alipay.sofa.rpc.common.struct.Cache"] }, {"name":"setCompress","parameterTypes":["java.lang.String"] }, {"name":"setConfigListener","parameterTypes":["com.alipay.sofa.rpc.listener.ConfigListener"] }, {"name":"setFilter","parameterTypes":["java.util.List"] }, {"name":"setFilterRef","parameterTypes":["java.util.List"] }, {"name":"setGroup","parameterTypes":["java.lang.String"] }, {"name":"setInterfaceId","parameterTypes":["java.lang.String"] }, {"name":"setMethods","parameterTypes":["java.util.Map"] }, {"name":"setMock","parameterTypes":["boolean"] }, {"name":"setMockMode","parameterTypes":["java.lang.String"] }, {"name":"setMockRef","parameterTypes":["java.lang.Object"] }, {"name":"setParameters","parameterTypes":["java.util.Map"] }, {"name":"setProxy","parameterTypes":["java.lang.String"] }, {"name":"setProxyClass","parameterTypes":["java.lang.Class"] }, {"name":"setRegister","parameterTypes":["boolean"] }, {"name":"setRegistry","parameterTypes":["java.util.List"] }, {"name":"setSerialization","parameterTypes":["java.lang.String"] }, {"name":"setSubscribe","parameterTypes":["boolean"] }, {"name":"setUniqueId","parameterTypes":["java.lang.String"] }, {"name":"setValidation","parameterTypes":["boolean"] }, {"name":"setVersion","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.config.ConsumerConfig",
+  "allPublicFields":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"getAddressHolder","parameterTypes":[] }, {"name":"getAddressWait","parameterTypes":[] }, {"name":"getBootstrap","parameterTypes":[] }, {"name":"getCluster","parameterTypes":[] }, {"name":"getConcurrents","parameterTypes":[] }, {"name":"getConnectTimeout","parameterTypes":[] }, {"name":"getConnectionHolder","parameterTypes":[] }, {"name":"getConnectionNum","parameterTypes":[] }, {"name":"getDirectUrl","parameterTypes":[] }, {"name":"getDisconnectTimeout","parameterTypes":[] }, {"name":"getHeartbeatPeriod","parameterTypes":[] }, {"name":"getInvokeType","parameterTypes":[] }, {"name":"getLoadBalancer","parameterTypes":[] }, {"name":"getOnAvailable","parameterTypes":[] }, {"name":"getOnConnect","parameterTypes":[] }, {"name":"getOnReturn","parameterTypes":[] }, {"name":"getProtocol","parameterTypes":[] }, {"name":"getProviderInfoListener","parameterTypes":[] }, {"name":"getProxyClass","parameterTypes":[] }, {"name":"getReconnectPeriod","parameterTypes":[] }, {"name":"getRepeatedReferLimit","parameterTypes":[] }, {"name":"getRetries","parameterTypes":[] }, {"name":"getRouter","parameterTypes":[] }, {"name":"getRouterRef","parameterTypes":[] }, {"name":"getTimeout","parameterTypes":[] }, {"name":"isCheck","parameterTypes":[] }, {"name":"isGeneric","parameterTypes":[] }, {"name":"isInJVM","parameterTypes":[] }, {"name":"isLazy","parameterTypes":[] }, {"name":"isSticky","parameterTypes":[] }, {"name":"setAddressHolder","parameterTypes":["java.lang.String"] }, {"name":"setAddressWait","parameterTypes":["int"] }, {"name":"setAppName","parameterTypes":["java.lang.String"] }, {"name":"setBootstrap","parameterTypes":["java.lang.String"] }, {"name":"setCheck","parameterTypes":["boolean"] }, {"name":"setCluster","parameterTypes":["java.lang.String"] }, {"name":"setConcurrents","parameterTypes":["int"] }, {"name":"setConfigValueCache","parameterTypes":["java.util.Map"] }, {"name":"setConnectTimeout","parameterTypes":["int"] }, {"name":"setConnectionHolder","parameterTypes":["java.lang.String"] }, {"name":"setConnectionNum","parameterTypes":["int"] }, {"name":"setConsumerBootstrap","parameterTypes":["com.alipay.sofa.rpc.bootstrap.ConsumerBootstrap"] }, {"name":"setDirectUrl","parameterTypes":["java.lang.String"] }, {"name":"setDisconnectTimeout","parameterTypes":["int"] }, {"name":"setGeneric","parameterTypes":["boolean"] }, {"name":"setHeartbeatPeriod","parameterTypes":["int"] }, {"name":"setInJVM","parameterTypes":["boolean"] }, {"name":"setInvokeType","parameterTypes":["java.lang.String"] }, {"name":"setLazy","parameterTypes":["boolean"] }, {"name":"setLoadBalancer","parameterTypes":["java.lang.String"] }, {"name":"setOnAvailable","parameterTypes":["java.util.List"] }, {"name":"setOnConnect","parameterTypes":["java.util.List"] }, {"name":"setOnReturn","parameterTypes":["com.alipay.sofa.rpc.core.invoke.SofaResponseCallback"] }, {"name":"setProtocol","parameterTypes":["java.lang.String"] }, {"name":"setProviderInfoListener","parameterTypes":["com.alipay.sofa.rpc.listener.ProviderInfoListener"] }, {"name":"setReconnectPeriod","parameterTypes":["int"] }, {"name":"setRepeatedReferLimit","parameterTypes":["int"] }, {"name":"setRetries","parameterTypes":["int"] }, {"name":"setRouter","parameterTypes":["java.util.List"] }, {"name":"setRouterRef","parameterTypes":["java.util.List"] }, {"name":"setSerialization","parameterTypes":["java.lang.String"] }, {"name":"setSticky","parameterTypes":["boolean"] }, {"name":"setTimeout","parameterTypes":["int"] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.config.ProviderConfig",
+  "allPublicFields":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"getBootstrap","parameterTypes":[] }, {"name":"getConcurrents","parameterTypes":[] }, {"name":"getDelay","parameterTypes":[] }, {"name":"getExclude","parameterTypes":[] }, {"name":"getExecutor","parameterTypes":[] }, {"name":"getInclude","parameterTypes":[] }, {"name":"getPriority","parameterTypes":[] }, {"name":"getProviderBootstrap","parameterTypes":[] }, {"name":"getProxyClass","parameterTypes":[] }, {"name":"getRef","parameterTypes":[] }, {"name":"getRepeatedExportLimit","parameterTypes":[] }, {"name":"getServer","parameterTypes":[] }, {"name":"getTimeout","parameterTypes":[] }, {"name":"getWeight","parameterTypes":[] }, {"name":"isDynamic","parameterTypes":[] }, {"name":"setAppName","parameterTypes":["java.lang.String"] }, {"name":"setBootstrap","parameterTypes":["java.lang.String"] }, {"name":"setConcurrents","parameterTypes":["int"] }, {"name":"setConfigValueCache","parameterTypes":["java.util.Map"] }, {"name":"setDelay","parameterTypes":["int"] }, {"name":"setDynamic","parameterTypes":["boolean"] }, {"name":"setExclude","parameterTypes":["java.lang.String"] }, {"name":"setExecutor","parameterTypes":["java.util.concurrent.ThreadPoolExecutor"] }, {"name":"setInclude","parameterTypes":["java.lang.String"] }, {"name":"setMethodsLimit","parameterTypes":["java.util.Map"] }, {"name":"setPriority","parameterTypes":["int"] }, {"name":"setProviderBootstrap","parameterTypes":["com.alipay.sofa.rpc.bootstrap.ProviderBootstrap"] }, {"name":"setRef","parameterTypes":["java.lang.Object"] }, {"name":"setRepeatedExportLimit","parameterTypes":["int"] }, {"name":"setServer","parameterTypes":["java.util.List"] }, {"name":"setTimeout","parameterTypes":["int"] }, {"name":"setWeight","parameterTypes":["int"] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.core.request.RequestBase",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"com.alipay.sofa.rpc.core.request.SofaRequest",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.core.request.SofaRequestHessianSerializer"
+},
+{
+  "name":"com.alipay.sofa.rpc.filter.ConsumerExceptionFilter",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.filter.ConsumerGenericFilter",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.filter.Filter",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"com.alipay.sofa.rpc.filter.ProviderBaggageFilter",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.filter.ProviderExceptionFilter",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.filter.RpcReferenceContextFilter",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.filter.RpcServiceContextFilter",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.filter.sofatracer.ConsumerTracerFilter",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.filter.sofatracer.ProviderTracerFilter",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.hystrix.HystrixFilter",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.log.MiddlewareLoggerImpl",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Class"] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.module.FaultToleranceModule",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.module.LookoutModule",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.module.RestTracerModule",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.module.SofaTracerModule",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.proxy.bytebuddy.BytebuddyProxy"
+},
+{
+  "name":"com.alipay.sofa.rpc.proxy.javassist.JavassistProxy",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.proxy.jdk.JDKProxy"
+},
+{
+  "name":"com.alipay.sofa.rpc.server.bolt.BoltServer",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.server.grpc.GrpcServer"
+},
+{
+  "name":"com.alipay.sofa.rpc.server.http.Http1Server"
+},
+{
+  "name":"com.alipay.sofa.rpc.server.http.Http2ClearTextServer"
+},
+{
+  "name":"com.alipay.sofa.rpc.server.http.Http2WithSSLServer"
+},
+{
+  "name":"com.alipay.sofa.rpc.server.rest.RestServer"
+},
+{
+  "name":"com.alipay.sofa.rpc.tracer.sofatracer.RpcSofaTracer",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.transport.bolt.BoltClientTransport",
+  "methods":[{"name":"<init>","parameterTypes":["com.alipay.sofa.rpc.transport.ClientTransportConfig"] }]
+},
+{
+  "name":"com.alipay.sofa.rpc.transport.grpc.GrpcClientTransport"
+},
+{
+  "name":"com.alipay.sofa.rpc.transport.http.Http2ClearTextClientTransport"
+},
+{
+  "name":"com.alipay.sofa.rpc.transport.http.Http2ClientTransport"
+},
+{
+  "name":"com.alipay.sofa.rpc.transport.rest.RestClientTransport"
+},
+{
+  "name":"com.baidu.brpc.client.RpcClient$2"
+},
+{
+  "name":"com.baidu.brpc.client.handler.RpcClientHandler",
+  "methods":[{"name":"channelInactive","parameterTypes":["io.netty.channel.ChannelHandlerContext"] }, {"name":"exceptionCaught","parameterTypes":["io.netty.channel.ChannelHandlerContext","java.lang.Throwable"] }]
+},
+{
+  "name":"com.baidu.brpc.interceptor.AbstractInterceptor",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"com.baidu.brpc.interceptor.Interceptor",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"com.baidu.brpc.server.RpcServer$1"
+},
+{
+  "name":"com.baidu.brpc.server.handler.RpcServerChannelIdleHandler",
+  "methods":[{"name":"userEventTriggered","parameterTypes":["io.netty.channel.ChannelHandlerContext","java.lang.Object"] }]
+},
+{
+  "name":"com.baidu.brpc.server.handler.RpcServerHandler",
+  "methods":[{"name":"channelActive","parameterTypes":["io.netty.channel.ChannelHandlerContext"] }, {"name":"channelInactive","parameterTypes":["io.netty.channel.ChannelHandlerContext"] }, {"name":"exceptionCaught","parameterTypes":["io.netty.channel.ChannelHandlerContext","java.lang.Throwable"] }]
+},
+{
+  "name":"com.caucho.burlap.io.BurlapRemoteObject"
+},
+{
+  "name":"com.caucho.hessian.io.BigDecimalDeserializer",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.caucho.hessian.io.ClassSerializer",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.caucho.hessian.io.FileDeserializer",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.caucho.hessian.io.HessianRemote",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"com.caucho.hessian.io.HessianRemoteObject"
+},
+{
+  "name":"com.caucho.hessian.io.InputStreamDeserializer",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.caucho.hessian.io.InputStreamSerializer",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.caucho.hessian.io.LocaleSerializer",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.caucho.hessian.io.ObjectNameDeserializer",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.caucho.hessian.io.RemoteSerializer",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.caucho.hessian.io.ShortHandle"
+},
+{
+  "name":"com.caucho.hessian.io.SqlDateSerializer",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.caucho.hessian.io.StackTraceElementDeserializer",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.caucho.hessian.io.StringValueSerializer",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
   "name":"com.fasterxml.jackson.databind.ext.Java7SupportImpl",
@@ -138,11 +638,473 @@
   "methods":[{"name":"premain","parameterTypes":["java.lang.String","java.lang.instrument.Instrumentation"] }]
 },
 {
+  "name":"com.sun.crypto.provider.AESCipher$General",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.crypto.provider.ARCFOURCipher",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.crypto.provider.ChaCha20Cipher$ChaCha20Poly1305",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.crypto.provider.DESCipher",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.crypto.provider.DESedeCipher",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.crypto.provider.GaloisCounterMode$AESGCM",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "name":"com.sun.crypto.provider.HmacCore$HmacSHA256",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
+  "name":"com.sun.management.GarbageCollectorMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"com.sun.management.GcInfo",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"com.sun.management.HotSpotDiagnosticMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"com.sun.management.ThreadMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"com.sun.management.UnixOperatingSystemMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"com.sun.management.VMOption",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"com.sun.management.internal.GarbageCollectorExtImpl",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"com.sun.management.internal.HotSpotDiagnostic",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"com.sun.management.internal.HotSpotThreadImpl",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"com.sun.management.internal.OperatingSystemImpl",
+  "queryAllPublicConstructors":true
+},
+{
   "name":"com.sun.tools.attach.VirtualMachine"
+},
+{
+  "name":"com.taobao.hsf.invocation.filter.ClientFilter",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"com.taobao.hsf.invocation.filter.RPCFilter",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"com.taobao.hsf.invocation.filter.ServerFilter",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"com.weibo.api.motan.cluster.ha.FailfastHaStrategy",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"com.weibo.api.motan.cluster.ha.FailoverHaStrategy",
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.weibo.api.motan.cluster.loadbalance.ActiveWeightLoadBalance",
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.weibo.api.motan.cluster.loadbalance.ConfigurableWeightLoadBalance",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"com.weibo.api.motan.cluster.loadbalance.ConsistentHashLoadBalance",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"com.weibo.api.motan.cluster.loadbalance.LocalFirstLoadBalance",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"com.weibo.api.motan.cluster.loadbalance.RandomLoadBalance",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"com.weibo.api.motan.cluster.loadbalance.RoundRobinLoadBalance",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"com.weibo.api.motan.cluster.support.ClusterSpi",
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.weibo.api.motan.config.AbstractConfig",
+  "methods":[{"name":"getId","parameterTypes":[] }]
+},
+{
+  "name":"com.weibo.api.motan.config.AbstractInterfaceConfig",
+  "methods":[{"name":"getAccessLog","parameterTypes":[] }, {"name":"getActives","parameterTypes":[] }, {"name":"getApplication","parameterTypes":[] }, {"name":"getAsync","parameterTypes":[] }, {"name":"getBackupRequestDelayRatio","parameterTypes":[] }, {"name":"getBackupRequestDelayTime","parameterTypes":[] }, {"name":"getBackupRequestMaxRetryRatio","parameterTypes":[] }, {"name":"getBackupRequestSwitcherName","parameterTypes":[] }, {"name":"getCheck","parameterTypes":[] }, {"name":"getCodec","parameterTypes":[] }, {"name":"getFilter","parameterTypes":[] }, {"name":"getGroup","parameterTypes":[] }, {"name":"getLocalServiceAddress","parameterTypes":[] }, {"name":"getMingzSize","parameterTypes":[] }, {"name":"getMock","parameterTypes":[] }, {"name":"getModule","parameterTypes":[] }, {"name":"getProxy","parameterTypes":[] }, {"name":"getRegister","parameterTypes":[] }, {"name":"getRequestTimeout","parameterTypes":[] }, {"name":"getRetries","parameterTypes":[] }, {"name":"getShareChannel","parameterTypes":[] }, {"name":"getThrowException","parameterTypes":[] }, {"name":"getTransExceptionStack","parameterTypes":[] }, {"name":"getUsegz","parameterTypes":[] }, {"name":"getVersion","parameterTypes":[] }]
+},
+{
+  "name":"com.weibo.api.motan.config.AbstractRefererConfig",
+  "methods":[{"name":"getErrorRate","parameterTypes":[] }, {"name":"getMean","parameterTypes":[] }, {"name":"getP90","parameterTypes":[] }, {"name":"getP99","parameterTypes":[] }, {"name":"getP999","parameterTypes":[] }]
+},
+{
+  "name":"com.weibo.api.motan.config.AbstractServiceConfig",
+  "methods":[{"name":"getExport","parameterTypes":[] }]
+},
+{
+  "name":"com.weibo.api.motan.config.ProtocolConfig",
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"getAcceptConnections","parameterTypes":[] }, {"name":"getAsync","parameterTypes":[] }, {"name":"getCluster","parameterTypes":[] }, {"name":"getCodec","parameterTypes":[] }, {"name":"getEndpointFactory","parameterTypes":[] }, {"name":"getFilter","parameterTypes":[] }, {"name":"getHaStrategy","parameterTypes":[] }, {"name":"getIothreads","parameterTypes":[] }, {"name":"getIsDefault","parameterTypes":[] }, {"name":"getLazyInit","parameterTypes":[] }, {"name":"getLoadbalance","parameterTypes":[] }, {"name":"getMaxClientConnection","parameterTypes":[] }, {"name":"getMaxContentLength","parameterTypes":[] }, {"name":"getMaxServerConnection","parameterTypes":[] }, {"name":"getMaxWorkerThread","parameterTypes":[] }, {"name":"getMinClientConnection","parameterTypes":[] }, {"name":"getMinWorkerThread","parameterTypes":[] }, {"name":"getName","parameterTypes":[] }, {"name":"getParameters","parameterTypes":[] }, {"name":"getPoolLifo","parameterTypes":[] }, {"name":"getProxy","parameterTypes":[] }, {"name":"getRequestTimeout","parameterTypes":[] }, {"name":"getRetries","parameterTypes":[] }, {"name":"getSerialization","parameterTypes":[] }, {"name":"getWorkerQueueSize","parameterTypes":[] }]
+},
+{
+  "name":"com.weibo.api.motan.config.RefererConfig",
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"getDirectUrl","parameterTypes":[] }]
+},
+{
+  "name":"com.weibo.api.motan.config.RegistryConfig",
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"getAddress","parameterTypes":[] }, {"name":"getCheck","parameterTypes":[] }, {"name":"getConnectTimeout","parameterTypes":[] }, {"name":"getExcise","parameterTypes":[] }, {"name":"getName","parameterTypes":[] }, {"name":"getPort","parameterTypes":[] }, {"name":"getRegProtocol","parameterTypes":[] }, {"name":"getRegister","parameterTypes":[] }, {"name":"getRegistryRetryPeriod","parameterTypes":[] }, {"name":"getRegistrySessionTimeout","parameterTypes":[] }, {"name":"getRequestTimeout","parameterTypes":[] }, {"name":"getSubscribe","parameterTypes":[] }]
+},
+{
+  "name":"com.weibo.api.motan.config.ServiceConfig",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"com.weibo.api.motan.config.handler.SimpleConfigHandler",
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.weibo.api.motan.filter.AccessLogFilter",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"com.weibo.api.motan.filter.AccessStatisticFilter",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"com.weibo.api.motan.filter.ActiveLimitFilter",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"com.weibo.api.motan.filter.Filter",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"com.weibo.api.motan.filter.ServiceMockFilter",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"com.weibo.api.motan.filter.SwitcherFilter",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"com.weibo.api.motan.filter.ThreadProtectedFilter",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"com.weibo.api.motan.protocol.injvm.InjvmProtocol",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"com.weibo.api.motan.protocol.rpc.CompressRpcCodec",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"com.weibo.api.motan.protocol.rpc.DefaultRpcCodec",
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.weibo.api.motan.protocol.rpc.DefaultRpcProtocol",
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.weibo.api.motan.protocol.v2motan.MotanV2Codec",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"com.weibo.api.motan.protocol.v2motan.MotanV2Protocol",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"com.weibo.api.motan.proxy.spi.JdkProxyFactory",
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.weibo.api.motan.registry.support.DirectRegistryFactory",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"com.weibo.api.motan.registry.support.LocalRegistryFactory",
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.weibo.api.motan.registry.support.LocalRegistryService",
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.weibo.api.motan.serialize.FastJsonSerialization",
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.weibo.api.motan.serialize.Hessian2Serialization",
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.weibo.api.motan.serialize.SimpleSerialization",
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.weibo.api.motan.switcher.LocalSwitcherService",
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.weibo.api.motan.transport.netty.NettyEndpointFactory",
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.weibo.api.motan.transport.support.DefaultRpcHeartbeatFactory",
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"io.grpc.CallOptions",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":["io.grpc.CallOptions$Builder"] }]
+},
+{
+  "name":"io.grpc.Channel",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"authority","parameterTypes":[] }, {"name":"newCall","parameterTypes":["io.grpc.MethodDescriptor","io.grpc.CallOptions"] }]
+},
+{
+  "name":"io.grpc.Channel$MockitoMock$EsPTH4xv",
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"io.grpc.Channel$MockitoMock$VZeDicIY",
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"io.grpc.ClientCall",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"cancel","parameterTypes":["java.lang.String","java.lang.Throwable"] }, {"name":"halfClose","parameterTypes":[] }, {"name":"request","parameterTypes":["int"] }, {"name":"sendMessage","parameterTypes":["java.lang.Object"] }, {"name":"start","parameterTypes":["io.grpc.ClientCall$Listener","io.grpc.Metadata"] }]
+},
+{
+  "name":"io.grpc.ClientCall$Listener",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"onHeaders","parameterTypes":["io.grpc.Metadata"] }]
+},
+{
+  "name":"io.grpc.ClientCall$Listener$MockitoMock$DZWk6wKZ",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"io.grpc.ClientCall$Listener$MockitoMock$SiJU4SuM",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"io.grpc.ClientCall$MockitoMock$V1Ef2QTw",
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"io.grpc.ClientCall$MockitoMock$jacZY0Vu",
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"io.grpc.ClientInterceptor",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"io.grpc.MethodDescriptor",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":["io.grpc.MethodDescriptor$MethodType","java.lang.String","io.grpc.MethodDescriptor$Marshaller","io.grpc.MethodDescriptor$Marshaller","java.lang.Object","boolean","boolean","boolean"] }, {"name":"<init>","parameterTypes":["io.grpc.MethodDescriptor$MethodType","java.lang.String","io.grpc.MethodDescriptor$Marshaller","io.grpc.MethodDescriptor$Marshaller","java.lang.Object","boolean","boolean","boolean","io.grpc.MethodDescriptor$1"] }]
+},
+{
+  "name":"io.grpc.ServerCall",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"close","parameterTypes":["io.grpc.Status","io.grpc.Metadata"] }, {"name":"getMethodDescriptor","parameterTypes":[] }, {"name":"isCancelled","parameterTypes":[] }, {"name":"request","parameterTypes":["int"] }, {"name":"sendHeaders","parameterTypes":["io.grpc.Metadata"] }, {"name":"sendMessage","parameterTypes":["java.lang.Object"] }]
+},
+{
+  "name":"io.grpc.ServerCall$Listener",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"onCancel","parameterTypes":[] }, {"name":"onComplete","parameterTypes":[] }, {"name":"onHalfClose","parameterTypes":[] }, {"name":"onMessage","parameterTypes":["java.lang.Object"] }, {"name":"onReady","parameterTypes":[] }]
+},
+{
+  "name":"io.grpc.ServerCall$Listener$MockitoMock$FYWnUU3v",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"io.grpc.ServerCall$Listener$MockitoMock$MnfAgKOS",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"io.grpc.ServerCall$MockitoMock$HfWxNamT",
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"io.grpc.ServerCall$MockitoMock$XuDi6jTu",
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"io.grpc.ServerCallHandler",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"startCall","parameterTypes":["io.grpc.ServerCall","io.grpc.Metadata"] }]
+},
+{
+  "name":"io.grpc.ServerCallHandler$MockitoMock$6xSFxzNH",
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"io.grpc.ServerCallHandler$MockitoMock$WzNFXHQI",
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"io.grpc.ServerInterceptor",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"interceptCall","parameterTypes":["io.grpc.ServerCall","io.grpc.Metadata","io.grpc.ServerCallHandler"] }]
+},
+{
+  "name":"io.grpc.ServerInterceptor$MockitoMock$IiP4SaYn",
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"io.grpc.ServerInterceptor$MockitoMock$nJMWao8k",
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"io.grpc.census.InternalCensusStatsAccessor"
+},
+{
+  "name":"io.grpc.census.InternalCensusTracingAccessor"
+},
+{
+  "name":"io.grpc.internal.DnsNameResolverProvider"
+},
+{
+  "name":"io.grpc.internal.PickFirstLoadBalancerProvider"
+},
+{
+  "name":"io.grpc.internal.SerializingExecutor",
+  "fields":[{"name":"runState"}]
+},
+{
+  "name":"io.grpc.override.ContextStorageOverride"
+},
+{
+  "name":"io.grpc.stub.AbstractAsyncStub",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"io.grpc.stub.AbstractBlockingStub",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"io.grpc.stub.AbstractFutureStub",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"io.grpc.stub.AbstractStub",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"io.grpc.util.SecretRoundRobinLoadBalancerProvider$Provider"
 },
 {
   "name":"io.netty.bootstrap.AbstractBootstrap",
@@ -379,6 +1341,9 @@
   "methods":[{"name":"channelActive","parameterTypes":["io.netty.channel.ChannelHandlerContext"] }, {"name":"channelInactive","parameterTypes":["io.netty.channel.ChannelHandlerContext"] }, {"name":"channelRead","parameterTypes":["io.netty.channel.ChannelHandlerContext","java.lang.Object"] }, {"name":"channelReadComplete","parameterTypes":["io.netty.channel.ChannelHandlerContext"] }, {"name":"channelRegistered","parameterTypes":["io.netty.channel.ChannelHandlerContext"] }, {"name":"channelUnregistered","parameterTypes":["io.netty.channel.ChannelHandlerContext"] }, {"name":"channelWritabilityChanged","parameterTypes":["io.netty.channel.ChannelHandlerContext"] }, {"name":"exceptionCaught","parameterTypes":["io.netty.channel.ChannelHandlerContext","java.lang.Throwable"] }, {"name":"userEventTriggered","parameterTypes":["io.netty.channel.ChannelHandlerContext","java.lang.Object"] }]
 },
 {
+  "name":"io.netty.channel.DefaultFileRegion"
+},
+{
   "name":"io.netty.channel.SimpleChannelInboundHandler",
   "allDeclaredClasses":true,
   "queryAllDeclaredMethods":true,
@@ -389,12 +1354,18 @@
   "name":"io.netty.channel.embedded.EmbeddedChannel$2"
 },
 {
+  "name":"io.netty.channel.epoll.NativeDatagramPacketArray$NativeDatagramPacket"
+},
+{
   "name":"io.netty.channel.socket.nio.NioServerSocketChannel",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
   "name":"io.netty.channel.socket.nio.NioSocketChannel",
   "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"io.netty.channel.unix.PeerCredentials"
 },
 {
   "name":"io.netty.handler.codec.ByteToMessageDecoder",
@@ -518,6 +1489,18 @@
   "fields":[{"name":"attributes"}]
 },
 {
+  "name":"io.netty.util.DefaultAttributeMap$DefaultAttribute",
+  "fields":[{"name":"attributeMap"}]
+},
+{
+  "name":"io.netty.util.HashedWheelTimer",
+  "fields":[{"name":"workerState"}]
+},
+{
+  "name":"io.netty.util.HashedWheelTimer$HashedWheelTimeout",
+  "fields":[{"name":"state"}]
+},
+{
   "name":"io.netty.util.Recycler$DefaultHandle",
   "fields":[{"name":"state"}]
 },
@@ -532,6 +1515,10 @@
   "queryAllDeclaredMethods":true,
   "queryAllDeclaredConstructors":true,
   "methods":[{"name":"refCnt","parameterTypes":[] }, {"name":"release","parameterTypes":[] }, {"name":"release","parameterTypes":["int"] }]
+},
+{
+  "name":"io.netty.util.ResourceLeakDetector$DefaultResourceLeak",
+  "fields":[{"name":"droppedRecords"}, {"name":"head"}]
 },
 {
   "name":"io.netty.util.concurrent.DefaultPromise",
@@ -582,6 +1569,9 @@
   "fields":[{"name":"producerLimit"}]
 },
 {
+  "name":"io.perfmark.impl.SecretPerfMarkImpl$PerfMarkImpl"
+},
+{
   "name":"io.seata.config.ConfigurationProvider"
 },
 {
@@ -621,7 +1611,16 @@
   "name":"java.beans.Transient"
 },
 {
+  "name":"java.io.File"
+},
+{
+  "name":"java.io.FileDescriptor"
+},
+{
   "name":"java.io.FilePermission"
+},
+{
+  "name":"java.io.InputStream"
 },
 {
   "name":"java.io.Serializable",
@@ -635,12 +1634,24 @@
   "name":"java.lang.AutoCloseable"
 },
 {
+  "name":"java.lang.Boolean",
+  "fields":[{"name":"TYPE"}]
+},
+{
+  "name":"java.lang.Byte",
+  "fields":[{"name":"TYPE"}]
+},
+{
+  "name":"java.lang.Character",
+  "fields":[{"name":"TYPE"}]
+},
+{
   "name":"java.lang.Class",
   "methods":[{"name":"forName","parameterTypes":["java.lang.String"] }, {"name":"getAnnotatedInterfaces","parameterTypes":[] }, {"name":"getAnnotatedSuperclass","parameterTypes":[] }, {"name":"getDeclaredMethod","parameterTypes":["java.lang.String","java.lang.Class[]"] }, {"name":"getMethod","parameterTypes":["java.lang.String","java.lang.Class[]"] }, {"name":"getModule","parameterTypes":[] }, {"name":"getNestHost","parameterTypes":[] }, {"name":"getNestMembers","parameterTypes":[] }, {"name":"getPermittedSubclasses","parameterTypes":[] }, {"name":"getRecordComponents","parameterTypes":[] }, {"name":"isNestmateOf","parameterTypes":["java.lang.Class"] }, {"name":"isRecord","parameterTypes":[] }, {"name":"isSealed","parameterTypes":[] }]
 },
 {
   "name":"java.lang.ClassLoader",
-  "methods":[{"name":"defineClass","parameterTypes":["java.lang.String","byte[]","int","int","java.security.ProtectionDomain"] }, {"name":"definePackage","parameterTypes":["java.lang.String","java.lang.String","java.lang.String","java.lang.String","java.lang.String","java.lang.String","java.lang.String","java.net.URL"] }, {"name":"findLoadedClass","parameterTypes":["java.lang.String"] }, {"name":"getClassLoadingLock","parameterTypes":["java.lang.String"] }, {"name":"getDefinedPackage","parameterTypes":["java.lang.String"] }, {"name":"getPackage","parameterTypes":["java.lang.String"] }, {"name":"getUnnamedModule","parameterTypes":[] }, {"name":"registerAsParallelCapable","parameterTypes":[] }]
+  "methods":[{"name":"defineClass","parameterTypes":["java.lang.String","byte[]","int","int"] }, {"name":"defineClass","parameterTypes":["java.lang.String","byte[]","int","int","java.security.ProtectionDomain"] }, {"name":"definePackage","parameterTypes":["java.lang.String","java.lang.String","java.lang.String","java.lang.String","java.lang.String","java.lang.String","java.lang.String","java.net.URL"] }, {"name":"findLoadedClass","parameterTypes":["java.lang.String"] }, {"name":"getClassLoadingLock","parameterTypes":["java.lang.String"] }, {"name":"getDefinedPackage","parameterTypes":["java.lang.String"] }, {"name":"getPackage","parameterTypes":["java.lang.String"] }, {"name":"getUnnamedModule","parameterTypes":[] }, {"name":"registerAsParallelCapable","parameterTypes":[] }]
 },
 {
   "name":"java.lang.ClassLoader$ByteBuddyAccessor$V1",
@@ -664,8 +1675,13 @@
 {
   "name":"java.lang.Deprecated",
   "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
   "queryAllDeclaredConstructors":true,
   "methods":[{"name":"forRemoval","parameterTypes":[] }, {"name":"since","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.Double",
+  "fields":[{"name":"TYPE"}]
 },
 {
   "name":"java.lang.Enum",
@@ -675,14 +1691,23 @@
 },
 {
   "name":"java.lang.Exception",
+  "allDeclaredFields":true,
   "allDeclaredClasses":true,
   "queryAllDeclaredMethods":true,
   "queryAllPublicMethods":true
 },
 {
+  "name":"java.lang.Float",
+  "fields":[{"name":"TYPE"}]
+},
+{
   "name":"java.lang.FunctionalInterface",
   "queryAllDeclaredMethods":true,
   "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.lang.Integer",
+  "fields":[{"name":"TYPE"}]
 },
 {
   "name":"java.lang.Iterable",
@@ -691,6 +1716,10 @@
   "queryAllDeclaredMethods":true,
   "queryAllDeclaredConstructors":true,
   "methods":[{"name":"iterator","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.Long",
+  "fields":[{"name":"TYPE"}]
 },
 {
   "name":"java.lang.Module",
@@ -735,6 +1764,20 @@
   "methods":[{"name":"checkPermission","parameterTypes":["java.security.Permission"] }]
 },
 {
+  "name":"java.lang.Short",
+  "fields":[{"name":"TYPE"}]
+},
+{
+  "name":"java.lang.StackTraceElement",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.lang.StackTraceElementHessianSerializer"
+},
+{
   "name":"java.lang.StackWalker",
   "methods":[{"name":"getInstance","parameterTypes":["java.lang.StackWalker$Option"] }, {"name":"getInstance","parameterTypes":["java.util.Set","int"] }, {"name":"walk","parameterTypes":["java.util.function.Function"] }]
 },
@@ -746,6 +1789,13 @@
   "methods":[{"name":"getClassName","parameterTypes":[] }, {"name":"getDeclaringClass","parameterTypes":[] }, {"name":"getFileName","parameterTypes":[] }, {"name":"getLineNumber","parameterTypes":[] }, {"name":"getMethodName","parameterTypes":[] }]
 },
 {
+  "name":"java.lang.String",
+  "fields":[{"name":"TYPE"}]
+},
+{
+  "name":"java.lang.StringBuilder"
+},
+{
   "name":"java.lang.System",
   "methods":[{"name":"getSecurityManager","parameterTypes":[] }]
 },
@@ -754,13 +1804,19 @@
   "allDeclaredClasses":true,
   "queryAllDeclaredMethods":true,
   "queryAllPublicMethods":true,
-  "fields":[{"name":"threadLocalRandomProbe"}]
+  "fields":[{"name":"threadLocalRandomProbe"}],
+  "methods":[{"name":"getContextClassLoader","parameterTypes":[] }]
 },
 {
   "name":"java.lang.Throwable",
+  "allDeclaredFields":true,
   "allDeclaredClasses":true,
   "queryAllDeclaredMethods":true,
   "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.Void",
+  "fields":[{"name":"TYPE"}]
 },
 {
   "name":"java.lang.WeakPairMap"
@@ -823,6 +1879,9 @@
   "methods":[{"name":"redefineModule","parameterTypes":["java.lang.Module","java.util.Set","java.util.Map","java.util.Map","java.util.Set","java.util.Map"] }]
 },
 {
+  "name":"java.lang.invoke.CallSite"
+},
+{
   "name":"java.lang.invoke.MethodHandle",
   "methods":[{"name":"bindTo","parameterTypes":["java.lang.Object"] }, {"name":"invokeWithArguments","parameterTypes":["java.lang.Object[]"] }]
 },
@@ -837,6 +1896,64 @@
 {
   "name":"java.lang.invoke.MethodType",
   "methods":[{"name":"methodType","parameterTypes":["java.lang.Class","java.lang.Class[]"] }]
+},
+{
+  "name":"java.lang.management.BufferPoolMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.management.ClassLoadingMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.management.CompilationMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.management.LockInfo",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.management.ManagementFactory",
+  "methods":[{"name":"getRuntimeMXBean","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.management.ManagementPermission",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"java.lang.management.MemoryMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.management.MemoryManagerMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.management.MemoryPoolMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.management.MemoryUsage",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.management.MonitorInfo",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.management.PlatformLoggingMXBean",
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"getLoggerLevel","parameterTypes":["java.lang.String"] }, {"name":"getLoggerNames","parameterTypes":[] }, {"name":"getParentLoggerName","parameterTypes":["java.lang.String"] }, {"name":"setLoggerLevel","parameterTypes":["java.lang.String","java.lang.String"] }]
+},
+{
+  "name":"java.lang.management.RuntimeMXBean",
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"getName","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.management.ThreadInfo",
+  "queryAllPublicMethods":true
 },
 {
   "name":"java.lang.reflect.AccessibleObject",
@@ -892,6 +2009,12 @@
   "methods":[{"name":"getAnnotatedBounds","parameterTypes":[] }]
 },
 {
+  "name":"java.math.BigDecimal"
+},
+{
+  "name":"java.math.BigInteger"
+},
+{
   "name":"java.net.NetPermission"
 },
 {
@@ -918,6 +2041,9 @@
   "methods":[{"name":"<init>","parameterTypes":["long","long"] }]
 },
 {
+  "name":"java.nio.channels.FileChannel"
+},
+{
   "name":"java.nio.channels.spi.SelectorProvider",
   "methods":[{"name":"openServerSocketChannel","parameterTypes":["java.net.ProtocolFamily"] }, {"name":"openSocketChannel","parameterTypes":["java.net.ProtocolFamily"] }]
 },
@@ -929,7 +2055,13 @@
   "methods":[{"name":"doPrivileged","parameterTypes":["java.security.PrivilegedAction"] }, {"name":"doPrivileged","parameterTypes":["java.security.PrivilegedExceptionAction"] }]
 },
 {
+  "name":"java.security.AlgorithmParametersSpi"
+},
+{
   "name":"java.security.AllPermission"
+},
+{
+  "name":"java.security.KeyStoreSpi"
 },
 {
   "name":"java.security.SecureRandomParameters"
@@ -938,7 +2070,66 @@
   "name":"java.security.SecurityPermission"
 },
 {
-  "name":"java.sql.Time"
+  "name":"java.sql.Date",
+  "methods":[{"name":"<init>","parameterTypes":["long"] }]
+},
+{
+  "name":"java.sql.Time",
+  "methods":[{"name":"<init>","parameterTypes":["long"] }]
+},
+{
+  "name":"java.sql.Timestamp",
+  "methods":[{"name":"<init>","parameterTypes":["long"] }]
+},
+{
+  "name":"java.time.Duration"
+},
+{
+  "name":"java.time.Instant"
+},
+{
+  "name":"java.time.LocalDate"
+},
+{
+  "name":"java.time.LocalDateTime"
+},
+{
+  "name":"java.time.LocalTime"
+},
+{
+  "name":"java.time.MonthDay"
+},
+{
+  "name":"java.time.OffsetDateTime"
+},
+{
+  "name":"java.time.OffsetTime"
+},
+{
+  "name":"java.time.Period"
+},
+{
+  "name":"java.time.Year"
+},
+{
+  "name":"java.time.YearMonth"
+},
+{
+  "name":"java.time.ZoneId"
+},
+{
+  "name":"java.time.ZoneOffset"
+},
+{
+  "name":"java.time.ZonedDateTime"
+},
+{
+  "name":"java.util.AbstractCollection",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.AbstractList",
+  "queryAllDeclaredMethods":true
 },
 {
   "name":"java.util.AbstractMap",
@@ -946,19 +2137,45 @@
   "queryAllDeclaredMethods":true
 },
 {
+  "name":"java.util.ArrayList",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"java.util.Collections$EmptyList",
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"java.util.Collections$EmptyListHessianDeserializer"
+},
+{
+  "name":"java.util.Collections$EmptyListHessianSerializer"
+},
+{
+  "name":"java.util.Date"
+},
+{
   "name":"java.util.Deque"
 },
 {
   "name":"java.util.HashMap",
   "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"java.util.HashMapHessianSerializer"
+},
+{
+  "name":"java.util.Locale"
 },
 {
   "name":"java.util.Map",
   "queryAllDeclaredMethods":true
 },
 {
-  "name":"java.util.PropertyPermission"
+  "name":"java.util.PropertyPermission",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.String","java.lang.String"] }]
 },
 {
   "name":"java.util.concurrent.ForkJoinTask",
@@ -973,12 +2190,25 @@
   "methods":[{"name":"get","parameterTypes":[] }, {"name":"get","parameterTypes":["long","java.util.concurrent.TimeUnit"] }, {"name":"isCancelled","parameterTypes":[] }, {"name":"isDone","parameterTypes":[] }]
 },
 {
+  "name":"java.util.concurrent.ScheduledThreadPoolExecutor",
+  "methods":[{"name":"setRemoveOnCancelPolicy","parameterTypes":["boolean"] }]
+},
+{
   "name":"java.util.concurrent.atomic.AtomicBoolean",
   "fields":[{"name":"value"}]
 },
 {
+  "name":"java.util.concurrent.atomic.AtomicMarkableReference",
+  "fields":[{"name":"pair"}]
+},
+{
   "name":"java.util.concurrent.atomic.AtomicReference",
   "fields":[{"name":"value"}]
+},
+{
+  "name":"java.util.concurrent.atomic.LongAdder",
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"add","parameterTypes":["long"] }, {"name":"sum","parameterTypes":[] }]
 },
 {
   "name":"java.util.concurrent.atomic.Striped64",
@@ -994,13 +2224,75 @@
   "methods":[{"name":"apply","parameterTypes":["java.lang.Object"] }]
 },
 {
+  "name":"java.util.logging.LogManager",
+  "methods":[{"name":"getLoggingMXBean","parameterTypes":[] }]
+},
+{
+  "name":"java.util.logging.LoggingMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.zip.DeflaterInputStream"
+},
+{
+  "name":"javax.annotation.Nullable",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"javax.management.MBeanOperationInfo",
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"getSignature","parameterTypes":[] }]
+},
+{
+  "name":"javax.management.MBeanServerBuilder",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"javax.management.ObjectName"
+},
+{
+  "name":"javax.management.StandardEmitterMBean",
+  "methods":[{"name":"cacheMBeanInfo","parameterTypes":["javax.management.MBeanInfo"] }, {"name":"getCachedMBeanInfo","parameterTypes":[] }, {"name":"getMBeanInfo","parameterTypes":[] }]
+},
+{
+  "name":"javax.management.openmbean.CompositeData"
+},
+{
+  "name":"javax.management.openmbean.OpenMBeanOperationInfoSupport"
+},
+{
+  "name":"javax.management.openmbean.TabularData"
+},
+{
   "name":"javax.persistence.ManyToMany"
 },
 {
   "name":"javax.persistence.OneToMany"
 },
 {
+  "name":"javax.security.auth.x500.X500Principal",
+  "fields":[{"name":"thisX500Name"}],
+  "methods":[{"name":"<init>","parameterTypes":["sun.security.x509.X500Name"] }]
+},
+{
+  "name":"javax.servlet.ServletRequest",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"javax.servlet.http.HttpServletRequest",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
+},
+{
   "name":"javax.smartcardio.CardPermission"
+},
+{
+  "name":"javax.ws.rs.container.ContainerRequestFilter"
+},
+{
+  "name":"javax.ws.rs.container.ContainerResponseFilter"
 },
 {
   "name":"javax.xml.bind.annotation.XmlAccessorType"
@@ -1009,6 +2301,31 @@
   "name":"jdk.internal.misc.Unsafe",
   "fields":[{"name":"theUnsafe"}],
   "methods":[{"name":"defineClass","parameterTypes":["java.lang.String","byte[]","int","int","java.lang.ClassLoader","java.security.ProtectionDomain"] }, {"name":"getUnsafe","parameterTypes":[] }]
+},
+{
+  "name":"jdk.management.jfr.ConfigurationInfo",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"jdk.management.jfr.EventTypeInfo",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"jdk.management.jfr.FlightRecorderMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"jdk.management.jfr.FlightRecorderMXBeanImpl",
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"cacheMBeanInfo","parameterTypes":["javax.management.MBeanInfo"] }, {"name":"getCachedMBeanInfo","parameterTypes":[] }, {"name":"getMBeanInfo","parameterTypes":[] }, {"name":"getNotificationInfo","parameterTypes":[] }]
+},
+{
+  "name":"jdk.management.jfr.RecordingInfo",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"jdk.management.jfr.SettingDescriptorInfo",
+  "queryAllPublicMethods":true
 },
 {
   "name":"kotlin.Metadata"
@@ -1392,6 +2709,22 @@
   "fields":[{"name":"INSTANCE"}]
 },
 {
+  "name":"net.sf.cglib.core.MethodWrapper$MethodWrapperKey",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"net.sf.cglib.core.MethodWrapper$MethodWrapperKey$$KeyFactoryByCGLIB$$d45e49f7",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"net.sf.cglib.proxy.Enhancer$EnhancerKey",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"net.sf.cglib.proxy.Enhancer$EnhancerKey$$KeyFactoryByCGLIB$$7fb24d72",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "name":"org.apache.commons.pool.BaseKeyedObjectPool",
   "allDeclaredFields":true,
   "allDeclaredClasses":true,
@@ -1420,6 +2753,43 @@
   "queryAllDeclaredMethods":true,
   "queryAllDeclaredConstructors":true,
   "methods":[{"name":"<init>","parameterTypes":["org.apache.commons.pool.KeyedPoolableObjectFactory","int","byte","long","int"] }, {"name":"returnObject","parameterTypes":["java.lang.Object","java.lang.Object"] }]
+},
+{
+  "name":"org.apache.commons.pool2.impl.DefaultEvictionPolicy",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.commons.pool2.impl.DefaultPooledObjectInfo",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.commons.pool2.impl.GenericObjectPool",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"org.apache.commons.pool2.impl.GenericObjectPoolMXBean",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.dubbo.rpc.RpcContext"
+},
+{
+  "name":"org.apache.log4j.Category"
+},
+{
+  "name":"org.apache.log4j.CategoryKey"
+},
+{
+  "name":"org.apache.log4j.Logger"
+},
+{
+  "name":"org.apache.log4j.helpers.Loader"
+},
+{
+  "name":"org.apache.logging.log4j.spi.ExtendedLogger"
+},
+{
+  "name":"org.apache.logging.slf4j.Log4jLoggerFactory"
 },
 {
   "name":"org.apache.seata.common.loader.EnhancedServiceLoader",
@@ -4194,11 +5564,557 @@
   "methods":[{"name":"getInstances","parameterTypes":[] }]
 },
 {
+  "name":"org.apache.seata.integration.brpc.TransactionInterceptorTest",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"rpcInit","parameterTypes":[] }, {"name":"testWithInterceptor","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.integration.brpc.TransactionPropagationClientInterceptor",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.brpc.TransactionPropagationServerInterceptor",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.brpc.dto.Echo",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.brpc.dto.Echo$1"
+},
+{
+  "name":"org.apache.seata.integration.brpc.dto.Echo$EchoRequest",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"getDefaultInstance","parameterTypes":[] }, {"name":"parseFrom","parameterTypes":["byte[]"] }]
+},
+{
+  "name":"org.apache.seata.integration.brpc.dto.Echo$EchoRequest$1"
+},
+{
+  "name":"org.apache.seata.integration.brpc.dto.Echo$EchoRequest$Builder",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.brpc.dto.Echo$EchoRequestOrBuilder",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.brpc.dto.Echo$EchoResponse",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"getDefaultInstance","parameterTypes":[] }, {"name":"parseFrom","parameterTypes":["byte[]"] }]
+},
+{
+  "name":"org.apache.seata.integration.brpc.dto.Echo$EchoResponse$1"
+},
+{
+  "name":"org.apache.seata.integration.brpc.dto.Echo$EchoResponse$Builder",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.brpc.dto.Echo$EchoResponseOrBuilder",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.brpc.server.EchoService",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"echo","parameterTypes":["org.apache.seata.integration.brpc.dto.Echo$EchoRequest"] }]
+},
+{
+  "name":"org.apache.seata.integration.brpc.server.EchoService$$EnhancerByCGLIB$$6a3f8c38",
+  "fields":[{"name":"CGLIB$CALLBACK_FILTER"}, {"name":"CGLIB$FACTORY_DATA"}],
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"CGLIB$SET_THREAD_CALLBACKS","parameterTypes":["net.sf.cglib.proxy.Callback[]"] }]
+},
+{
+  "name":"org.apache.seata.integration.brpc.server.impl.EchoServiceImpl",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.dubbo.alibaba.AlibabaDubboTransactionConsumerFilter",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.dubbo.alibaba.AlibabaDubboTransactionPropagationFilterTest",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"testInvoke_And_RootContext","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.integration.dubbo.alibaba.AlibabaDubboTransactionProviderFilter",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.dubbo.alibaba.AlibabaDubboTransactionProviderFilter$1"
+},
+{
+  "name":"org.apache.seata.integration.dubbo.alibaba.AlibabaDubboTransactionProviderFilter$TransactionContextBinding"
+},
+{
+  "name":"org.apache.seata.integration.dubbo.alibaba.mock.MockInvoker",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.GrpcHeaderKey"
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.GrpcTest",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"clientHeaderDeliveredToServer","parameterTypes":[] }, {"name":"suite","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.GrpcTest$1"
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.GrpcTest$2"
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.client.ClientTransactionInterceptor",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"suite","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.client.ClientTransactionInterceptor$1"
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.client.ClientTransactionInterceptor$1$1"
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.client.ClientTransactionInterceptorTest",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setUp","parameterTypes":[] }, {"name":"testInterceptCall_withXid_shouldInjectHeaders","parameterTypes":[] }, {"name":"testInterceptCall_withoutXid_shouldNotInjectHeaders","parameterTypes":[] }, {"name":"testOnHeaders_shouldDelegateToOriginalListener","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.proto.ContextRpcGrpc",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"suite","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.proto.ContextRpcGrpc$1"
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.proto.ContextRpcGrpc$2"
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.proto.ContextRpcGrpc$3"
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.proto.ContextRpcGrpc$AsyncService"
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.proto.ContextRpcGrpc$ContextRpcBaseDescriptorSupplier"
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.proto.ContextRpcGrpc$ContextRpcBlockingStub",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"suite","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.proto.ContextRpcGrpc$ContextRpcFileDescriptorSupplier"
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.proto.ContextRpcGrpc$ContextRpcFutureStub",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"suite","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.proto.ContextRpcGrpc$ContextRpcImplBase"
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.proto.ContextRpcGrpc$ContextRpcMethodDescriptorSupplier"
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.proto.ContextRpcGrpc$ContextRpcStub",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"suite","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.proto.ContextRpcGrpc$MethodHandlers"
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.proto.ContextRpcTest",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"suite","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.proto.Request",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"suite","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.proto.Request$1"
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.proto.Request$Builder",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"suite","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.proto.RequestOrBuilder",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.proto.Response",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"suite","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.proto.Response$1"
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.proto.Response$Builder",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"suite","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.proto.ResponseOrBuilder",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.server.ServerListenerProxy",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"suite","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.server.ServerListenerProxyTest",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"cleanup","parameterTypes":[] }, {"name":"setup","parameterTypes":[] }, {"name":"testOnCancel_shouldDelegate","parameterTypes":[] }, {"name":"testOnComplete_shouldDelegate","parameterTypes":[] }, {"name":"testOnHalfClose_withEmptyXid_shouldOnlyCleanContext_andCallTarget","parameterTypes":[] }, {"name":"testOnHalfClose_withNonEmptyXid_andTCCBranchType_shouldBindContext","parameterTypes":[] }, {"name":"testOnMessage_shouldDelegateToTarget","parameterTypes":[] }, {"name":"testOnReady_shouldDelegate","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.server.ServerTransactionInterceptor",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"getBranchName","parameterTypes":["io.grpc.Metadata"] }, {"name":"getRpcXid","parameterTypes":["io.grpc.Metadata"] }, {"name":"suite","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.integration.grpc.interceptor.server.ServerTransactionInterceptorTest",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setUp","parameterTypes":[] }, {"name":"testGetBranchName_shouldReturnCorrectValue","parameterTypes":[] }, {"name":"testGetRpcXid_shouldSupportUppercaseAndLowercaseKeys","parameterTypes":[] }, {"name":"testInterceptCall_shouldExtractXidAndBranchTypeAndWrapListener","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.integration.hsf.HsfTransactionConsumerFilter",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.hsf.HsfTransactionConsumerFilter$1"
+},
+{
+  "name":"org.apache.seata.integration.hsf.HsfTransactionConsumerFilter$TransactionContext"
+},
+{
+  "name":"org.apache.seata.integration.hsf.HsfTransactionProviderFilter",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.hsf.HsfTransactionProviderFilter$1"
+},
+{
+  "name":"org.apache.seata.integration.hsf.HsfTransactionProviderFilter$RpcTransactionContext"
+},
+{
+  "name":"org.apache.seata.integration.hsf.HsfTransactionProviderFilter$TransactionContextBinding"
+},
+{
+  "name":"org.apache.seata.integration.http.AbstractHttpExecutor",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.http.DefaultHttpExecutor",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.http.HandlerInterceptorAdapter",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.http.HttpExecutor",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.http.HttpTest",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"convertParamOfJsonStringTest","parameterTypes":[] }, {"name":"testGetExceptionRemoveXID","parameterTypes":[] }, {"name":"testGetProviderXID","parameterTypes":[] }, {"name":"testPostProviderXID","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.integration.http.HttpTest$Person",
+  "allDeclaredFields":true,
+  "allPublicFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"setAge","parameterTypes":["int"] }]
+},
+{
+  "name":"org.apache.seata.integration.http.MockController",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"testException","parameterTypes":["org.apache.seata.integration.http.HttpTest$Person"] }, {"name":"testGet","parameterTypes":["org.apache.seata.integration.http.HttpTest$Person"] }, {"name":"testPost","parameterTypes":["org.apache.seata.integration.http.HttpTest$Person"] }]
+},
+{
+  "name":"org.apache.seata.integration.http.MockHttpExecuter",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.http.MockHttpServletRequest",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.http.MockRequest",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.http.MockResponse",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.http.MockWebServer",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.http.SeataWebMvcConfigurer",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.http.ServletMapping",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.http.TransactionPropagationInterceptor",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.http.WebMvcConfigurerAdapter",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.http.XidResource",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.motan.MotanTransactionFilter",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.integration.motan.MotanTransactionFilterTest",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"testGetProviderXID","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.integration.motan.XIDService",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"getXid","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.integration.motan.XIDServiceImpl",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.rpc.core.BaseRpcFilter",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.rpc.core.ConsumerRpcFilter",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.rpc.core.ProviderRpcFilter",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.sofa.rpc.HelloService",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"sayHello","parameterTypes":["java.lang.String","int"] }]
+},
+{
+  "name":"org.apache.seata.integration.sofa.rpc.HelloServiceImpl",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.sofa.rpc.HelloServiceProxy",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.apache.seata.integration.sofa.rpc.HelloService_proxy_0",
+  "fields":[{"name":"proxyInvoker"}],
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.integration.sofa.rpc.TransactionContextConsumerFilter",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.integration.sofa.rpc.TransactionContextFilterTest",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"adAfterClass","parameterTypes":[] }, {"name":"adBeforeClass","parameterTypes":[] }, {"name":"testAll","parameterTypes":[] }, {"name":"testSetAttachment","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.seata.integration.sofa.rpc.TransactionContextProviderFilter",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "name":"org.apache.seata.serializer.protobuf.ProtobufSerializer"
 },
 {
   "name":"org.apiguardian.api.API",
   "queryAllPublicMethods":true
+},
+{
+  "name":"org.jboss.netty.util.internal.AtomicFieldUpdaterUtil$Node",
+  "fields":[{"name":"next"}]
+},
+{
+  "name":"org.jboss.netty.util.internal.LinkedTransferQueue",
+  "fields":[{"name":"head"}, {"name":"sweepVotes"}, {"name":"tail"}]
+},
+{
+  "name":"org.jboss.netty.util.internal.LinkedTransferQueue$Node",
+  "fields":[{"name":"item"}, {"name":"next"}]
+},
+{
+  "name":"org.jboss.resteasy.core.interception.PostMatchContainerRequestContext"
+},
+{
+  "name":"org.jboss.resteasy.plugins.server.netty.NettyHttpRequest"
+},
+{
+  "name":"org.jboss.resteasy.plugins.server.netty.NettyHttpResponse"
 },
 {
   "name":"org.junit.internal.AssumptionViolatedException"
@@ -4238,6 +6154,10 @@
 {
   "name":"org.junit.platform.suite.api.Suite",
   "queryAllPublicMethods":true
+},
+{
+  "name":"org.junit.runner.Description",
+  "fields":[{"name":"fUniqueId"}]
 },
 {
   "name":"org.mockito.Captor",
@@ -4376,7 +6296,15 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
+  "name":"org.mockito.internal.util.reflection.InstrumentationMemberAccessor$Dispatcher$ByteBuddy$biFaMuWn",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "name":"org.mockito.internal.util.reflection.InstrumentationMemberAccessor$Dispatcher$ByteBuddy$sOdPtOf5",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.mockito.internal.util.reflection.InstrumentationMemberAccessor$Dispatcher$ByteBuddy$x7nTk9eZ",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
@@ -4421,6 +6349,57 @@
   "methods":[{"name":"getLogger","parameterTypes":["java.lang.Class"] }]
 },
 {
+  "name":"org.slf4j.impl.JCLLoggerAdapter"
+},
+{
+  "name":"org.slf4j.impl.Log4jLoggerFactory"
+},
+{
+  "name":"org.slf4j.spi.LocationAwareLogger"
+},
+{
+  "name":"org.springframework.web.servlet.HandlerInterceptor",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"org.springframework.web.servlet.config.annotation.WebMvcConfigurer",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"sun.management.ClassLoadingImpl",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"sun.management.CompilationImpl",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"sun.management.ManagementFactoryHelper$1",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"sun.management.ManagementFactoryHelper$PlatformLoggingImpl",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"sun.management.MemoryImpl",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"sun.management.MemoryManagerImpl",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"sun.management.MemoryPoolImpl",
+  "queryAllPublicConstructors":true
+},
+{
+  "name":"sun.management.RuntimeImpl",
+  "queryAllPublicConstructors":true
+},
+{
   "name":"sun.misc.SharedSecrets"
 },
 {
@@ -4433,6 +6412,18 @@
   "fields":[{"name":"publicSelectedKeys"}, {"name":"selectedKeys"}]
 },
 {
+  "name":"sun.security.pkcs12.PKCS12KeyStore",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.pkcs12.PKCS12KeyStore$DualFormatPKCS12",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.MD5",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "name":"sun.security.provider.NativePRNG",
   "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"<init>","parameterTypes":["java.security.SecureRandomParameters"] }]
 },
@@ -4443,5 +6434,69 @@
 {
   "name":"sun.security.provider.SHA2$SHA256",
   "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.X509Factory",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.rsa.RSAKeyFactory$Legacy",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.ssl.SSLContextImpl$TLSContext",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.ssl.TrustManagerFactoryImpl$PKIXFactory",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.x509.AuthorityInfoAccessExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.AuthorityKeyIdentifierExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.BasicConstraintsExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.CRLDistributionPointsExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.CertificatePoliciesExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.ExtendedKeyUsageExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.IssuerAlternativeNameExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.KeyUsageExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.NetscapeCertTypeExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.PrivateKeyUsageExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.SubjectAlternativeNameExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.SubjectKeyIdentifierExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
 }
 ]

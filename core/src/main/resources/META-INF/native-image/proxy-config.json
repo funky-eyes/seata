@@ -91,5 +91,8 @@
   },
   {
     "interfaces":["org.apache.seata.config.Configuration"]
+  },
+  {
+    "interfaces":["org.apache.seata.integration.motan.XIDService"]
   }
 ]
