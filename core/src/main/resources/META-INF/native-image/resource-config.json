@@ -1,9 +1,73 @@
 {
   "resources":{
   "includes":[{
+    "pattern":"\\QMETA-INF/seata/io.seata.config.ConfigurationProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/seata/org.apache.seata.config.ConfigurationProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/seata/org.apache.seata.config.ExtConfigurationProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/seata/org.apache.seata.config.file.FileConfig\\E"
+  }, {
+    "pattern":"\\QMETA-INF/seata/org.apache.seata.core.auth.AuthSigner\\E"
+  }, {
+    "pattern":"\\QMETA-INF/seata/org.apache.seata.core.context.ContextCore\\E"
+  }, {
+    "pattern":"\\QMETA-INF/seata/org.apache.seata.core.rpc.hook.RpcHook\\E"
+  }, {
+    "pattern":"\\QMETA-INF/seata/org.apache.seata.core.rpc.netty.http.filter.HttpRequestFilter\\E"
+  }, {
+    "pattern":"\\QMETA-INF/seata/org.apache.seata.core.serializer.Serializer\\E"
+  }, {
+    "pattern":"\\QMETA-INF/seata/org.apache.seata.core.store.db.sql.distributed.lock.DistributedLockSql\\E"
+  }, {
+    "pattern":"\\QMETA-INF/seata/org.apache.seata.core.store.db.sql.lock.LockStoreSql\\E"
+  }, {
+    "pattern":"\\QMETA-INF/seata/org.apache.seata.core.store.db.sql.log.LogStoreSqls\\E"
+  }, {
+    "pattern":"\\QMETA-INF/seata/org.apache.seata.discovery.registry.RegistryProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/ch.qos.logback.classic.spi.Configurator\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/com.alibaba.fastjson.parser.deserializer.AutowiredObjectDeserializer\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/com.alibaba.fastjson.serializer.AutowiredObjectSerializer\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/io.seata.config.ConfigurationProvider\\E"
+  }, {
     "pattern":"\\QMETA-INF/services/java.lang.System$LoggerFinder\\E"
   }, {
+    "pattern":"\\QMETA-INF/services/java.net.spi.URLStreamHandlerProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/java.nio.channels.spi.SelectorProvider\\E"
+  }, {
     "pattern":"\\QMETA-INF/services/java.time.zone.ZoneRulesProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.apache.seata.config.ConfigurationProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.apache.seata.config.ExtConfigurationProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.apache.seata.config.file.FileConfig\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.apache.seata.core.auth.AuthSigner\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.apache.seata.core.context.ContextCore\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.apache.seata.core.rpc.hook.RpcHook\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.apache.seata.core.rpc.netty.http.filter.HttpRequestFilter\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.apache.seata.core.serializer.Serializer\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.apache.seata.core.store.db.sql.distributed.lock.DistributedLockSql\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.apache.seata.core.store.db.sql.lock.LockStoreSql\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.apache.seata.core.store.db.sql.log.LogStoreSqls\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.apache.seata.discovery.registry.RegistryProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.assertj.core.presentation.Representation\\E"
   }, {
     "pattern":"\\QMETA-INF/services/org.junit.platform.engine.TestEngine\\E"
   }, {
@@ -17,13 +81,67 @@
   }, {
     "pattern":"\\QMETA-INF/services/org.slf4j.spi.SLF4JServiceProvider\\E"
   }, {
+    "pattern":"\\Q\\E"
+  }, {
     "pattern":"\\Qdarwin/aarch64/libzstd-jni-1.5.0-4.dylib\\E"
+  }, {
+    "pattern":"\\Qfastjson.properties\\E"
+  }, {
+    "pattern":"\\Qfile.conf\\E"
+  }, {
+    "pattern":"\\Qjava/lang/reflect/AccessibleObject.class\\E"
   }, {
     "pattern":"\\Qjunit-platform.properties\\E"
   }, {
+    "pattern":"\\Qlogback-test.scmo\\E"
+  }, {
+    "pattern":"\\Qlogback-test.xml\\E"
+  }, {
+    "pattern":"\\Qlogback.scmo\\E"
+  }, {
+    "pattern":"\\Qlogback.xml\\E"
+  }, {
+    "pattern":"\\Qmockito-extensions/org.mockito.plugins.AnnotationEngine\\E"
+  }, {
+    "pattern":"\\Qmockito-extensions/org.mockito.plugins.DoNotMockEnforcer\\E"
+  }, {
+    "pattern":"\\Qmockito-extensions/org.mockito.plugins.InstantiatorProvider2\\E"
+  }, {
+    "pattern":"\\Qmockito-extensions/org.mockito.plugins.MemberAccessor\\E"
+  }, {
+    "pattern":"\\Qmockito-extensions/org.mockito.plugins.MockMaker\\E"
+  }, {
+    "pattern":"\\Qmockito-extensions/org.mockito.plugins.MockResolver\\E"
+  }, {
+    "pattern":"\\Qmockito-extensions/org.mockito.plugins.MockitoLogger\\E"
+  }, {
+    "pattern":"\\Qmockito-extensions/org.mockito.plugins.PluginSwitch\\E"
+  }, {
+    "pattern":"\\Qmockito-extensions/org.mockito.plugins.StackTraceCleanerProvider\\E"
+  }, {
     "pattern":"\\Qnet/jpountz/util/darwin/aarch64/liblz4-java.dylib\\E"
   }, {
+    "pattern":"\\Qorg/apache/seata/core/protocol\\E"
+  }, {
+    "pattern":"\\Qorg/mockito/internal/creation/bytebuddy/MockMethodAdvice$ForEquals.class\\E"
+  }, {
+    "pattern":"\\Qorg/mockito/internal/creation/bytebuddy/MockMethodAdvice$ForHashCode.class\\E"
+  }, {
+    "pattern":"\\Qorg/mockito/internal/creation/bytebuddy/MockMethodAdvice$ForStatic.class\\E"
+  }, {
+    "pattern":"\\Qorg/mockito/internal/creation/bytebuddy/MockMethodAdvice.class\\E"
+  }, {
+    "pattern":"\\Qorg/mockito/internal/creation/bytebuddy/inject/MockMethodDispatcher.raw\\E"
+  }, {
     "pattern":"\\Qorg/slf4j/impl/StaticLoggerBinder.class\\E"
+  }, {
+    "pattern":"\\Qreference.conf\\E"
+  }, {
+    "pattern":"\\Qregistry.conf\\E"
+  }, {
+    "pattern":"java.base:\\Qjava/lang/reflect/AccessibleObject.class\\E"
+  }, {
+    "pattern":"java.base:\\Qjdk/internal/icu/impl/data/icudt72b/nfc.nrm\\E"
   }]},
   "bundles":[]
 }
