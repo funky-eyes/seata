@@ -22,7 +22,7 @@ import Page from '@/components/Page';
 import { GlobalProps } from '@/module';
 import styled, { css } from 'styled-components';
 import getData, { changeGlobalData, deleteBranchData, deleteGlobalData, GlobalSessionParam, sendGlobalCommitOrRollback,
-  startBranchData, startGlobalData, stopBranchData, stopGlobalData, forceDeleteGlobalData, forceDeleteBranchData, fetchNamespace } from '@/service/transactionInfo';
+  startBranchData, startGlobalData, stopBranchData, stopGlobalData, forceDeleteGlobalData, forceDeleteBranchData, fetchNamespace, addGroup } from '@/service/transactionInfo';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 
@@ -51,6 +51,8 @@ type TransactionInfoState = {
   namespaceOptions: Map<string, { clusters: string[], vgroups: string[] }>;
   clusters: Array<string>;
   vgroups: Array<string>;
+  createVGroupDialogVisible: boolean;
+  vGroupName: string;
 }
 
 const statusList:Array<StatusType> = [
@@ -316,6 +318,8 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
     namespaceOptions: new Map<string, { clusters: string[], vgroups: string[] }>(),
     clusters: [],
     vgroups: [],
+    createVGroupDialogVisible: false,
+    vGroupName: '',
   };
   componentDidMount = () => {
     // search once by default
@@ -839,6 +843,41 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
     });
   }
 
+  showCreateVGroupDialog = () => {
+    this.setState({
+      createVGroupDialogVisible: true,
+      vGroupName: '',
+    });
+  }
+
+  closeCreateVGroupDialog = () => {
+    this.setState({
+      createVGroupDialogVisible: false,
+      vGroupName: '',
+    });
+  }
+
+  handleCreateVGroup = () => {
+    const { locale = {} } = this.props;
+    const { createVGroupErrorMessage, createVGroupSuccessMessage, createVGroupFailMessage } = locale;
+    const { namespace, cluster } = this.state.globalSessionParam;
+    const { vGroupName } = this.state;
+    if (!namespace || !cluster || !vGroupName.trim()) {
+      Message.error(createVGroupErrorMessage);
+      return;
+    }
+    addGroup(namespace, cluster, vGroupName.trim()).then(() => {
+      Message.success(createVGroupSuccessMessage);
+      this.closeCreateVGroupDialog();
+      // Delay 5 seconds before reloading namespaces to get the latest vgroup list
+      setTimeout(() => {
+        this.loadNamespaces();
+      }, 5000);
+    }).catch((error) => {
+      Message.error(lodashGet(error, 'data.message') || createVGroupFailMessage);
+    });
+  }
+
   render() {
     const { locale = {} } = this.props;
     const { title, subTitle, createTimeLabel,
@@ -852,6 +891,10 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
       searchButtonLabel,
       operateTitle,
       branchSessionDialogTitle,
+      createVGroupButtonLabel,
+      createVGroupDialogTitle,
+      createVGroupInputPlaceholder,
+      createVGroupConfirmButton,
     } = locale;
     return (
       <Page
@@ -949,6 +992,12 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
               <Icon type="search" />{searchButtonLabel}
             </Form.Submit>
           </FormItem>
+          {/* {create vgroup button} */}
+          <FormItem>
+            <Button onClick={this.showCreateVGroupDialog}>
+              {createVGroupButtonLabel}
+            </Button>
+          </FormItem>
         </Form>
         {/* global session table */}
         <div>
@@ -1003,6 +1052,24 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
               cell={this.branchSessionDialogOperateCell}
             />
           </Table>
+        </Dialog>
+
+        {/* create vgroup dialog */}
+        <Dialog visible={this.state.createVGroupDialogVisible} title={createVGroupDialogTitle} footer={false} onClose={this.closeCreateVGroupDialog}>
+          <Form labelAlign="left">
+            <FormItem name="vGroupName" label="VGroup Name">
+              <Input
+                placeholder={createVGroupInputPlaceholder}
+                value={this.state.vGroupName}
+                onChange={(value: string) => { this.setState({ vGroupName: value }); }}
+              />
+            </FormItem>
+            <FormItem>
+              <Button type="primary" onClick={this.handleCreateVGroup}>
+                {createVGroupConfirmButton}
+              </Button>
+            </FormItem>
+          </Form>
         </Dialog>
       </Page>
     );

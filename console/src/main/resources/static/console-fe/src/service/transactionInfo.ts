@@ -239,3 +239,16 @@ export async function startBranchData(params: BranchSessionParam): Promise<any> 
   });
   return result;
 }
+
+export async function addGroup(namespace: string, clusterName: string, vGroup: string, unitName?: string): Promise<any> {
+  let result = await request('/naming/addGroup', {
+    method: 'POST',
+    params: {
+      namespace,
+      clusterName,
+      vGroup,
+      unitName,
+    },
+  });
+  return result;
+}

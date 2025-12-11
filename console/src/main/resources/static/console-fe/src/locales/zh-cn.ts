@@ -74,6 +74,13 @@ const zhCn: ILocale = {
     forceDeleteBranchSessionTitle: '强制删除分支事务',
     stopBranchSessionTitle: '停止分支事务重启',
     startBranchSessionTitle: '开启分支事务重试',
+    createVGroupButtonLabel: '创建事务分组',
+    createVGroupDialogTitle: '创建事务分组',
+    createVGroupInputPlaceholder: '请输入事务分组名称',
+    createVGroupConfirmButton: '创建',
+    createVGroupErrorMessage: '请选择命名空间、集群并输入事务分组名称',
+    createVGroupSuccessMessage: '事务分组创建成功',
+    createVGroupFailMessage: '创建事务分组失败',
   },
   GlobalLockInfo: {
     title: '全局锁信息',

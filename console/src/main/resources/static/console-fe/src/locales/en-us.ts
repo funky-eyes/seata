@@ -74,6 +74,13 @@ const enUs: ILocale = {
     forceDeleteBranchSessionTitle: 'force delete branch session',
     stopBranchSessionTitle: 'Stop branch session retry',
     startBranchSessionTitle: 'Start branch session retry',
+    createVGroupButtonLabel: 'Create VGroup',
+    createVGroupDialogTitle: 'Create VGroup',
+    createVGroupInputPlaceholder: 'Enter VGroup name',
+    createVGroupConfirmButton: 'Create',
+    createVGroupErrorMessage: 'Please select namespace, cluster and enter vgroup name',
+    createVGroupSuccessMessage: 'VGroup created successfully',
+    createVGroupFailMessage: 'Failed to create vgroup',
   },
   GlobalLockInfo: {
     title: 'GlobalLockInfo',
