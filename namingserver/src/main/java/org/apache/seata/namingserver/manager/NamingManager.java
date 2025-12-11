@@ -152,6 +152,14 @@ public class NamingManager {
         return new ArrayList<>(clusterVOHashMap.values());
     }
 
+    public ClusterData getClusterData(String namespace, String clusterName) {
+        Map<String, ClusterData> clusterDataMap = namespaceClusterDataMap.get(namespace);
+        if (clusterDataMap != null) {
+            return clusterDataMap.get(clusterName);
+        }
+        return null;
+    }
+
     public Result<String> createGroup(String namespace, String vGroup, String clusterName, String unitName) {
         // add vGroup in new cluster
         List<Node> nodeList = getInstances(namespace, clusterName);

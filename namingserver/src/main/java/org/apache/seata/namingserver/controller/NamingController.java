@@ -109,6 +109,18 @@ public class NamingController {
         return namingManager.monitorCluster(namespace);
     }
 
+    @GetMapping("/clusterData")
+    public SingleResult<org.apache.seata.namingserver.entity.pojo.ClusterData> getClusterData(
+            @RequestParam String namespace,
+            @RequestParam String clusterName) {
+        org.apache.seata.namingserver.entity.pojo.ClusterData clusterData = namingManager.getClusterData(namespace, clusterName);
+        if (clusterData != null) {
+            return SingleResult.success(clusterData);
+        } else {
+            return SingleResult.failure("Cluster not found");
+        }
+    }
+
     @GetMapping("/discovery")
     public MetaResponse discovery(@RequestParam String vGroup, @RequestParam String namespace) {
         return new MetaResponse(
