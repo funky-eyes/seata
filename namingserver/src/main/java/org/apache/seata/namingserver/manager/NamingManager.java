@@ -537,7 +537,7 @@ public class NamingManager {
             });
         }));
 
-        // Build NamespaceVOv2
+        // Build NamespaceVO v2
         Map<String, org.apache.seata.namingserver.entity.vo.v2.NamespaceVO> namespaceVOs = new HashMap<>();
         clustersMap.forEach((namespace, clusters) -> {
             org.apache.seata.namingserver.entity.vo.v2.NamespaceVO namespaceVO =
