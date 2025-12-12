@@ -232,6 +232,9 @@ class NamingManagerTest {
 
         Mockito.when(statusLine.getStatusCode()).thenReturn(200);
         Result<String> result = namingManager.createGroup(namespace, vGroup, clusterName, unitName);
+        assertFalse(result.isSuccess());
+        vGroup = "test-vGroup2";
+        result = namingManager.createGroup(namespace, vGroup, clusterName, unitName);
         assertTrue(result.isSuccess());
         assertEquals("200", result.getCode());
         assertEquals("add vGroup successfully!", result.getMessage());
