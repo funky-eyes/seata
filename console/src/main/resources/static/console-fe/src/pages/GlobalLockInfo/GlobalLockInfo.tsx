@@ -40,7 +40,7 @@ import moment from 'moment';
 import './index.scss';
 import {get} from "lodash";
 import {enUsKey, getCurrentLanguage} from "@/reducers/locale";
-import {fetchNamespace} from "@/service/transactionInfo";
+import {fetchNamespaceV2} from "@/service/transactionInfo";
 
 const { RangePicker } = DatePicker;
 const FormItem = Form.Item;
@@ -99,13 +99,16 @@ class GlobalLockInfo extends React.Component<GlobalProps, GlobalLockInfoState> {
   }
   loadNamespaces = async () => {
     try {
-      const namespaces = await fetchNamespace();
+      const namespaces = await fetchNamespaceV2();
       const namespaceOptions = new Map<string, { clusters: string[], vgroups: string[] }>();
       Object.keys(namespaces).forEach(namespaceKey => {
         const namespaceData = namespaces[namespaceKey];
+        const clusterVgroups = (namespaceData.clusterVgroups || {}) as {[key: string]: string[]};
+        const clusters = Object.keys(clusterVgroups);
+        const vgroups = Array.from(new Set(([] as string[]).concat(...Object.values(clusterVgroups))));
         namespaceOptions.set(namespaceKey, {
-          clusters: namespaceData.clusters,
-          vgroups: namespaceData.vgroups,
+          clusters,
+          vgroups,
         });
       });
       if (namespaceOptions.size > 0) {
@@ -393,4 +396,3 @@ class GlobalLockInfo extends React.Component<GlobalProps, GlobalLockInfoState> {
 }
 
 export default withRouter(ConfigProvider.config(GlobalLockInfo, {}));
-

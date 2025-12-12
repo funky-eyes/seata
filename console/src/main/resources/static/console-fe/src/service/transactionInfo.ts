@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 import request from '@/utils/request';
+import requestV2 from '@/utils/requestV2';
 
 export type GlobalSessionParam = {
   xid?: string,
@@ -44,6 +45,13 @@ export type BranchSessionParam = {
 
 export async function fetchNamespace():Promise<any> {
   const result = await request.get('/naming/namespace', {
+    method: 'get',
+  });
+  return result.data;
+}
+
+export async function fetchNamespaceV2():Promise<any> {
+  const result = await requestV2.get('/naming/namespace', {
     method: 'get',
   });
   return result.data;
