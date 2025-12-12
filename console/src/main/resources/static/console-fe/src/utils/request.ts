@@ -20,9 +20,9 @@ import { get } from 'lodash';
 import { AUTHORIZATION_HEADER } from '@/contants';
 import { getCurrentLocaleObj } from '@/reducers/locale';
 
-const request = () => {
+const createRequest = (baseURL: string, generalErrorMessage: string = 'Request error, please try again later!') => {
   const instance: AxiosInstance = axios.create({
-    baseURL: 'api/v1',
+    baseURL,
     method: 'get',
   });
 
@@ -33,7 +33,7 @@ const request = () => {
       config.headers[AUTHORIZATION_HEADER] = authHeader;
     }
     return config;
-  })
+  });
 
   instance.interceptors.response.use(
     (response: AxiosResponse): Promise<any> => {
@@ -60,7 +60,7 @@ const request = () => {
         }
         Message.error(`HTTP ERROR: ${status}`);
       } else {
-        Message.error('Request error, please try again later!');
+        Message.error(generalErrorMessage);
       }
       return Promise.reject(error);
     }
@@ -69,4 +69,7 @@ const request = () => {
   return instance;
 };
 
-export default request();
+const request = createRequest('api/v1');
+
+export { createRequest };
+export default request;

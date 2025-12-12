@@ -295,6 +295,8 @@ const warnning = new Map([
     ['SAGA', 'The force delete will only delete session in server.']])],
 ])
 
+const VGROUP_REFRESH_DELAY_MS = 5000;
+
 class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState> {
   static displayName = 'TransactionInfo';
 
@@ -894,9 +896,11 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
       // Delay 5 seconds before reloading namespaces to get the latest vgroup list
       setTimeout(() => {
         this.loadNamespaces();
-      }, 5000);
+      }, VGROUP_REFRESH_DELAY_MS);
     }).catch((error) => {
-      Message.error(lodashGet(error, 'data.message') || createVGroupFailMessage);
+      const backendMessage = lodashGet(error, 'data.message');
+      const displayMessage = backendMessage ? `${createVGroupFailMessage}: ${backendMessage}` : createVGroupFailMessage;
+      Message.error(displayMessage);
     });
   }
 
