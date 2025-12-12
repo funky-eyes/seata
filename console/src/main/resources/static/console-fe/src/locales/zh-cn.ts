@@ -81,6 +81,10 @@ const zhCn: ILocale = {
     createVGroupErrorMessage: '请选择命名空间、集群并输入事务分组名称',
     createVGroupSuccessMessage: '事务分组创建成功',
     createVGroupFailMessage: '创建事务分组失败',
+    changeVGroupButtonLabel: '修改事务分组',
+    changeVGroupDialogTitle: '修改事务分组',
+    changeVGroupSuccessMessage: '事务分组修改成功',
+    changeVGroupFailMessage: '修改事务分组失败',
   },
   GlobalLockInfo: {
     title: '全局锁信息',

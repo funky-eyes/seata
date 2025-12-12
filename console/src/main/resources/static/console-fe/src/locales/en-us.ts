@@ -81,6 +81,10 @@ const enUs: ILocale = {
     createVGroupErrorMessage: 'Please select namespace, cluster and enter vgroup name',
     createVGroupSuccessMessage: 'VGroup created successfully',
     createVGroupFailMessage: 'Failed to create vgroup',
+    changeVGroupButtonLabel: 'Change VGroup',
+    changeVGroupDialogTitle: 'Change VGroup',
+    changeVGroupSuccessMessage: 'VGroup changed successfully',
+    changeVGroupFailMessage: 'Failed to change vgroup',
   },
   GlobalLockInfo: {
     title: 'GlobalLockInfo',

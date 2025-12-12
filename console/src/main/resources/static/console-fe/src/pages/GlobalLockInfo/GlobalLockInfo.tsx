@@ -28,11 +28,10 @@ import {
   Message,
   Select
 } from '@alicloud/console-components';
-import Actions, { LinkButton } from '@alicloud/console-components-actions';
+import Actions from '@alicloud/console-components-actions';
 import { withRouter } from 'react-router-dom';
 import Page from '@/components/Page';
 import { GlobalProps } from '@/module';
-import styled, { css } from 'styled-components';
 import getData, {checkData, deleteData, GlobalLockParam } from '@/service/globalLockInfo';
 import PropTypes from 'prop-types';
 import moment from 'moment';

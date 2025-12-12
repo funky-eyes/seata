@@ -260,3 +260,16 @@ export async function addGroup(namespace: string, clusterName: string, vGroup: s
   });
   return result;
 }
+
+export async function changeGroup(namespace: string, clusterName: string, vGroup: string, unitName?: string): Promise<any> {
+  let result = await request('/naming/changeGroup', {
+    method: 'POST',
+    params: {
+      namespace,
+      clusterName,
+      vGroup,
+      unitName,
+    },
+  });
+  return result;
+}

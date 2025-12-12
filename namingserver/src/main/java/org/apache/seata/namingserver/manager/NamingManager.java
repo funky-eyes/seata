@@ -169,6 +169,16 @@ public class NamingManager {
     }
 
     public Result<String> createGroup(String namespace, String vGroup, String clusterName, String unitName) {
+        return createGroup(namespace, vGroup, clusterName, unitName, true);
+    }
+
+    public Result<String> createGroup(
+            String namespace, String vGroup, String clusterName, String unitName, boolean checkExist) {
+        // Check if vGroup already exists
+        if (checkExist && vGroupMap.getIfPresent(vGroup) != null) {
+            LOGGER.error("vGroup {} already exists", vGroup);
+            return new Result<>("400", "vGroup " + vGroup + " already exists");
+        }
         // add vGroup in new cluster
         List<Node> nodeList = getInstances(namespace, clusterName);
         if (nodeList == null || nodeList.size() == 0) {
@@ -464,7 +474,7 @@ public class NamingManager {
                     new HashSet<>(
                             namespaceMap.get(currentNamespace).getClusterMap().keySet()));
         }
-        Result<String> res = createGroup(namespace, vGroup, clusterName, unitName);
+        Result<String> res = createGroup(namespace, vGroup, clusterName, unitName, false);
         if (!res.isSuccess()) {
             LOGGER.error("add vgroup failed!" + res.getMessage());
             return res;

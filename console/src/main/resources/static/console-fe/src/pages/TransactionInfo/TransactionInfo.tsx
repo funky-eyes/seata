@@ -20,9 +20,8 @@ import Actions, { LinkButton } from '@alicloud/console-components-actions';
 import { withRouter } from 'react-router-dom';
 import Page from '@/components/Page';
 import { GlobalProps } from '@/module';
-import styled, { css } from 'styled-components';
 import getData, { changeGlobalData, deleteBranchData, deleteGlobalData, GlobalSessionParam, sendGlobalCommitOrRollback,
-  startBranchData, startGlobalData, stopBranchData, stopGlobalData, forceDeleteGlobalData, forceDeleteBranchData, fetchNamespace, fetchNamespaceV2, addGroup } from '@/service/transactionInfo';
+  startBranchData, startGlobalData, stopBranchData, stopGlobalData, forceDeleteGlobalData, forceDeleteBranchData, fetchNamespace, fetchNamespaceV2, addGroup, changeGroup } from '@/service/transactionInfo';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 
@@ -53,6 +52,15 @@ type TransactionInfoState = {
   vgroups: Array<string>;
   createVGroupDialogVisible: boolean;
   vGroupName: string;
+  changeVGroupDialogVisible: boolean;
+  selectedVGroup: string;
+  targetNamespace: string;
+  targetClusters: Array<string>;
+  targetCluster: string;
+  originalNamespace: string;
+  originalClusters: Array<string>;
+  originalCluster: string;
+  originalVGroups: Array<string>;
 }
 
 const statusList:Array<StatusType> = [
@@ -322,6 +330,15 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
     vgroups: [],
     createVGroupDialogVisible: false,
     vGroupName: '',
+    changeVGroupDialogVisible: false,
+    selectedVGroup: '',
+    targetNamespace: '',
+    targetClusters: [],
+    targetCluster: '',
+    originalNamespace: '',
+    originalClusters: [],
+    originalCluster: '',
+    originalVGroups: [],
   };
   componentDidMount = () => {
     // search once by default
@@ -554,6 +571,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
         >
           {showGlobalLockTitle}
         </LinkButton>
+
 
         <Button
           onClick={() => {
@@ -881,6 +899,34 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
     });
   }
 
+  showChangeVGroupDialog = () => {
+    this.setState({
+      changeVGroupDialogVisible: true,
+      selectedVGroup: '',
+      targetNamespace: '',
+      targetClusters: [],
+      targetCluster: '',
+      originalNamespace: '',
+      originalClusters: [],
+      originalCluster: '',
+      originalVGroups: [],
+    });
+  }
+
+  closeChangeVGroupDialog = () => {
+    this.setState({
+      changeVGroupDialogVisible: false,
+      selectedVGroup: '',
+      targetNamespace: '',
+      targetClusters: [],
+      targetCluster: '',
+      originalNamespace: '',
+      originalClusters: [],
+      originalCluster: '',
+      originalVGroups: [],
+    });
+  }
+
   handleCreateVGroup = () => {
     const { locale = {} } = this.props;
     const { createVGroupErrorMessage, createVGroupSuccessMessage, createVGroupFailMessage } = locale;
@@ -904,6 +950,27 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
     });
   }
 
+  handleChangeVGroup = () => {
+    const { locale = {} } = this.props;
+    const { changeVGroupSuccessMessage, changeVGroupFailMessage } = locale;
+    const { selectedVGroup, targetNamespace, targetCluster } = this.state;
+    if (!selectedVGroup || !targetNamespace || !targetCluster) {
+      return;
+    }
+    changeGroup(targetNamespace, targetCluster, selectedVGroup, "").then(() => {
+      Message.success(changeVGroupSuccessMessage);
+      this.closeChangeVGroupDialog();
+      // Delay 5 seconds before reloading namespaces to get the latest vgroup list
+      setTimeout(() => {
+        this.loadNamespaces();
+      }, VGROUP_REFRESH_DELAY_MS);
+    }).catch((error) => {
+      const backendMessage = lodashGet(error, 'data.message');
+      const displayMessage = backendMessage ? `${changeVGroupFailMessage}: ${backendMessage}` : changeVGroupFailMessage;
+      Message.error(displayMessage);
+    });
+  }
+
   render() {
     const { locale = {} } = this.props;
     const { title, subTitle, createTimeLabel,
@@ -921,6 +988,8 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
       createVGroupDialogTitle,
       createVGroupInputPlaceholder,
       createVGroupConfirmButton,
+      changeVGroupButtonLabel,
+      changeVGroupDialogTitle,
     } = locale;
     return (
       <Page
@@ -1024,6 +1093,12 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
               {createVGroupButtonLabel}
             </Button>
           </FormItem>
+          {/* {change vgroup button} */}
+          <FormItem>
+            <Button onClick={this.showChangeVGroupDialog}>
+              {changeVGroupButtonLabel}
+            </Button>
+          </FormItem>
         </Form>
         {/* global session table */}
         <div>
@@ -1093,6 +1168,103 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
             <FormItem>
               <Button type="primary" onClick={this.handleCreateVGroup}>
                 {createVGroupConfirmButton}
+              </Button>
+            </FormItem>
+          </Form>
+        </Dialog>
+
+        {/* change vgroup dialog */}
+        <Dialog visible={this.state.changeVGroupDialogVisible} title={changeVGroupDialogTitle} footer={false} onClose={this.closeChangeVGroupDialog}>
+          <Form inline labelAlign="left">
+            <FormItem name="originalNamespace" label="Original Namespace">
+              <Select
+                hasClear
+                placeholder="Select original namespace"
+                onChange={(value: string) => {
+                  this.setState(prevState => {
+                    const clusters = value ? prevState.namespaceOptions.get(value)?.clusters || [] : [];
+                    const firstCluster = clusters.length > 0 ? clusters[0] : '';
+                    const namespaceData = prevState.namespaceOptions.get(value);
+                    const clusterVgroups = namespaceData ? namespaceData.clusterVgroups : {};
+                    const vgroups = firstCluster ? clusterVgroups[firstCluster] || [] : [];
+                    return {
+                      originalNamespace: value,
+                      originalClusters: clusters,
+                      originalCluster: firstCluster,
+                      originalVGroups: vgroups,
+                    };
+                  });
+                }}
+                dataSource={Array.from(this.state.namespaceOptions.keys()).map(key => ({ label: key, value: key }))}
+                value={this.state.originalNamespace}
+              />
+            </FormItem>
+            <FormItem name="originalCluster" label="Original Cluster">
+              <Select
+                hasClear
+                placeholder="Select original cluster"
+                onChange={(value: string) => {
+                  this.setState(prevState => {
+                    const namespaceData = prevState.namespaceOptions.get(prevState.originalNamespace);
+                    const clusterVgroups = namespaceData ? namespaceData.clusterVgroups : {};
+                    const vgroups = clusterVgroups[value] || [];
+                    return {
+                      originalCluster: value,
+                      originalVGroups: vgroups,
+                    };
+                  });
+                }}
+                dataSource={this.state.originalClusters.map(value => ({ label: value, value }))}
+                value={this.state.originalCluster}
+              />
+            </FormItem>
+            <FormItem name="selectedVGroup" label="Select VGroup">
+              <Select
+                hasClear
+                placeholder="Select vgroup"
+                onChange={(value: string) => {
+                  this.setState(prevState => ({
+                    selectedVGroup: value,
+                  }));
+                }}
+                dataSource={this.state.originalVGroups.map(value => ({ label: value, value }))}
+                value={this.state.selectedVGroup}
+              />
+            </FormItem>
+            <FormItem name="targetNamespace" label="Target Namespace">
+              <Select
+                hasClear
+                placeholder="Select target namespace"
+                onChange={(value: string) => {
+                  this.setState(prevState => {
+                    const clusters = value ? prevState.namespaceOptions.get(value)?.clusters || [] : [];
+                    return {
+                      targetNamespace: value,
+                      targetClusters: clusters,
+                      targetCluster: clusters.length > 0 ? clusters[0] : '',
+                    };
+                  });
+                }}
+                dataSource={Array.from(this.state.namespaceOptions.keys()).map(key => ({ label: key, value: key }))}
+                value={this.state.targetNamespace}
+              />
+            </FormItem>
+            <FormItem name="targetCluster" label="Target Cluster">
+              <Select
+                hasClear
+                placeholder="Select target cluster"
+                onChange={(value: string) => {
+                  this.setState(prevState => ({
+                    targetCluster: value,
+                  }));
+                }}
+                dataSource={this.state.targetClusters.map(value => ({ label: value, value }))}
+                value={this.state.targetCluster}
+              />
+            </FormItem>
+            <FormItem>
+              <Button type="primary" onClick={this.handleChangeVGroup} disabled={!this.state.selectedVGroup || !this.state.targetNamespace || !this.state.targetCluster}>
+                Confirm
               </Button>
             </FormItem>
           </Form>
