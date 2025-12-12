@@ -499,6 +499,25 @@ public class NamingManager {
         return SingleResult.success(namespaceVOs);
     }
 
+    /**
+     * Returns a map of namespace names to their corresponding v2 {@code NamespaceVO} representations.
+     * <p>
+     * This method provides a new version (v2) of the namespace information, including detailed mappings
+     * of clusters and vgroups for each namespace. The returned structure is designed to support enhanced
+     * querying and display of namespace relationships, such as which clusters and vgroups belong to each namespace,
+     * and the mapping between clusters and their vgroups.
+     * </p>
+     * <p>
+     * <b>Difference from {@link #namespace()}:</b> Unlike the {@code namespace()} method, which returns a map of
+     * namespaces to a basic {@code NamespaceVO} (with lists of clusters and vgroups), this v2 method returns a map
+     * to a v2 {@code NamespaceVO} that contains more granular information, including a mapping of clusters to their
+     * associated vgroups within each namespace. This allows clients to better understand the relationships between
+     * namespaces, clusters, and vgroups.
+     * </p>
+     *
+     * @return a {@code SingleResult} containing a map where the key is the namespace name and the value is a v2
+     *         {@code NamespaceVO} object with detailed cluster and vgroup information.
+     */
     public SingleResult<Map<String, org.apache.seata.namingserver.entity.vo.v2.NamespaceVO>> namespaceV2() {
         Map<String, Set<String>> clustersMap = new HashMap<>();
         Map<String, Set<String>> vgroupsMap = new HashMap<>();
