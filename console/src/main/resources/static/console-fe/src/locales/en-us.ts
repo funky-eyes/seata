@@ -95,6 +95,24 @@ const enUs: ILocale = {
     operateTitle: 'operate',
     deleteGlobalLockTitle: 'Delete global lock',
   },
+  codeMessage: {
+    200: 'The server successfully returned the requested data.',
+    201: 'New or modified data successful.',
+    202: 'A request has entered the background queue (asynchronous task).',
+    204: 'Data deleted successfully.',
+    400: 'The request was made with an error, and the server did not create or modify data.',
+    401: 'The user does not have permission (token, username, password error).',
+    403: 'The user is authorized, but access is forbidden.',
+    404: 'The request is for a record that does not exist, and the server did not operate.',
+    406: 'The requested format is not available.',
+    410: 'The requested resource is permanently deleted and will not be obtained again.',
+    422: 'A validation error occurred when creating an object.',
+    500: 'An error occurred on the server, please check the server.',
+    502: 'Gateway error.',
+    503: 'Service unavailable, server temporarily overloaded or under maintenance.',
+    504: 'Gateway timeout.',
+    '-1000': 'Project name already exists, please use another name',
+  },
 };
 
 export default enUs;

@@ -79,6 +79,19 @@ public class NamingManager {
     private final ConcurrentMap<String /* namespace */, ConcurrentMap<String /* clusterName */, ClusterData>>
             namespaceClusterDataMap;
 
+    // Helper class to hold collected namespace data
+    private static class NamespaceData {
+        final Map<String, Set<String>> clustersMap;
+        final Map<String, Set<String>> vgroupsMap;
+        final Map<String, Map<String, Set<String>>> clusterVgroupsMap;
+
+        NamespaceData(Map<String, Set<String>> clustersMap, Map<String, Set<String>> vgroupsMap, Map<String, Map<String, Set<String>>> clusterVgroupsMap) {
+            this.clustersMap = clustersMap;
+            this.vgroupsMap = vgroupsMap;
+            this.clusterVgroupsMap = clusterVgroupsMap;
+        }
+    }
+
     @Value("${heartbeat.threshold:90000}")
     private int heartbeatTimeThreshold;
 
@@ -477,29 +490,52 @@ public class NamingManager {
     }
 
     public SingleResult<Map<String, NamespaceVO>> namespace() {
-        // namespace->cluster->vgroups
+        // Collect data using helper method
+        NamespaceData data = collectNamespaceData();
+
         Map<String, NamespaceVO> namespaceVOs = new HashMap<>();
-        Map<String /* VGroup */, ConcurrentMap<String /* namespace */, NamespaceBO>> currentVGourpMap =
-                new HashMap<>(vGroupMap.asMap());
-        if (currentVGourpMap.isEmpty()) {
-            namespaceClusterDataMap.forEach((namespace, clusterDataMap) -> {
+        if (data.vgroupsMap.isEmpty()) {
+            data.clustersMap.forEach((namespace, clusters) -> {
                 NamespaceVO namespaceVO = new NamespaceVO();
-                namespaceVO.setClusters(new ArrayList<>(clusterDataMap.keySet()));
+                namespaceVO.setClusters(new ArrayList<>(clusters));
                 namespaceVOs.put(namespace, namespaceVO);
             });
-            return SingleResult.success(namespaceVOs);
+        } else {
+            data.vgroupsMap.forEach((namespace, vgroups) -> {
+                NamespaceVO namespaceVO = namespaceVOs.computeIfAbsent(namespace, k -> new NamespaceVO());
+                namespaceVO.setClusters(new ArrayList<>(data.clustersMap.get(namespace)));
+                namespaceVO.setVgroups(new ArrayList<>(vgroups));
+            });
         }
-        currentVGourpMap.forEach((vGroup, namespaceMap) -> namespaceMap.forEach(
-                (namespace, namespaceBO) -> namespaceBO.getClusterMap().forEach((clusterName, clusterBO) -> {
-                    NamespaceVO namespaceVO = namespaceVOs.computeIfAbsent(namespace, value -> new NamespaceVO());
-                    namespaceVO.getClusters().add(clusterName);
-                    namespaceVO.getVgroups().add(vGroup);
-                })));
 
         return SingleResult.success(namespaceVOs);
     }
 
     public SingleResult<Map<String, org.apache.seata.namingserver.entity.vo.v2.NamespaceVO>> namespaceV2() {
+        // Collect data using helper method
+        NamespaceData data = collectNamespaceData();
+
+        // Build NamespaceVOv2
+        Map<String, org.apache.seata.namingserver.entity.vo.v2.NamespaceVO> namespaceVOs = new HashMap<>();
+        data.clustersMap.forEach((namespace, clusters) -> {
+            org.apache.seata.namingserver.entity.vo.v2.NamespaceVO namespaceVO =
+                    new org.apache.seata.namingserver.entity.vo.v2.NamespaceVO();
+            Map<String, List<String>> clusterVgList = new HashMap<>();
+            Map<String, Set<String>> clusterVgSet = data.clusterVgroupsMap.get(namespace);
+            clusters.forEach(cluster -> {
+                Set<String> vgSet = clusterVgSet.get(cluster);
+                clusterVgList.put(cluster, vgSet != null ? new ArrayList<>(vgSet) : new ArrayList<>());
+            });
+            namespaceVO.setClusterVgroups(clusterVgList);
+
+            namespaceVOs.put(namespace, namespaceVO);
+        });
+
+        return SingleResult.success(namespaceVOs);
+    }
+
+    // Helper method to collect namespace data
+    private NamespaceData collectNamespaceData() {
         Map<String, Set<String>> clustersMap = new HashMap<>();
         Map<String, Set<String>> vgroupsMap = new HashMap<>();
         Map<String, Map<String, Set<String>>> clusterVgroupsMap = new HashMap<>(); // namespace -> cluster -> vgroups
@@ -537,22 +573,6 @@ public class NamingManager {
             });
         }));
 
-        // Build NamespaceVOv2
-        Map<String, org.apache.seata.namingserver.entity.vo.v2.NamespaceVO> namespaceVOs = new HashMap<>();
-        clustersMap.forEach((namespace, clusters) -> {
-            org.apache.seata.namingserver.entity.vo.v2.NamespaceVO namespaceVO =
-                    new org.apache.seata.namingserver.entity.vo.v2.NamespaceVO();
-            Map<String, List<String>> clusterVgList = new HashMap<>();
-            Map<String, Set<String>> clusterVgSet = clusterVgroupsMap.get(namespace);
-            clusters.forEach(cluster -> {
-                Set<String> vgSet = clusterVgSet.get(cluster);
-                clusterVgList.put(cluster, vgSet != null ? new ArrayList<>(vgSet) : new ArrayList<>());
-            });
-            namespaceVO.setClusterVgroups(clusterVgList);
-
-            namespaceVOs.put(namespace, namespaceVO);
-        });
-
-        return SingleResult.success(namespaceVOs);
+        return new NamespaceData(clustersMap, vgroupsMap, clusterVgroupsMap);
     }
 }

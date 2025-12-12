@@ -381,13 +381,12 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
     getData(this.state.globalSessionParam).then(data => {
       // if the result set is empty, set the page number to go back to the first page
       if (data.total === 0) {
-        this.setState({
+        this.setState(prevState => ({
           list: [],
           total: 0,
           loading: false,
-          globalSessionParam: Object.assign(this.state.globalSessionParam,
-            { pageNum: 1 }),
-        });
+          globalSessionParam: { ...prevState.globalSessionParam, pageNum: 1 },
+        }));
         return;
       }
       // format time
@@ -406,17 +405,20 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
       });
 
       if (this.state.branchSessionDialogVisible) {
-        data.data.forEach((item: any) => {
-          if (item.xid == this.state.xid) {
-            this.state.currentBranchSession = item.branchSessionVOs
-          }
-        })
+        const currentBranchSession = data.data.find((item: any) => item.xid == this.state.xid)?.branchSessionVOs || [];
+        this.setState({
+          list: data.data,
+          total: data.total,
+          loading: false,
+          currentBranchSession,
+        });
+      } else {
+        this.setState({
+          list: data.data,
+          total: data.total,
+          loading: false,
+        });
       }
-      this.setState({
-        list: data.data,
-        total: data.total,
-        loading: false,
-      });
     }).catch(err => {
       this.setState({ loading: false });
     });
@@ -429,38 +431,37 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
       const firstCluster = clusters.length > 0 ? clusters[0] : undefined;
       const clusterVgroups = selectedNamespace ? selectedNamespace.clusterVgroups : {};
       const vgroups = firstCluster ? clusterVgroups[firstCluster] || [] : [];
-      this.setState({
+      this.setState(prevState => ({
         clusters,
         vgroups,
-        globalSessionParam: Object.assign(this.state.globalSessionParam, {[key]: val, cluster: firstCluster}),
-      });
+        globalSessionParam: { ...prevState.globalSessionParam, [key]: val, cluster: firstCluster },
+      }));
     } else if (key === 'cluster') {
       const currentNamespace = this.state.globalSessionParam.namespace;
       if (currentNamespace) {
         const namespaceData = this.state.namespaceOptions.get(currentNamespace);
         const clusterVgroups = namespaceData ? namespaceData.clusterVgroups : {};
         const selectedVgroups = clusterVgroups[val] || [];
-        this.setState({
+        this.setState(prevState => ({
           vgroups: selectedVgroups,
-          globalSessionParam: Object.assign(this.state.globalSessionParam, {[key]: val}),
-        });
+          globalSessionParam: { ...prevState.globalSessionParam, [key]: val },
+        }));
       } else {
-        this.setState({
-          globalSessionParam: Object.assign(this.state.globalSessionParam, {[key]: val}),
-        });
+        this.setState(prevState => ({
+          globalSessionParam: { ...prevState.globalSessionParam, [key]: val },
+        }));
       }
     } else {
-      this.setState({
-        globalSessionParam: Object.assign(this.state.globalSessionParam, {[key]: val}),
-      });
+      this.setState(prevState => ({
+        globalSessionParam: { ...prevState.globalSessionParam, [key]: val },
+      }));
     }
   };
 
   branchSessionSwitchOnChange = (checked: boolean, e: any) => {
-    this.setState({
-      globalSessionParam: Object.assign(this.state.globalSessionParam,
-        { withBranch: checked }),
-    });
+    this.setState(prevState => ({
+      globalSessionParam: { ...prevState.globalSessionParam, withBranch: checked },
+    }));
     if (checked) {
       // if checked, do search for load branch sessions
       this.search();
@@ -469,12 +470,11 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
 
   createTimeOnChange = (value: Array<any>) => {
     // timestamp(milliseconds)
-    const timeStart = value[0] == null ? null : moment(value[0]).unix() * 1000;
-    const timeEnd = value[1] == null ? null : moment(value[1]).unix() * 1000;
-    this.setState({
-      globalSessionParam: Object.assign(this.state.globalSessionParam,
-        { timeStart, timeEnd }),
-    });
+    const timeStart = value[0] == null ? undefined : moment(value[0]).unix() * 1000;
+    const timeEnd = value[1] == null ? undefined : moment(value[1]).unix() * 1000;
+    this.setState(prevState => ({
+      globalSessionParam: { ...prevState.globalSessionParam, timeStart, timeEnd },
+    }));
   }
 
   statusCell = (val: number, index: number, record: any) => {
@@ -836,18 +836,16 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
   }
 
   paginationOnChange = (current: number, e: {}) => {
-    this.setState({
-      globalSessionParam: Object.assign(this.state.globalSessionParam,
-        { pageNum: current }),
-    });
+    this.setState(prevState => ({
+      globalSessionParam: { ...prevState.globalSessionParam, pageNum: current },
+    }));
     this.search();
   }
 
   paginationOnPageSizeChange = (pageSize: number) => {
-    this.setState({
-      globalSessionParam: Object.assign(this.state.globalSessionParam,
-        { pageSize }),
-    });
+    this.setState(prevState => ({
+      globalSessionParam: { ...prevState.globalSessionParam, pageSize },
+    }));
     this.search();
   }
 

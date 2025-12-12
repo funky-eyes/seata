@@ -25,4 +25,5 @@ export interface ILocale {
   Overview: ILocaleMap;
   TransactionInfo: ILocaleMap;
   GlobalLockInfo: ILocaleMap;
+  codeMessage: ILocaleMap;
 }
