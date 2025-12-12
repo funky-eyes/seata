@@ -39,7 +39,7 @@ import java.util.Map;
  */
 public class NamespaceVO {
 
-    Map<String, List<String>> clusterVgroups = new HashMap<>();
+    private Map<String, List<String>> clusterVgroups = new HashMap<>();
 
     public Map<String, List<String>> getClusterVgroups() {
         return clusterVgroups;
