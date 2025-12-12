@@ -20,6 +20,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Value Object representing namespace information for the v2 API.
+ * <p>
+ * This class provides a mapping between cluster names and their associated vgroup lists.
+ * It is used in the v2 version of the API and may differ from the original {@code NamespaceVO}
+ * (in the v1 or root package) in its structure or the semantics of its fields.
+ * <p>
+ * <b>Differences from the original NamespaceVO:</b>
+ * <ul>
+ *   <li>Located in the {@code org.apache.seata.namingserver.entity.vo.v2} package, indicating it is for the v2 API.</li>
+ *   <li>Contains a {@code clusterVgroups} map, which maps cluster names to lists of vgroup names.</li>
+ *   <li>May have a different structure or additional fields compared to the original version.</li>
+ * </ul>
+ * <p>
+ * API consumers should refer to this class when interacting with the v2 endpoints to understand
+ * the data structure being returned.
+ */
 public class NamespaceVO {
 
     Map<String, List<String>> clusterVgroups = new HashMap<>();

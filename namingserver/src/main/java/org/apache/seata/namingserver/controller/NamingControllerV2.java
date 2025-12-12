@@ -37,6 +37,14 @@ public class NamingControllerV2 {
     @Resource
     private NamingManager namingManager;
 
+    /**
+     * Retrieves all namespaces.
+     * <p>
+     * API Endpoint: GET /naming/v2/namespace or /api/v2/naming/namespace
+     * </p>
+     *
+     * @return a {@link SingleResult} containing a map where the key is the namespace name and the value is a {@link NamespaceVO} object
+     */
     @GetMapping("/namespace")
     public SingleResult<Map<String, NamespaceVO>> namespaces() {
         return namingManager.namespaceV2();
