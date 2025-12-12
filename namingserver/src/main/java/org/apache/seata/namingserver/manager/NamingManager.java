@@ -85,7 +85,10 @@ public class NamingManager {
         final Map<String, Set<String>> vgroupsMap;
         final Map<String, Map<String, Set<String>>> clusterVgroupsMap;
 
-        NamespaceData(Map<String, Set<String>> clustersMap, Map<String, Set<String>> vgroupsMap, Map<String, Map<String, Set<String>>> clusterVgroupsMap) {
+        NamespaceData(
+                Map<String, Set<String>> clustersMap,
+                Map<String, Set<String>> vgroupsMap,
+                Map<String, Map<String, Set<String>>> clusterVgroupsMap) {
             this.clustersMap = clustersMap;
             this.vgroupsMap = vgroupsMap;
             this.clusterVgroupsMap = clusterVgroupsMap;
