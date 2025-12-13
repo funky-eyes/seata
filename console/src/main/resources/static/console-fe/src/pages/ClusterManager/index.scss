@@ -1,3 +1,4 @@
+// filepath: d:\workspace\seata\console\src\main\resources\static\console-fe\src\pages\ClusterManager\index.scss
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +15,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createRequest } from './request';
 
-const requestV2 = createRequest('/api/v2');
-
-export default requestV2;

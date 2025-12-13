@@ -35,6 +35,7 @@ public class Instance {
     private boolean healthy = true;
     private long term;
     private long timestamp;
+    private String version;
     private ClusterRole role = ClusterRole.MEMBER;
     private Map<String, Object> metadata = new HashMap<>();
 
@@ -165,6 +166,14 @@ public class Instance {
         }
     }
 
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
     public Instance clone() {
         Instance instance = new Instance();
         instance.setNamespace(namespace);
@@ -177,6 +186,7 @@ public class Instance {
         instance.setTerm(term);
         instance.setTimestamp(timestamp);
         instance.setMetadata(metadata);
+        instance.setVersion(instance.getVersion());
         return instance;
     }
 
