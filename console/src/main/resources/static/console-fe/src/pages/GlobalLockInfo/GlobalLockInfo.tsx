@@ -28,11 +28,10 @@ import {
   Message,
   Select
 } from '@alicloud/console-components';
-import Actions, { LinkButton } from '@alicloud/console-components-actions';
+import Actions from '@alicloud/console-components-actions';
 import { withRouter } from 'react-router-dom';
 import Page from '@/components/Page';
 import { GlobalProps } from '@/module';
-import styled, { css } from 'styled-components';
 import getData, {checkData, deleteData, GlobalLockParam } from '@/service/globalLockInfo';
 import PropTypes from 'prop-types';
 import moment from 'moment';
@@ -40,7 +39,7 @@ import moment from 'moment';
 import './index.scss';
 import {get} from "lodash";
 import {enUsKey, getCurrentLanguage} from "@/reducers/locale";
-import {fetchNamespace} from "@/service/transactionInfo";
+import {fetchNamespaceV2} from "@/service/transactionInfo";
 
 const { RangePicker } = DatePicker;
 const FormItem = Form.Item;
@@ -48,7 +47,7 @@ const FormItem = Form.Item;
 type GlobalLockInfoState = {
   list: Array<any>;
   total: number;
-  namespaceOptions: Map<string, { clusters: string[], vgroups: string[] }>;
+  namespaceOptions: Map<string, { clusters: string[], clusterVgroups: {[key: string]: string[]} }>;
   clusters: Array<string>;
   vgroups: Array<string>;
   loading: boolean;
@@ -71,7 +70,7 @@ class GlobalLockInfo extends React.Component<GlobalProps, GlobalLockInfoState> {
       pageSize: 10,
       pageNum: 1,
     },
-    namespaceOptions: new Map<string, { clusters: string[], vgroups: string[] }>(),
+    namespaceOptions: new Map<string, { clusters: string[], clusterVgroups: {[key: string]: string[]} }>(),
     clusters: [],
     vgroups: [],
   }
@@ -99,28 +98,33 @@ class GlobalLockInfo extends React.Component<GlobalProps, GlobalLockInfoState> {
   }
   loadNamespaces = async () => {
     try {
-      const namespaces = await fetchNamespace();
-      const namespaceOptions = new Map<string, { clusters: string[], vgroups: string[] }>();
+      const namespaces = await fetchNamespaceV2();
+      const namespaceOptions = new Map<string, { clusters: string[], clusterVgroups: {[key: string]: string[]} }>();
       Object.keys(namespaces).forEach(namespaceKey => {
         const namespaceData = namespaces[namespaceKey];
+        const clusterVgroups = (namespaceData.clusterVgroups || {}) as {[key: string]: string[]};
+        const clusters = Object.keys(clusterVgroups);
         namespaceOptions.set(namespaceKey, {
-          clusters: namespaceData.clusters,
-          vgroups: namespaceData.vgroups,
+          clusters,
+          clusterVgroups,
         });
       });
       if (namespaceOptions.size > 0) {
         // Set default namespace to the first option
         const firstNamespace = Array.from(namespaceOptions.keys())[0];
         const selectedNamespace = namespaceOptions.get(firstNamespace);
+        const firstCluster = selectedNamespace ? selectedNamespace.clusters[0] : undefined;
+        const clusterVgroups = selectedNamespace ? selectedNamespace.clusterVgroups : {};
+        const selectedVgroups = firstCluster ? clusterVgroups[firstCluster] || [] : [];
         this.setState({
           namespaceOptions,
           globalLockParam: {
             ...this.state.globalLockParam,
             namespace: firstNamespace,
-            cluster: selectedNamespace ? selectedNamespace.clusters[0] : undefined,
+            cluster: firstCluster,
           },
           clusters: selectedNamespace ? selectedNamespace.clusters : [],
-          vgroups: selectedNamespace ? selectedNamespace.vgroups : [],
+          vgroups: selectedVgroups,
         });
         this.search();
       } else {
@@ -187,15 +191,33 @@ class GlobalLockInfo extends React.Component<GlobalProps, GlobalLockInfoState> {
   searchFilterOnChange = (key:string, val:string) => {
     if (key === 'namespace') {
       const selectedNamespace = this.state.namespaceOptions.get(val);
+      const clusters = selectedNamespace ? selectedNamespace.clusters : [];
+      const firstCluster = clusters.length > 0 ? clusters[0] : undefined;
+      const clusterVgroups = selectedNamespace ? selectedNamespace.clusterVgroups : {};
+      const vgroups = firstCluster ? clusterVgroups[firstCluster] || [] : [];
       this.setState({
-        clusters: selectedNamespace ? selectedNamespace.clusters : [],
-        vgroups: selectedNamespace ? selectedNamespace.vgroups : [],
-        globalLockParam: Object.assign(this.state.globalLockParam, {[key]: val}),
+        clusters,
+        vgroups,
+        globalLockParam: Object.assign(this.state.globalLockParam, {[key]: val, cluster: firstCluster}),
       });
+    } else if (key === 'cluster') {
+      const currentNamespace = this.state.globalLockParam.namespace;
+      if (currentNamespace) {
+        const namespaceData = this.state.namespaceOptions.get(currentNamespace);
+        const clusterVgroups = namespaceData ? namespaceData.clusterVgroups : {};
+        const selectedVgroups = clusterVgroups[val] || [];
+        this.setState({
+          vgroups: selectedVgroups,
+          globalLockParam: Object.assign(this.state.globalLockParam, {[key]: val}),
+        });
+      } else {
+        this.setState({
+          globalLockParam: Object.assign(this.state.globalLockParam, {[key]: val}),
+        });
+      }
     } else {
       this.setState({
-        globalLockParam: Object.assign(this.state.globalLockParam,
-            {[key]: val}),
+        globalLockParam: Object.assign(this.state.globalLockParam, {[key]: val}),
       });
     }
   }
@@ -393,4 +415,3 @@ class GlobalLockInfo extends React.Component<GlobalProps, GlobalLockInfoState> {
 }
 
 export default withRouter(ConfigProvider.config(GlobalLockInfo, {}));
-
