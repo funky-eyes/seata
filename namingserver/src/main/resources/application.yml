@@ -17,10 +17,6 @@
 
 server:
   port: 8081
-console:
-  user:
-    username: seata
-    password: seata
 spring:
   application:
     name: seata-namingserver
