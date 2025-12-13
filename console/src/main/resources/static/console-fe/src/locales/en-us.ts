@@ -117,6 +117,13 @@ const enUs: ILocale = {
     healthy: 'Healthy',
     term: 'Term',
     unit: 'Unit',
+    operations: 'Operations',
+    internal: 'Internal',
+    version: 'Version',
+    metadata: 'Metadata',
+    controlEndpoint: 'Control Endpoint',
+    transactionEndpoint: 'Transaction Endpoint',
+    metadataDialogTitle: 'Metadata',
   },
   codeMessage: {
     200: 'The server successfully returned the requested data.',

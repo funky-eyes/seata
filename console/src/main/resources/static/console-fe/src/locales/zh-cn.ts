@@ -117,6 +117,13 @@ const zhCn: ILocale = {
     healthy: '健康状态',
     term: '任期',
     unit: '单元',
+    operations: '操作',
+    internal: '内部地址',
+    version: '版本',
+    metadata: '元数据',
+    controlEndpoint: '控制端点',
+    transactionEndpoint: '事务端点',
+    metadataDialogTitle: '元数据',
   },
   codeMessage: {
     200: '服务器成功返回请求的数据。',

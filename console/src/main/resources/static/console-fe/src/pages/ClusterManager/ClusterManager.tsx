@@ -19,6 +19,7 @@ import React from 'react';
 import { ConfigProvider, Table, Button, Form, Icon, Dialog, Input, Select, Message } from '@alicloud/console-components';
 import Actions from '@alicloud/console-components-actions';
 import { withRouter } from 'react-router-dom';
+import { connect } from 'react-redux';
 import Page from '@/components/Page';
 import { GlobalProps } from '@/module';
 import { fetchNamespaceV2, fetchClusterData } from '@/service/clusterManager';
@@ -45,6 +46,13 @@ type ClusterManagerLocale = {
   healthy?: string;
   term?: string;
   unit?: string;
+  operations?: string;
+  internal?: string;
+  version?: string;
+  metadata?: string;
+  controlEndpoint?: string;
+  transactionEndpoint?: string;
+  metadataDialogTitle?: string;
 };
 
 type ClusterManagerState = {
@@ -211,7 +219,7 @@ class ClusterManager extends React.Component<GlobalProps, ClusterManagerState> {
     const { locale = {} } = this.props;
     const rawLocale = locale.ClusterManager;
     const clusterManagerLocale: ClusterManagerLocale = typeof rawLocale === 'object' && rawLocale !== null ? rawLocale : {};
-    const { title, subTitle, selectNamespaceFilerPlaceholder, selectClusterFilerPlaceholder, searchButtonLabel, unitName, members, clusterType, view, unitDialogTitle, control, transaction, weight, healthy, term, unit } = clusterManagerLocale;
+    const { title, subTitle, selectNamespaceFilerPlaceholder, selectClusterFilerPlaceholder, searchButtonLabel, unitName, members, clusterType, view, unitDialogTitle, control, transaction, weight, healthy, term, unit, operations, internal, version, metadata, controlEndpoint, transactionEndpoint, metadataDialogTitle } = clusterManagerLocale;
     const unitData = this.state.clusterData ? Object.entries(this.state.clusterData.unitData || {}) : [];
     return (
       <Page
@@ -262,7 +270,7 @@ class ClusterManager extends React.Component<GlobalProps, ClusterManagerState> {
             <Table.Column title={members || 'Members'} dataIndex="1" cell={(val: any) => (val.namingInstanceList ? val.namingInstanceList.length : 0)} />
             <Table.Column title={clusterType || 'Cluster Type'} cell={() => (this.state.clusterData ? this.state.clusterData.clusterType : '')} />
             <Table.Column
-              title="Operations"
+              title={operations || 'Operations'}
               cell={(val: any, index: number, record: any) => {
                 return (
                   <Actions>
@@ -279,20 +287,20 @@ class ClusterManager extends React.Component<GlobalProps, ClusterManagerState> {
         {/* unit dialog */}
         <Dialog visible={this.state.unitDialogVisible} title={`${unitDialogTitle || 'Unit'}: ${this.state.selectedUnitName}`} footer={false} onClose={this.closeUnitDialog} style={{ width: '80vw', height: '80vh', overflow: 'auto' }}>
           <Table dataSource={this.state.selectedUnit ? this.state.selectedUnit.namingInstanceList || [] : []} style={{ overflow: 'auto' }}>
-            <Table.Column title={control || 'Control'} dataIndex="control" cell={(val: any) => (val ? `Control Endpoint: ${val.host}:${val.port}` : '')} />
-            <Table.Column title={transaction || 'Transaction'} dataIndex="transaction" cell={(val: any) => (val ? `Transaction Endpoint: ${val.host}:${val.port}` : '')} />
-            <Table.Column title="Internal" dataIndex="internal" cell={(val: any) => (val ? `${val.host}:${val.port}` : '')} />
+            <Table.Column title={control || 'Control'} dataIndex="control" cell={(val: any) => (val ? `${controlEndpoint || 'Control Endpoint'}: ${val.host}:${val.port}` : '')} />
+            <Table.Column title={transaction || 'Transaction'} dataIndex="transaction" cell={(val: any) => (val ? `${transactionEndpoint || 'Transaction Endpoint'}: ${val.host}:${val.port}` : '')} />
+            <Table.Column title={internal || 'Internal'} dataIndex="internal" cell={(val: any) => (val ? `${val.host}:${val.port}` : '')} />
             <Table.Column title={weight || 'Weight'} dataIndex="weight" />
             <Table.Column title={healthy || 'Healthy'} dataIndex="healthy" cell={(val: boolean) => (val ? 'Yes' : 'No')} />
             <Table.Column title={term || 'Term'} dataIndex="term" />
             <Table.Column title={unit || 'Unit'} dataIndex="unit" />
-            <Table.Column title="Version" dataIndex="version" />
-            <Table.Column title="Metadata" dataIndex="metadata" cell={(val: any) => (val ? <Button onClick={() => this.showMetadataDialog(val)}>View JSON</Button> : '')} />
+            <Table.Column title={version || 'Version'} dataIndex="version" />
+            <Table.Column title={metadata || 'Metadata'} dataIndex="metadata" cell={(val: any) => (val ? <Button onClick={() => this.showMetadataDialog(val)}>View JSON</Button> : '')} />
           </Table>
         </Dialog>
 
         {/* metadata dialog */}
-        <Dialog visible={this.state.metadataDialogVisible} title="Metadata" footer={false} onClose={this.closeMetadataDialog} style={{ width: '80vw', height: '80vh', overflow: 'auto' }}>
+        <Dialog visible={this.state.metadataDialogVisible} title={metadataDialogTitle || 'Metadata'} footer={false} onClose={this.closeMetadataDialog} style={{ width: '80vw', height: '80vh', overflow: 'auto' }}>
           <pre>{JSON.stringify(this.state.selectedMetadata, null, 2)}</pre>
         </Dialog>
       </Page>
@@ -300,4 +308,8 @@ class ClusterManager extends React.Component<GlobalProps, ClusterManagerState> {
   }
 }
 
-export default withRouter(ConfigProvider.config(ClusterManager, {}));
+const mapStateToProps = (state: any) => ({
+  locale: state.locale.locale,
+});
+
+export default connect(mapStateToProps)(withRouter(ConfigProvider.config(ClusterManager, {})));
