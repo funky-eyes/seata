@@ -61,6 +61,8 @@ type TransactionInfoState = {
   originalClusters: Array<string>;
   originalCluster: string;
   originalVGroups: Array<string>;
+  createNamespace: string;
+  createCluster: string;
 }
 
 const statusList:Array<StatusType> = [
@@ -339,6 +341,8 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
     originalClusters: [],
     originalCluster: '',
     originalVGroups: [],
+    createNamespace: '',
+    createCluster: '',
   };
   componentDidMount = () => {
     // search once by default
@@ -889,6 +893,8 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
     this.setState({
       createVGroupDialogVisible: true,
       vGroupName: '',
+      createNamespace: this.state.globalSessionParam.namespace || '',
+      createCluster: this.state.globalSessionParam.cluster || '',
     });
   }
 
@@ -896,6 +902,8 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
     this.setState({
       createVGroupDialogVisible: false,
       vGroupName: '',
+      createNamespace: '',
+      createCluster: '',
     });
   }
 
@@ -930,13 +938,12 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
   handleCreateVGroup = () => {
     const { locale = {} } = this.props;
     const { createVGroupErrorMessage, createVGroupSuccessMessage, createVGroupFailMessage } = locale;
-    const { namespace, cluster } = this.state.globalSessionParam;
-    const { vGroupName } = this.state;
-    if (!namespace || !cluster || !vGroupName.trim()) {
+    const { createNamespace, createCluster, vGroupName } = this.state;
+    if (!createNamespace || !createCluster || !vGroupName.trim()) {
       Message.error(createVGroupErrorMessage);
       return;
     }
-    addGroup(namespace, cluster, vGroupName.trim()).then(() => {
+    addGroup(createNamespace, createCluster, vGroupName.trim()).then(() => {
       Message.success(createVGroupSuccessMessage);
       this.closeCreateVGroupDialog();
       // Delay 5 seconds before reloading namespaces to get the latest vgroup list
@@ -990,6 +997,20 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
       createVGroupConfirmButton,
       changeVGroupButtonLabel,
       changeVGroupDialogTitle,
+      namespaceLabel,
+      clusterLabel,
+      originalNamespaceLabel,
+      originalClusterLabel,
+      selectVGroupLabel,
+      targetNamespaceLabel,
+      targetClusterLabel,
+      vGroupNameLabel,
+      confirmButtonLabel,
+      selectOriginalNamespacePlaceholder,
+      selectOriginalClusterPlaceholder,
+      selectTargetNamespacePlaceholder,
+      selectTargetClusterPlaceholder,
+      selectVGroupPlaceholder,
     } = locale;
     return (
       <Page
@@ -1157,8 +1178,34 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
 
         {/* create vgroup dialog */}
         <Dialog visible={this.state.createVGroupDialogVisible} title={createVGroupDialogTitle} footer={false} onClose={this.closeCreateVGroupDialog}>
-          <Form labelAlign="left">
-            <FormItem name="vGroupName" label="VGroup Name">
+          <Form inline labelAlign="left">
+            <FormItem name="createNamespace" label={namespaceLabel}>
+              <Select
+                placeholder={selectNamespaceFilerPlaceholder}
+                onChange={(value: string) => {
+                  this.setState(prevState => {
+                    const clusters = value ? prevState.namespaceOptions.get(value)?.clusters || [] : [];
+                    return {
+                      createNamespace: value,
+                      createCluster: clusters.length > 0 ? clusters[0] : '',
+                    };
+                  });
+                }}
+                dataSource={Array.from(this.state.namespaceOptions.keys()).map(key => ({ label: key, value: key }))}
+                value={this.state.createNamespace}
+              />
+            </FormItem>
+            <FormItem name="createCluster" label={clusterLabel}>
+              <Select
+                placeholder={selectClusterFilerPlaceholder}
+                onChange={(value: string) => {
+                  this.setState({ createCluster: value });
+                }}
+                dataSource={this.state.namespaceOptions.get(this.state.createNamespace)?.clusters.map(value => ({ label: value, value })) || []}
+                value={this.state.createCluster}
+              />
+            </FormItem>
+            <FormItem name="vGroupName" label={vGroupNameLabel}>
               <Input
                 placeholder={createVGroupInputPlaceholder}
                 value={this.state.vGroupName}
@@ -1176,10 +1223,10 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
         {/* change vgroup dialog */}
         <Dialog visible={this.state.changeVGroupDialogVisible} title={changeVGroupDialogTitle} footer={false} onClose={this.closeChangeVGroupDialog}>
           <Form inline labelAlign="left">
-            <FormItem name="originalNamespace" label="Original Namespace">
+            <FormItem name="originalNamespace" label={originalNamespaceLabel}>
               <Select
                 hasClear
-                placeholder="Select original namespace"
+                placeholder={selectOriginalNamespacePlaceholder}
                 onChange={(value: string) => {
                   this.setState(prevState => {
                     const clusters = value ? prevState.namespaceOptions.get(value)?.clusters || [] : [];
@@ -1199,10 +1246,10 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                 value={this.state.originalNamespace}
               />
             </FormItem>
-            <FormItem name="originalCluster" label="Original Cluster">
+            <FormItem name="originalCluster" label={originalClusterLabel}>
               <Select
                 hasClear
-                placeholder="Select original cluster"
+                placeholder={selectOriginalClusterPlaceholder}
                 onChange={(value: string) => {
                   this.setState(prevState => {
                     const namespaceData = prevState.namespaceOptions.get(prevState.originalNamespace);
@@ -1218,10 +1265,10 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                 value={this.state.originalCluster}
               />
             </FormItem>
-            <FormItem name="selectedVGroup" label="Select VGroup">
+            <FormItem name="selectedVGroup" label={selectVGroupLabel}>
               <Select
                 hasClear
-                placeholder="Select vgroup"
+                placeholder={selectVGroupPlaceholder}
                 onChange={(value: string) => {
                   this.setState(prevState => ({
                     selectedVGroup: value,
@@ -1231,10 +1278,10 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                 value={this.state.selectedVGroup}
               />
             </FormItem>
-            <FormItem name="targetNamespace" label="Target Namespace">
+            <FormItem name="targetNamespace" label={targetNamespaceLabel}>
               <Select
                 hasClear
-                placeholder="Select target namespace"
+                placeholder={selectTargetNamespacePlaceholder}
                 onChange={(value: string) => {
                   this.setState(prevState => {
                     const clusters = value ? prevState.namespaceOptions.get(value)?.clusters || [] : [];
@@ -1249,10 +1296,10 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                 value={this.state.targetNamespace}
               />
             </FormItem>
-            <FormItem name="targetCluster" label="Target Cluster">
+            <FormItem name="targetCluster" label={targetClusterLabel}>
               <Select
                 hasClear
-                placeholder="Select target cluster"
+                placeholder={selectTargetClusterPlaceholder}
                 onChange={(value: string) => {
                   this.setState(prevState => ({
                     targetCluster: value,
@@ -1264,7 +1311,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
             </FormItem>
             <FormItem>
               <Button type="primary" onClick={this.handleChangeVGroup} disabled={!this.state.selectedVGroup || !this.state.targetNamespace || !this.state.targetCluster}>
-                Confirm
+                {confirmButtonLabel}
               </Button>
             </FormItem>
           </Form>
