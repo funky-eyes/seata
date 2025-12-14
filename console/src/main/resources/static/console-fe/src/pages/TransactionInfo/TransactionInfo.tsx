@@ -396,6 +396,8 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
         pageSize: this.state.globalSessionParam.pageSize,
         pageNum: this.state.globalSessionParam.pageNum,
       },
+      clusters: [],
+      vgroups: [],
     });
   }
 
@@ -457,7 +459,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
       this.setState(prevState => ({
         clusters,
         vgroups,
-        globalSessionParam: { ...prevState.globalSessionParam, [key]: val, cluster: firstCluster },
+        globalSessionParam: { ...prevState.globalSessionParam, [key]: val, cluster: firstCluster, vgroup: '' },
       }));
     } else if (key === 'cluster') {
       const currentNamespace = this.state.globalSessionParam.namespace;
@@ -467,11 +469,11 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
         const selectedVgroups = clusterVgroups[val] || [];
         this.setState(prevState => ({
           vgroups: selectedVgroups,
-          globalSessionParam: { ...prevState.globalSessionParam, [key]: val },
+          globalSessionParam: { ...prevState.globalSessionParam, [key]: val, vgroup: '' },
         }));
       } else {
         this.setState(prevState => ({
-          globalSessionParam: { ...prevState.globalSessionParam, [key]: val },
+          globalSessionParam: { ...prevState.globalSessionParam, [key]: val, vgroup: '' },
         }));
       }
     } else {
@@ -1087,6 +1089,8 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                   this.searchFilterOnChange('vgroup', value);
                 }}
                 dataSource={this.state.vgroups.map(value => ({ label: value, value }))}
+                value={this.state.globalSessionParam.vgroup}
+                key={this.state.globalSessionParam.cluster}
             />
           </FormItem>
           {/* {branch session switch} */}
