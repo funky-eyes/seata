@@ -186,7 +186,7 @@ public class Instance {
         instance.setTerm(term);
         instance.setTimestamp(timestamp);
         instance.setMetadata(metadata);
-        instance.setVersion(instance.getVersion());
+        instance.setVersion(this.getVersion());
         return instance;
     }
 
