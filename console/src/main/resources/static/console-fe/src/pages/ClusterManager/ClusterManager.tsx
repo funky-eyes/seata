@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 import React from 'react';
-import { ConfigProvider, Table, Button, Form, Icon, Dialog, Input, Select, Message } from '@alicloud/console-components';
+import { ConfigProvider, Table, Button, Form, Icon, Dialog, Select, Message } from '@alicloud/console-components';
 import Actions from '@alicloud/console-components-actions';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
