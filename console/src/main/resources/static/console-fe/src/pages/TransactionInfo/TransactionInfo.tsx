@@ -21,7 +21,7 @@ import { withRouter } from 'react-router-dom';
 import Page from '@/components/Page';
 import { GlobalProps } from '@/module';
 import getData, { changeGlobalData, deleteBranchData, deleteGlobalData, GlobalSessionParam, sendGlobalCommitOrRollback,
-  startBranchData, startGlobalData, stopBranchData, stopGlobalData, forceDeleteGlobalData, forceDeleteBranchData, fetchNamespace, fetchNamespaceV2, addGroup, changeGroup } from '@/service/transactionInfo';
+  startBranchData, startGlobalData, stopBranchData, stopGlobalData, forceDeleteGlobalData, forceDeleteBranchData, fetchNamespaceV2, addGroup, changeGroup } from '@/service/transactionInfo';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 
@@ -368,37 +368,37 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
             const firstCluster = selectedNamespace ? selectedNamespace.clusters[0] : undefined;
             const clusterVgroups = selectedNamespace ? selectedNamespace.clusterVgroups : {};
             const selectedVgroups = firstCluster ? clusterVgroups[firstCluster] || [] : [];
-            this.setState({
+            this.setState(prevState => ({
                 namespaceOptions,
                 globalSessionParam: {
-                    ...this.state.globalSessionParam,
+                    ...prevState.globalSessionParam,
                     namespace: firstNamespace,
                     cluster: firstCluster,
                 },
                 clusters: selectedNamespace ? selectedNamespace.clusters : [],
                 vgroups: selectedVgroups,
-            });
-            this.search();
-        } else {
-            this.setState({
-                namespaceOptions,
-            });
-        }
+            }));
+             this.search();
+         } else {
+             this.setState({
+                 namespaceOptions,
+             });
+         }
     } catch (error) {
       console.error('Failed to fetch namespaces:', error);
     }
   }
   resetSearchFilter = () => {
-    this.setState({
+    this.setState(prevState => ({
       globalSessionParam: {
         withBranch: false,
         // pagination info don`t reset
-        pageSize: this.state.globalSessionParam.pageSize,
-        pageNum: this.state.globalSessionParam.pageNum,
+        pageSize: prevState.globalSessionParam.pageSize,
+        pageNum: prevState.globalSessionParam.pageNum,
       },
       clusters: [],
       vgroups: [],
-    });
+    }));
   }
 
   search = () => {
@@ -444,7 +444,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
           loading: false,
         });
       }
-    }).catch(err => {
+    }).catch(() => {
       this.setState({ loading: false });
     });
   }
@@ -483,7 +483,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
     }
   };
 
-  branchSessionSwitchOnChange = (checked: boolean, e: any) => {
+  branchSessionSwitchOnChange = (checked: boolean, _e?: any) => {
     this.setState(prevState => ({
       globalSessionParam: { ...prevState.globalSessionParam, withBranch: checked },
     }));
@@ -502,7 +502,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
     }));
   }
 
-  statusCell = (val: number, index: number, record: any) => {
+  statusCell = (val: number, _index?: number, _record?: any) => {
     let icon;
     statusList.forEach((status: StatusType) => {
       if (status.value === val) {
@@ -518,7 +518,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
     return icon;
   }
 
-  branchSessionStatusCell = (val: number, index: number, record: any) => {
+  branchSessionStatusCell = (val: number, _index?: number, _record?: any) => {
     let icon;
     branchSessionStatusList.forEach((status: StatusType) => {
       if (status.value === val) {
@@ -599,7 +599,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                   title: 'Warnning',
                   content: <div dangerouslySetInnerHTML={{__html: commonWarnning + '<br>' + warnMessage}}/>,
                   onOk: () => {
-                    deleteGlobalData(record).then((rsp) => {
+                    deleteGlobalData(record).then(() => {
                       Message.success("Delete successfully")
                       this.search()
                     }).catch((rsp) => {
@@ -634,7 +634,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                   title: 'Warnning',
                   content: <div dangerouslySetInnerHTML={{__html: commonWarnning + '<br>' + warnMessage}}/>,
                   onOk: () => {
-                    forceDeleteGlobalData(record).then((rsp) => {
+                    forceDeleteGlobalData(record).then(() => {
                       Message.success("Delete successfully")
                       this.search()
                     }).catch((rsp) => {
@@ -656,7 +656,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                 title: 'Confirm',
                 content: 'Are you sure you want to start restart global transactions',
                 onOk: () => {
-                  startGlobalData(record).then((rsp) => {
+                  startGlobalData(record).then(() => {
                     Message.success("Start successfully")
                     this.search()
                   }).catch((rsp) => {
@@ -673,7 +673,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
             title: 'Confirm',
             content: 'Are you sure you want to stop stop global transactions',
             onOk: () => {
-              stopGlobalData(record).then((rsp) => {
+              stopGlobalData(record).then(() => {
                 Message.success("Stop successfully")
                 this.search()
               }).catch((rsp) => {
@@ -693,7 +693,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
               title: 'Confirm',
               content: 'Are you sure you want to send commit or rollback to global transactions',
               onOk: () => {
-                sendGlobalCommitOrRollback(record).then((rsp) => {
+                sendGlobalCommitOrRollback(record).then(() => {
                   Message.success("Send successfully")
                   this.search()
                 }).catch((rsp) => {
@@ -712,7 +712,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
               title: 'Confirm',
               content: 'Are you sure you want to change the global transactions status',
               onOk: () => {
-                changeGlobalData(record).then((rsp) => {
+                changeGlobalData(record).then(() => {
                   Message.success("Change successfully")
                   this.search()
                 }).catch((rsp) => {
@@ -772,7 +772,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                   title: 'Warnning',
                   content: <div dangerouslySetInnerHTML={{__html: commonWarnning + '<br>' + warnMessage}}/>,
                   onOk: () => {
-                    deleteBranchData(record).then((rsp) => {
+                    deleteBranchData(record).then(() => {
                       Message.success("Delete successfully")
                       this.search()
                     }).catch((rsp) => {
@@ -798,7 +798,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                   title: 'Warnning',
                   content: <div dangerouslySetInnerHTML={{__html: commonWarnning + '<br>' + warnMessage}}/>,
                   onOk: () => {
-                    forceDeleteBranchData(record).then((rsp) => {
+                    forceDeleteBranchData(record).then(() => {
                       Message.success("Delete successfully")
                       this.search()
                     }).catch((rsp) => {
@@ -820,7 +820,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                 title: 'Confirm',
                 content: 'Are you sure you want to start branch transactions retry',
                 onOk: () => {
-                  startBranchData(record).then((rsp) => {
+                  startBranchData(record).then(() => {
                     Message.success("Start successfully")
                     this.search()
                   }).catch((rsp) => {
@@ -843,7 +843,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                   title: 'Warnning',
                   content: <div dangerouslySetInnerHTML={{__html: commonWarnning + '<br>' + warnMessage}}/>,
                   onOk: () => {
-                    stopBranchData(record).then((rsp) => {
+                    stopBranchData(record).then(() => {
                       Message.success("Stop successfully")
                       this.search()
                     }).catch((rsp) => {
@@ -861,7 +861,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
       </Actions>);
   }
 
-  paginationOnChange = (current: number, e: {}) => {
+  paginationOnChange = (current: number, _e?: any) => {
     this.setState(prevState => ({
       globalSessionParam: { ...prevState.globalSessionParam, pageNum: current },
     }));
@@ -892,12 +892,12 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
   }
 
   showCreateVGroupDialog = () => {
-    this.setState({
+    this.setState(prevState => ({
       createVGroupDialogVisible: true,
       vGroupName: '',
-      createNamespace: this.state.globalSessionParam.namespace || '',
-      createCluster: this.state.globalSessionParam.cluster || '',
-    });
+      createNamespace: prevState.globalSessionParam.namespace || '',
+      createCluster: prevState.globalSessionParam.cluster || '',
+    }));
   }
 
   closeCreateVGroupDialog = () => {
@@ -1274,9 +1274,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                 hasClear
                 placeholder={selectVGroupPlaceholder}
                 onChange={(value: string) => {
-                  this.setState(prevState => ({
-                    selectedVGroup: value,
-                  }));
+                  this.setState({ selectedVGroup: value });
                 }}
                 dataSource={this.state.originalVGroups.map(value => ({ label: value, value }))}
                 value={this.state.selectedVGroup}
@@ -1305,9 +1303,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                 hasClear
                 placeholder={selectTargetClusterPlaceholder}
                 onChange={(value: string) => {
-                  this.setState(prevState => ({
-                    targetCluster: value,
-                  }));
+                  this.setState({ targetCluster: value });
                 }}
                 dataSource={this.state.targetClusters.map(value => ({ label: value, value }))}
                 value={this.state.targetCluster}

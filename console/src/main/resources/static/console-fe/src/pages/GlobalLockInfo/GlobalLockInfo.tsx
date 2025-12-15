@@ -90,7 +90,10 @@ class GlobalLockInfo extends React.Component<GlobalProps, GlobalLockInfoState> {
             pageSize: 10,
             pageNum: 1,
           },
-        }, () => this.search());
+        });
+        // always load namespaces so the select options can be populated and
+        // the passed namespace/cluster/vgroup are respected
+        this.loadNamespaces();
         return;
       }
     }
@@ -110,23 +113,32 @@ class GlobalLockInfo extends React.Component<GlobalProps, GlobalLockInfoState> {
         });
       });
       if (namespaceOptions.size > 0) {
-        // Set default namespace to the first option
+        // determine selected namespace/cluster based on existing param (from query) or fallback to first
+        const existingNamespace = this.state.globalLockParam.namespace;
+        const existingCluster = this.state.globalLockParam.cluster;
         const firstNamespace = Array.from(namespaceOptions.keys())[0];
-        const selectedNamespace = namespaceOptions.get(firstNamespace);
-        const firstCluster = selectedNamespace ? selectedNamespace.clusters[0] : undefined;
+        const selectedNamespaceKey = (existingNamespace && namespaceOptions.has(existingNamespace)) ? existingNamespace : firstNamespace;
+        const selectedNamespace = namespaceOptions.get(selectedNamespaceKey);
+        const clusters = selectedNamespace ? selectedNamespace.clusters : [];
+        const firstCluster = clusters.length > 0 ? clusters[0] : undefined;
+        const selectedCluster = (existingCluster && clusters.includes(existingCluster)) ? existingCluster : firstCluster;
         const clusterVgroups = selectedNamespace ? selectedNamespace.clusterVgroups : {};
-        const selectedVgroups = firstCluster ? clusterVgroups[firstCluster] || [] : [];
-        this.setState({
+        const selectedVgroups = selectedCluster ? clusterVgroups[selectedCluster] || [] : [];
+        // preserve vgroup from query if present and valid for the selected cluster, otherwise clear it
+        const existingVgroup = this.state.globalLockParam.vgroup;
+        const finalVgroup = (existingVgroup && selectedVgroups.includes(existingVgroup)) ? existingVgroup : '';
+        this.setState(prevState => ({
           namespaceOptions,
           globalLockParam: {
-            ...this.state.globalLockParam,
-            namespace: firstNamespace,
-            cluster: firstCluster,
+            ...prevState.globalLockParam,
+            namespace: selectedNamespaceKey,
+            cluster: selectedCluster,
+            vgroup: finalVgroup,
           },
           clusters: selectedNamespace ? selectedNamespace.clusters : [],
           vgroups: selectedVgroups,
-        });
-        this.search();
+        }));
+       this.search();
       } else {
         this.setState({
           namespaceOptions,
@@ -143,6 +155,8 @@ class GlobalLockInfo extends React.Component<GlobalProps, GlobalLockInfoState> {
         pageSize: this.state.globalLockParam.pageSize,
         pageNum: this.state.globalLockParam.pageNum,
       },
+      clusters: [],
+      vgroups: [],
     });
   }
 
@@ -151,13 +165,15 @@ class GlobalLockInfo extends React.Component<GlobalProps, GlobalLockInfoState> {
     getData(this.state.globalLockParam).then(data => {
       // if the result set is empty, set the page number to go back to the first page
       if (data.total === 0) {
-        this.setState({
+        this.setState(prevState => ({
           list: [],
           total: 0,
           loading: false,
-          globalLockParam: Object.assign(this.state.globalLockParam,
-            { pageNum: 1 }),
-        });
+          globalLockParam: {
+            ...prevState.globalLockParam,
+            pageNum: 1,
+          },
+        }));
         return;
       }
       // format time
@@ -173,19 +189,22 @@ class GlobalLockInfo extends React.Component<GlobalProps, GlobalLockInfoState> {
         total: data.total,
         loading: false,
       });
-    }).catch(err => {
+    }).catch(() => {
       this.setState({ loading: false });
     });
   }
 
   createTimeOnChange = (value: Array<any>) => {
     // timestamp(milliseconds)
-    const timeStart = value[0] == null ? null : moment(value[0]).unix() * 1000;
-    const timeEnd = value[1] == null ? null : moment(value[1]).unix() * 1000;
-    this.setState({
-      globalLockParam: Object.assign(this.state.globalLockParam,
-        { timeStart, timeEnd }),
-    });
+    const timeStart: number | undefined = value[0] == null ? undefined : moment(value[0]).unix() * 1000;
+    const timeEnd: number | undefined = value[1] == null ? undefined : moment(value[1]).unix() * 1000;
+    this.setState(prevState => ({
+      globalLockParam: {
+        ...prevState.globalLockParam,
+        timeStart,
+        timeEnd,
+      },
+    }));
   }
 
   searchFilterOnChange = (key:string, val:string) => {
@@ -195,47 +214,65 @@ class GlobalLockInfo extends React.Component<GlobalProps, GlobalLockInfoState> {
       const firstCluster = clusters.length > 0 ? clusters[0] : undefined;
       const clusterVgroups = selectedNamespace ? selectedNamespace.clusterVgroups : {};
       const vgroups = firstCluster ? clusterVgroups[firstCluster] || [] : [];
-      this.setState({
+      this.setState(prevState => ({
         clusters,
         vgroups,
-        globalLockParam: Object.assign(this.state.globalLockParam, {[key]: val, cluster: firstCluster}),
-      });
+        globalLockParam: {
+          ...prevState.globalLockParam,
+          [key]: val,
+          cluster: firstCluster,
+          vgroup: '',
+        },
+      }));
     } else if (key === 'cluster') {
       const currentNamespace = this.state.globalLockParam.namespace;
       if (currentNamespace) {
         const namespaceData = this.state.namespaceOptions.get(currentNamespace);
         const clusterVgroups = namespaceData ? namespaceData.clusterVgroups : {};
         const selectedVgroups = clusterVgroups[val] || [];
-        this.setState({
+        this.setState(prevState => ({
           vgroups: selectedVgroups,
-          globalLockParam: Object.assign(this.state.globalLockParam, {[key]: val}),
-        });
+          globalLockParam: {
+            ...prevState.globalLockParam,
+            [key]: val,
+            vgroup: '',
+          },
+        }));
       } else {
-        this.setState({
-          globalLockParam: Object.assign(this.state.globalLockParam, {[key]: val}),
-        });
+        this.setState(prevState => ({
+          globalLockParam: {
+            ...prevState.globalLockParam,
+            [key]: val,
+            vgroup: '',
+          },
+        }));
       }
     } else {
-      this.setState({
-        globalLockParam: Object.assign(this.state.globalLockParam, {[key]: val}),
-      });
+      this.setState(prevState => ({
+        globalLockParam: {
+          ...prevState.globalLockParam,
+          [key]: val,
+        },
+      }));
     }
   }
 
-  paginationOnChange = (current: number, e: {}) => {
-    this.setState({
-      globalLockParam: Object.assign(this.state.globalLockParam,
-        { pageNum: current }),
-    });
-    this.search();
+  paginationOnChange = (current: number, _e?: any) => {
+    this.setState(prevState => ({
+      globalLockParam: {
+        ...prevState.globalLockParam,
+        pageNum: current,
+      },
+    }), this.search);
   }
 
   paginationOnPageSizeChange = (pageSize: number) => {
-    this.setState({
-      globalLockParam: Object.assign(this.state.globalLockParam,
-        { pageSize }),
-    });
-    this.search();
+    this.setState(prevState => ({
+      globalLockParam: {
+        ...prevState.globalLockParam,
+        pageSize,
+      },
+    }), this.search);
   }
 
   deleteCell = (val: string, index: number, record: any) => {
@@ -369,6 +406,8 @@ class GlobalLockInfo extends React.Component<GlobalProps, GlobalLockInfoState> {
                   this.searchFilterOnChange('vgroup', value);
                 }}
                 dataSource={this.state.vgroups.map(value => ({ label: value, value }))}
+                value={this.state.globalLockParam.vgroup}
+                key={this.state.globalLockParam.cluster}
             />
           </FormItem>
           {/* {reset search filter button} */}
