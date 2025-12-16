@@ -21,7 +21,7 @@ import { withRouter } from 'react-router-dom';
 import Page from '@/components/Page';
 import { GlobalProps } from '@/module';
 import getData, { changeGlobalData, deleteBranchData, deleteGlobalData, GlobalSessionParam, sendGlobalCommitOrRollback,
-  startBranchData, startGlobalData, stopBranchData, stopGlobalData, forceDeleteGlobalData, forceDeleteBranchData, fetchNamespace, fetchNamespaceV2, addGroup, changeGroup } from '@/service/transactionInfo';
+  startBranchData, startGlobalData, stopBranchData, stopGlobalData, forceDeleteGlobalData, forceDeleteBranchData, fetchNamespaceV2, addGroup, changeGroup } from '@/service/transactionInfo';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 
@@ -61,6 +61,8 @@ type TransactionInfoState = {
   originalClusters: Array<string>;
   originalCluster: string;
   originalVGroups: Array<string>;
+  createNamespace: string;
+  createCluster: string;
 }
 
 const statusList:Array<StatusType> = [
@@ -339,6 +341,8 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
     originalClusters: [],
     originalCluster: '',
     originalVGroups: [],
+    createNamespace: '',
+    createCluster: '',
   };
   componentDidMount = () => {
     // search once by default
@@ -364,35 +368,37 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
             const firstCluster = selectedNamespace ? selectedNamespace.clusters[0] : undefined;
             const clusterVgroups = selectedNamespace ? selectedNamespace.clusterVgroups : {};
             const selectedVgroups = firstCluster ? clusterVgroups[firstCluster] || [] : [];
-            this.setState({
+            this.setState(prevState => ({
                 namespaceOptions,
                 globalSessionParam: {
-                    ...this.state.globalSessionParam,
+                    ...prevState.globalSessionParam,
                     namespace: firstNamespace,
                     cluster: firstCluster,
                 },
                 clusters: selectedNamespace ? selectedNamespace.clusters : [],
                 vgroups: selectedVgroups,
-            });
-            this.search();
-        } else {
-            this.setState({
-                namespaceOptions,
-            });
-        }
+            }));
+             this.search();
+         } else {
+             this.setState({
+                 namespaceOptions,
+             });
+         }
     } catch (error) {
       console.error('Failed to fetch namespaces:', error);
     }
   }
   resetSearchFilter = () => {
-    this.setState({
+    this.setState(prevState => ({
       globalSessionParam: {
         withBranch: false,
         // pagination info don`t reset
-        pageSize: this.state.globalSessionParam.pageSize,
-        pageNum: this.state.globalSessionParam.pageNum,
+        pageSize: prevState.globalSessionParam.pageSize,
+        pageNum: prevState.globalSessionParam.pageNum,
       },
-    });
+      clusters: [],
+      vgroups: [],
+    }));
   }
 
   search = () => {
@@ -438,7 +444,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
           loading: false,
         });
       }
-    }).catch(err => {
+    }).catch(() => {
       this.setState({ loading: false });
     });
   }
@@ -453,7 +459,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
       this.setState(prevState => ({
         clusters,
         vgroups,
-        globalSessionParam: { ...prevState.globalSessionParam, [key]: val, cluster: firstCluster },
+        globalSessionParam: { ...prevState.globalSessionParam, [key]: val, cluster: firstCluster, vgroup: '' },
       }));
     } else if (key === 'cluster') {
       const currentNamespace = this.state.globalSessionParam.namespace;
@@ -463,11 +469,11 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
         const selectedVgroups = clusterVgroups[val] || [];
         this.setState(prevState => ({
           vgroups: selectedVgroups,
-          globalSessionParam: { ...prevState.globalSessionParam, [key]: val },
+          globalSessionParam: { ...prevState.globalSessionParam, [key]: val, vgroup: '' },
         }));
       } else {
         this.setState(prevState => ({
-          globalSessionParam: { ...prevState.globalSessionParam, [key]: val },
+          globalSessionParam: { ...prevState.globalSessionParam, [key]: val, vgroup: '' },
         }));
       }
     } else {
@@ -477,7 +483,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
     }
   };
 
-  branchSessionSwitchOnChange = (checked: boolean, e: any) => {
+  branchSessionSwitchOnChange = (checked: boolean, _e?: any) => {
     this.setState(prevState => ({
       globalSessionParam: { ...prevState.globalSessionParam, withBranch: checked },
     }));
@@ -496,7 +502,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
     }));
   }
 
-  statusCell = (val: number, index: number, record: any) => {
+  statusCell = (val: number, _index?: number, _record?: any) => {
     let icon;
     statusList.forEach((status: StatusType) => {
       if (status.value === val) {
@@ -512,7 +518,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
     return icon;
   }
 
-  branchSessionStatusCell = (val: number, index: number, record: any) => {
+  branchSessionStatusCell = (val: number, _index?: number, _record?: any) => {
     let icon;
     branchSessionStatusList.forEach((status: StatusType) => {
       if (status.value === val) {
@@ -593,7 +599,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                   title: 'Warnning',
                   content: <div dangerouslySetInnerHTML={{__html: commonWarnning + '<br>' + warnMessage}}/>,
                   onOk: () => {
-                    deleteGlobalData(record).then((rsp) => {
+                    deleteGlobalData(record).then(() => {
                       Message.success("Delete successfully")
                       this.search()
                     }).catch((rsp) => {
@@ -628,7 +634,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                   title: 'Warnning',
                   content: <div dangerouslySetInnerHTML={{__html: commonWarnning + '<br>' + warnMessage}}/>,
                   onOk: () => {
-                    forceDeleteGlobalData(record).then((rsp) => {
+                    forceDeleteGlobalData(record).then(() => {
                       Message.success("Delete successfully")
                       this.search()
                     }).catch((rsp) => {
@@ -650,7 +656,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                 title: 'Confirm',
                 content: 'Are you sure you want to start restart global transactions',
                 onOk: () => {
-                  startGlobalData(record).then((rsp) => {
+                  startGlobalData(record).then(() => {
                     Message.success("Start successfully")
                     this.search()
                   }).catch((rsp) => {
@@ -667,7 +673,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
             title: 'Confirm',
             content: 'Are you sure you want to stop stop global transactions',
             onOk: () => {
-              stopGlobalData(record).then((rsp) => {
+              stopGlobalData(record).then(() => {
                 Message.success("Stop successfully")
                 this.search()
               }).catch((rsp) => {
@@ -687,7 +693,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
               title: 'Confirm',
               content: 'Are you sure you want to send commit or rollback to global transactions',
               onOk: () => {
-                sendGlobalCommitOrRollback(record).then((rsp) => {
+                sendGlobalCommitOrRollback(record).then(() => {
                   Message.success("Send successfully")
                   this.search()
                 }).catch((rsp) => {
@@ -706,7 +712,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
               title: 'Confirm',
               content: 'Are you sure you want to change the global transactions status',
               onOk: () => {
-                changeGlobalData(record).then((rsp) => {
+                changeGlobalData(record).then(() => {
                   Message.success("Change successfully")
                   this.search()
                 }).catch((rsp) => {
@@ -766,7 +772,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                   title: 'Warnning',
                   content: <div dangerouslySetInnerHTML={{__html: commonWarnning + '<br>' + warnMessage}}/>,
                   onOk: () => {
-                    deleteBranchData(record).then((rsp) => {
+                    deleteBranchData(record).then(() => {
                       Message.success("Delete successfully")
                       this.search()
                     }).catch((rsp) => {
@@ -792,7 +798,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                   title: 'Warnning',
                   content: <div dangerouslySetInnerHTML={{__html: commonWarnning + '<br>' + warnMessage}}/>,
                   onOk: () => {
-                    forceDeleteBranchData(record).then((rsp) => {
+                    forceDeleteBranchData(record).then(() => {
                       Message.success("Delete successfully")
                       this.search()
                     }).catch((rsp) => {
@@ -814,7 +820,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                 title: 'Confirm',
                 content: 'Are you sure you want to start branch transactions retry',
                 onOk: () => {
-                  startBranchData(record).then((rsp) => {
+                  startBranchData(record).then(() => {
                     Message.success("Start successfully")
                     this.search()
                   }).catch((rsp) => {
@@ -837,7 +843,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                   title: 'Warnning',
                   content: <div dangerouslySetInnerHTML={{__html: commonWarnning + '<br>' + warnMessage}}/>,
                   onOk: () => {
-                    stopBranchData(record).then((rsp) => {
+                    stopBranchData(record).then(() => {
                       Message.success("Stop successfully")
                       this.search()
                     }).catch((rsp) => {
@@ -855,7 +861,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
       </Actions>);
   }
 
-  paginationOnChange = (current: number, e: {}) => {
+  paginationOnChange = (current: number, _e?: any) => {
     this.setState(prevState => ({
       globalSessionParam: { ...prevState.globalSessionParam, pageNum: current },
     }));
@@ -886,16 +892,20 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
   }
 
   showCreateVGroupDialog = () => {
-    this.setState({
+    this.setState(prevState => ({
       createVGroupDialogVisible: true,
       vGroupName: '',
-    });
+      createNamespace: prevState.globalSessionParam.namespace || '',
+      createCluster: prevState.globalSessionParam.cluster || '',
+    }));
   }
 
   closeCreateVGroupDialog = () => {
     this.setState({
       createVGroupDialogVisible: false,
       vGroupName: '',
+      createNamespace: '',
+      createCluster: '',
     });
   }
 
@@ -930,13 +940,12 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
   handleCreateVGroup = () => {
     const { locale = {} } = this.props;
     const { createVGroupErrorMessage, createVGroupSuccessMessage, createVGroupFailMessage } = locale;
-    const { namespace, cluster } = this.state.globalSessionParam;
-    const { vGroupName } = this.state;
-    if (!namespace || !cluster || !vGroupName.trim()) {
+    const { createNamespace, createCluster, vGroupName } = this.state;
+    if (!createNamespace || !createCluster || !vGroupName.trim()) {
       Message.error(createVGroupErrorMessage);
       return;
     }
-    addGroup(namespace, cluster, vGroupName.trim()).then(() => {
+    addGroup(createNamespace, createCluster, vGroupName.trim()).then(() => {
       Message.success(createVGroupSuccessMessage);
       this.closeCreateVGroupDialog();
       // Delay 5 seconds before reloading namespaces to get the latest vgroup list
@@ -990,6 +999,20 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
       createVGroupConfirmButton,
       changeVGroupButtonLabel,
       changeVGroupDialogTitle,
+      namespaceLabel,
+      clusterLabel,
+      originalNamespaceLabel,
+      originalClusterLabel,
+      selectVGroupLabel,
+      targetNamespaceLabel,
+      targetClusterLabel,
+      vGroupNameLabel,
+      confirmButtonLabel,
+      selectOriginalNamespacePlaceholder,
+      selectOriginalClusterPlaceholder,
+      selectTargetNamespacePlaceholder,
+      selectTargetClusterPlaceholder,
+      selectVGroupPlaceholder,
     } = locale;
     return (
       <Page
@@ -1066,6 +1089,8 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                   this.searchFilterOnChange('vgroup', value);
                 }}
                 dataSource={this.state.vgroups.map(value => ({ label: value, value }))}
+                value={this.state.globalSessionParam.vgroup}
+                key={this.state.globalSessionParam.cluster}
             />
           </FormItem>
           {/* {branch session switch} */}
@@ -1157,8 +1182,34 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
 
         {/* create vgroup dialog */}
         <Dialog visible={this.state.createVGroupDialogVisible} title={createVGroupDialogTitle} footer={false} onClose={this.closeCreateVGroupDialog}>
-          <Form labelAlign="left">
-            <FormItem name="vGroupName" label="VGroup Name">
+          <Form inline labelAlign="left">
+            <FormItem name="createNamespace" label={namespaceLabel}>
+              <Select
+                placeholder={selectNamespaceFilerPlaceholder}
+                onChange={(value: string) => {
+                  this.setState(prevState => {
+                    const clusters = value ? prevState.namespaceOptions.get(value)?.clusters || [] : [];
+                    return {
+                      createNamespace: value,
+                      createCluster: clusters.length > 0 ? clusters[0] : '',
+                    };
+                  });
+                }}
+                dataSource={Array.from(this.state.namespaceOptions.keys()).map(key => ({ label: key, value: key }))}
+                value={this.state.createNamespace}
+              />
+            </FormItem>
+            <FormItem name="createCluster" label={clusterLabel}>
+              <Select
+                placeholder={selectClusterFilerPlaceholder}
+                onChange={(value: string) => {
+                  this.setState({ createCluster: value });
+                }}
+                dataSource={this.state.namespaceOptions.get(this.state.createNamespace)?.clusters.map(value => ({ label: value, value })) || []}
+                value={this.state.createCluster}
+              />
+            </FormItem>
+            <FormItem name="vGroupName" label={vGroupNameLabel}>
               <Input
                 placeholder={createVGroupInputPlaceholder}
                 value={this.state.vGroupName}
@@ -1176,10 +1227,10 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
         {/* change vgroup dialog */}
         <Dialog visible={this.state.changeVGroupDialogVisible} title={changeVGroupDialogTitle} footer={false} onClose={this.closeChangeVGroupDialog}>
           <Form inline labelAlign="left">
-            <FormItem name="originalNamespace" label="Original Namespace">
+            <FormItem name="originalNamespace" label={originalNamespaceLabel}>
               <Select
                 hasClear
-                placeholder="Select original namespace"
+                placeholder={selectOriginalNamespacePlaceholder}
                 onChange={(value: string) => {
                   this.setState(prevState => {
                     const clusters = value ? prevState.namespaceOptions.get(value)?.clusters || [] : [];
@@ -1199,10 +1250,10 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                 value={this.state.originalNamespace}
               />
             </FormItem>
-            <FormItem name="originalCluster" label="Original Cluster">
+            <FormItem name="originalCluster" label={originalClusterLabel}>
               <Select
                 hasClear
-                placeholder="Select original cluster"
+                placeholder={selectOriginalClusterPlaceholder}
                 onChange={(value: string) => {
                   this.setState(prevState => {
                     const namespaceData = prevState.namespaceOptions.get(prevState.originalNamespace);
@@ -1218,23 +1269,21 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                 value={this.state.originalCluster}
               />
             </FormItem>
-            <FormItem name="selectedVGroup" label="Select VGroup">
+            <FormItem name="selectedVGroup" label={selectVGroupLabel}>
               <Select
                 hasClear
-                placeholder="Select vgroup"
+                placeholder={selectVGroupPlaceholder}
                 onChange={(value: string) => {
-                  this.setState(prevState => ({
-                    selectedVGroup: value,
-                  }));
+                  this.setState({ selectedVGroup: value });
                 }}
                 dataSource={this.state.originalVGroups.map(value => ({ label: value, value }))}
                 value={this.state.selectedVGroup}
               />
             </FormItem>
-            <FormItem name="targetNamespace" label="Target Namespace">
+            <FormItem name="targetNamespace" label={targetNamespaceLabel}>
               <Select
                 hasClear
-                placeholder="Select target namespace"
+                placeholder={selectTargetNamespacePlaceholder}
                 onChange={(value: string) => {
                   this.setState(prevState => {
                     const clusters = value ? prevState.namespaceOptions.get(value)?.clusters || [] : [];
@@ -1249,14 +1298,12 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                 value={this.state.targetNamespace}
               />
             </FormItem>
-            <FormItem name="targetCluster" label="Target Cluster">
+            <FormItem name="targetCluster" label={targetClusterLabel}>
               <Select
                 hasClear
-                placeholder="Select target cluster"
+                placeholder={selectTargetClusterPlaceholder}
                 onChange={(value: string) => {
-                  this.setState(prevState => ({
-                    targetCluster: value,
-                  }));
+                  this.setState({ targetCluster: value });
                 }}
                 dataSource={this.state.targetClusters.map(value => ({ label: value, value }))}
                 value={this.state.targetCluster}
@@ -1264,7 +1311,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
             </FormItem>
             <FormItem>
               <Button type="primary" onClick={this.handleChangeVGroup} disabled={!this.state.selectedVGroup || !this.state.targetNamespace || !this.state.targetCluster}>
-                Confirm
+                {confirmButtonLabel}
               </Button>
             </FormItem>
           </Form>
