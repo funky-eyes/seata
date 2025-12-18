@@ -18,6 +18,7 @@ import React from 'react';
 import { ConfigProvider, Table, Button, DatePicker, Form, Icon, Switch, Pagination, Dialog, Input, Select, Message } from '@alicloud/console-components';
 import Actions, { LinkButton } from '@alicloud/console-components-actions';
 import { withRouter } from 'react-router-dom';
+import { connect } from 'react-redux';
 import Page from '@/components/Page';
 import { GlobalProps } from '@/module';
 import getData, { changeGlobalData, deleteBranchData, deleteGlobalData, GlobalSessionParam, sendGlobalCommitOrRollback,
@@ -354,8 +355,12 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
       const namespaceOptions = new Map<string, { clusters: string[], clusterVgroups: {[key: string]: string[]} }>();
       Object.keys(namespaces).forEach(namespaceKey => {
         const namespaceData = namespaces[namespaceKey];
-        const clusterVgroups = (namespaceData.clusterVgroups || {}) as {[key: string]: string[]};
-        const clusters = Object.keys(clusterVgroups);
+        const clustersData = namespaceData.clusters || {};
+        const clusterVgroups: {[key: string]: string[]} = {};
+        Object.keys(clustersData).forEach(clusterName => {
+          clusterVgroups[clusterName] = clustersData[clusterName].vgroups || [];
+        });
+        const clusters = Object.keys(clustersData);
         namespaceOptions.set(namespaceKey, {
           clusters,
           clusterVgroups,
@@ -535,7 +540,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
   }
 
   operateCell = (val: string, index: number, record: any) => {
-    const { locale = {}, history } = this.props;
+    const { locale, history } = this.props;
     const {
       showBranchSessionTitle,
       showGlobalLockTitle,
@@ -545,7 +550,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
       startGlobalSessionTitle,
       sendGlobalSessionTitle,
       changeGlobalSessionTitle,
-    } = locale;
+    } = locale.TransactionInfo || {};
     let width = getCurrentLanguage() === enUsKey ? '450px' : '420px'
     let height = '120px';
     return (
@@ -729,14 +734,14 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
   }
 
   branchSessionDialogOperateCell = (val: string, index: number, record: any) => {
-    const { locale = {}, history } = this.props;
+    const { locale, history } = this.props;
     const {
       showGlobalLockTitle,
       deleteBranchSessionTitle,
       stopBranchSessionTitle,
       startBranchSessionTitle,
       forceDeleteBranchSessionTitle,
-    } = locale;
+    } = locale.TransactionInfo || {};
     let width = getCurrentLanguage() === enUsKey ? '500px' : '450px'
     let height = '120px';
     return (
@@ -938,8 +943,8 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
   }
 
   handleCreateVGroup = () => {
-    const { locale = {} } = this.props;
-    const { createVGroupErrorMessage, createVGroupSuccessMessage, createVGroupFailMessage } = locale;
+    const { locale } = this.props;
+    const { createVGroupErrorMessage, createVGroupSuccessMessage, createVGroupFailMessage } = locale.TransactionInfo || {};
     const { createNamespace, createCluster, vGroupName } = this.state;
     if (!createNamespace || !createCluster || !vGroupName.trim()) {
       Message.error(createVGroupErrorMessage);
@@ -959,9 +964,9 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
     });
   }
 
-  handleChangeVGroup = () => {
-    const { locale = {} } = this.props;
-    const { changeVGroupSuccessMessage, changeVGroupFailMessage } = locale;
+    handleChangeVGroup = () => {
+    const { locale } = this.props;
+    const { changeVGroupSuccessMessage, changeVGroupFailMessage } = locale.TransactionInfo || {};
     const { selectedVGroup, targetNamespace, targetCluster } = this.state;
     if (!selectedVGroup || !targetNamespace || !targetCluster) {
       return;
@@ -978,10 +983,11 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
       const displayMessage = backendMessage ? `${changeVGroupFailMessage}: ${backendMessage}` : changeVGroupFailMessage;
       Message.error(displayMessage);
     });
-  }
+    }
 
   render() {
-    const { locale = {} } = this.props;
+    const { locale } = this.props;
+    const transactionInfo = locale.TransactionInfo || {};
     const { title, subTitle, createTimeLabel,
       selectFilerPlaceholder,
       selectNamespaceFilerPlaceholder,
@@ -1013,7 +1019,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
       selectTargetNamespacePlaceholder,
       selectTargetClusterPlaceholder,
       selectVGroupPlaceholder,
-    } = locale;
+    } = transactionInfo;
     return (
       <Page
         title={title}
@@ -1321,4 +1327,8 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
   }
 }
 
-export default withRouter(ConfigProvider.config(TransactionInfo, {}));
+const mapStateToProps = (state: any) => ({
+  locale: state.locale.locale,
+});
+
+export default ConfigProvider.config(withRouter(connect(mapStateToProps)(TransactionInfo)), {});

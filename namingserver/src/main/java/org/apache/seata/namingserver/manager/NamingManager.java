@@ -542,14 +542,34 @@ public class NamingManager {
         data.clustersMap.forEach((namespace, clusters) -> {
             org.apache.seata.namingserver.entity.vo.v2.NamespaceVO namespaceVO =
                     new org.apache.seata.namingserver.entity.vo.v2.NamespaceVO();
-            Map<String, List<String>> clusterVgList = new HashMap<>();
-            Map<String, Set<String>> clusterVgSet = data.clusterVgroupsMap.get(namespace);
-            clusters.forEach(cluster -> {
-                Set<String> vgSet = clusterVgSet.get(cluster);
-                clusterVgList.put(cluster, vgSet != null ? new ArrayList<>(vgSet) : new ArrayList<>());
-            });
-            namespaceVO.setClusterVgroups(clusterVgList);
+            Map<String, org.apache.seata.namingserver.entity.vo.v2.ClusterVO> clusterVOMap = new HashMap<>();
 
+            clusters.forEach(cluster -> {
+                org.apache.seata.namingserver.entity.vo.v2.ClusterVO clusterVO =
+                        new org.apache.seata.namingserver.entity.vo.v2.ClusterVO();
+
+                // Set vgroups for this cluster
+                Map<String, Set<String>> clusterVgSet = data.clusterVgroupsMap.get(namespace);
+                Set<String> vgSet = clusterVgSet.get(cluster);
+                clusterVO.setVgroups(vgSet != null ? new ArrayList<>(vgSet) : new ArrayList<>());
+
+                // Set units and type for this cluster
+                Map<String, ClusterData> clusterDataMap = namespaceClusterDataMap.get(namespace);
+                if (clusterDataMap != null) {
+                    ClusterData clusterData = clusterDataMap.get(cluster);
+                    if (clusterData != null) {
+                        List<String> unitNames = clusterData.getUnitData().values().stream()
+                                .map(unit -> unit.getUnitName())
+                                .collect(Collectors.toList());
+                        clusterVO.setUnits(unitNames);
+                        clusterVO.setType(clusterData.getClusterType());
+                    }
+                }
+
+                clusterVOMap.put(cluster, clusterVO);
+            });
+
+            namespaceVO.setClusters(clusterVOMap);
             namespaceVOs.put(namespace, namespaceVO);
         });
 
@@ -563,8 +583,7 @@ public class NamingManager {
         Map<String, Map<String, Set<String>>> clusterVgroupsMap = new HashMap<>(); // namespace -> cluster -> vgroups
 
         // Collect all namespaces
-        Set<String> allNamespaces = new HashSet<>();
-        allNamespaces.addAll(namespaceClusterDataMap.keySet());
+        Set<String> allNamespaces = new HashSet<>(namespaceClusterDataMap.keySet());
         vGroupMap.asMap().values().forEach(namespaceMap -> allNamespaces.addAll(namespaceMap.keySet()));
 
         // Initialize maps for all namespaces

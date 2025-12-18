@@ -97,8 +97,12 @@ class ClusterManager extends React.Component<GlobalProps, ClusterManagerState> {
       const namespaceOptions = new Map<string, { clusters: string[], clusterVgroups: {[key: string]: string[]} }>();
       Object.keys(namespaces).forEach(namespaceKey => {
         const namespaceData = namespaces[namespaceKey];
-        const clusterVgroups: {[key: string]: string[]} = namespaceData.clusterVgroups || {};
-        const clusters = Object.keys(clusterVgroups);
+        const clustersData = namespaceData.clusters || {};
+        const clusterVgroups: {[key: string]: string[]} = {};
+        Object.keys(clustersData).forEach(clusterName => {
+          clusterVgroups[clusterName] = clustersData[clusterName].vgroups || [];
+        });
+        const clusters = Object.keys(clustersData);
         namespaceOptions.set(namespaceKey, {
           clusters,
           clusterVgroups,
@@ -215,7 +219,7 @@ class ClusterManager extends React.Component<GlobalProps, ClusterManagerState> {
   };
 
   render() {
-    const { locale = {} } = this.props;
+    const { locale } = this.props;
     const rawLocale = locale.ClusterManager;
     const clusterManagerLocale: ClusterManagerLocale = typeof rawLocale === 'object' && rawLocale !== null ? rawLocale : {};
     const { title, subTitle, selectNamespaceFilerPlaceholder, selectClusterFilerPlaceholder, searchButtonLabel, unitName, members, clusterType, view, unitDialogTitle, control, transaction, weight, healthy, term, unit, operations, internal, version, metadata, controlEndpoint, transactionEndpoint, metadataDialogTitle } = clusterManagerLocale;
