@@ -31,3 +31,9 @@ export async function fetchClusterData(namespace: string, clusterName: string): 
   });
   return result;
 }
+
+export async function changeGroup(namespace: string, clusterName: string, vGroup: string): Promise<any> {
+  const params: any = { namespace, clusterName, vGroup };
+  const result = await request.post('/naming/changeGroup', params);
+  return result;
+}

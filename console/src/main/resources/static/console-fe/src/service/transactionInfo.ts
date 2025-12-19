@@ -248,28 +248,14 @@ export async function startBranchData(params: BranchSessionParam): Promise<any> 
   return result;
 }
 
-export async function addGroup(namespace: string, clusterName: string, vGroup: string, unitName?: string): Promise<any> {
-  let result = await request('/naming/addGroup', {
-    method: 'POST',
-    params: {
-      namespace,
-      clusterName,
-      vGroup,
-      unitName,
-    },
-  });
+export async function addGroup(namespace: string, clusterName: string, vGroup: string, unitName: string = ''): Promise<any> {
+  const params = { namespace, clusterName, vGroup, unitName };
+  const result = await request.post('/naming/addGroup', params);
   return result;
 }
 
-export async function changeGroup(namespace: string, clusterName: string, vGroup: string, unitName?: string): Promise<any> {
-  let result = await request('/naming/changeGroup', {
-    method: 'POST',
-    params: {
-      namespace,
-      clusterName,
-      vGroup,
-      unitName,
-    },
-  });
+export async function changeGroup(namespace: string, clusterName: string, vGroup: string, unitName: string): Promise<any> {
+  const params = { namespace, clusterName, vGroup, unitName };
+  const result = await request.post('/naming/changeGroup', params);
   return result;
 }
