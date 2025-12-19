@@ -476,6 +476,11 @@ public class NamingManager {
     public Result<String> changeGroup(String namespace, String vGroup, String clusterName, String unitName) {
         long changeTime = System.currentTimeMillis();
         ConcurrentMap<String, NamespaceBO> namespaceMap = new ConcurrentHashMap<>(vGroupMap.get(vGroup));
+        Result<String> res = createGroup(namespace, vGroup, clusterName, unitName, false);
+        if (!res.isSuccess()) {
+            LOGGER.error("add vgroup failed!" + res.getMessage());
+            return res;
+        }
         Set<String> currentNamespaces = namespaceMap.keySet();
         Map<String, Set<String>> namespaceClusters = new HashMap<>();
         for (String currentNamespace : currentNamespaces) {
@@ -483,37 +488,6 @@ public class NamingManager {
                     currentNamespace,
                     new HashSet<>(
                             namespaceMap.get(currentNamespace).getClusterMap().keySet()));
-        }
-        // If unitName is blank, find it from old clusters
-        AtomicReference<String> actualUnitName = new AtomicReference<>(unitName);
-        if (StringUtils.isBlank(unitName)) {
-            for (Map.Entry<String, Set<String>> entry : namespaceClusters.entrySet()) {
-                String oldNamespace = entry.getKey();
-                Set<String> clusters = entry.getValue();
-                for (String cluster : clusters) {
-                    Optional.ofNullable(namespaceClusterDataMap.get(oldNamespace))
-                            .flatMap(map -> Optional.ofNullable(map.get(cluster)))
-                            .ifPresent(clusterData -> {
-                                if (!CollectionUtils.isEmpty(clusterData.getUnitData())) {
-                                    Optional<Map.Entry<String, Unit>> optionalEntry =
-                                            clusterData.getUnitData().entrySet().stream()
-                                                    .findFirst();
-                                    optionalEntry.ifPresent(stringUnitEntry -> actualUnitName.set(stringUnitEntry.getKey()));
-                                }
-                            });
-                    if (!StringUtils.isBlank(actualUnitName.get())) {
-                        break;
-                    }
-                }
-                if (!StringUtils.isBlank(actualUnitName.get())) {
-                    break;
-                }
-            }
-        }
-        Result<String> res = createGroup(namespace, vGroup, clusterName, actualUnitName.get(), false);
-        if (!res.isSuccess()) {
-            LOGGER.error("add vgroup failed!" + res.getMessage());
-            return res;
         }
         AtomicReference<Result<String>> result = new AtomicReference<>();
         namespaceClusters.forEach((oldNamespace, clusters) -> {
