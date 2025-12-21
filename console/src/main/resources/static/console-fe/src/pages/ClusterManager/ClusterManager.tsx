@@ -227,7 +227,7 @@ class ClusterManager extends React.Component<GlobalProps, ClusterManagerState> {
     const { locale } = this.props;
     const rawLocale = locale.ClusterManager;
     const clusterManagerLocale: ClusterManagerLocale = typeof rawLocale === 'object' && rawLocale !== null ? rawLocale : {};
-    const { title, subTitle, selectNamespaceFilerPlaceholder, selectClusterFilerPlaceholder, searchButtonLabel, unitName, members, clusterType, view, unitDialogTitle, control, transaction, weight, healthy, term, unit, operations, internal, version, metadata, controlEndpoint, transactionEndpoint, metadataDialogTitle, role } = clusterManagerLocale;
+    const { title, subTitle, selectNamespaceFilerPlaceholder, selectClusterFilerPlaceholder, searchButtonLabel, members, clusterType, view, unitDialogTitle, control, transaction, weight, healthy, term, unit, operations, internal, version, metadata, controlEndpoint, transactionEndpoint, metadataDialogTitle, role } = clusterManagerLocale;
     const unitData = this.state.clusterData ? Object.entries(this.state.clusterData.unitData || {}) : [];
     const { namespace } = this.state;
     const namespaceData = namespace ? this.state.namespaceOptions.get(namespace) : null;
