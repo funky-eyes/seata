@@ -1386,10 +1386,10 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
               />
             </FormItem>
             {this.state.targetCluster && this.state.namespaceOptions.get(this.state.targetNamespace)?.clusterTypes[this.state.targetCluster] !== 'default' && (
-              <FormItem name="targetUnit" label="targetUnit">
+              <FormItem name="targetUnit" label="Target Unit">
                 <Select
                   hasClear
-                  placeholder="Select target unit"
+                  placeholder="Select Target Unit"
                   onChange={(value: string) => {
                     this.setState({ targetUnit: value });
                   }}
