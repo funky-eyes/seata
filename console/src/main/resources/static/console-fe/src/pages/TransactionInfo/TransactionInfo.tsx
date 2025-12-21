@@ -564,7 +564,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
       startGlobalSessionTitle,
       sendGlobalSessionTitle,
       changeGlobalSessionTitle,
-    } = locale.TransactionInfo || {};
+    } = locale?.TransactionInfo || {};
     let width = getCurrentLanguage() === enUsKey ? '450px' : '420px'
     let height = '120px';
     return (
