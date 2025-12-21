@@ -1020,6 +1020,15 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
     });
     }
 
+  isChangeVGroupDisabled = (): boolean => {
+    const { selectedVGroup, targetNamespace, targetCluster, targetUnit, namespaceOptions } = this.state;
+    if (!selectedVGroup || !targetNamespace || !targetCluster) {
+      return true;
+    }
+    const clusterType = namespaceOptions.get(targetNamespace)?.clusterTypes[targetCluster];
+    return clusterType !== 'default' && !targetUnit;
+  }
+
   render() {
     const { locale } = this.props;
     const transactionInfo = locale.TransactionInfo || {};
@@ -1400,7 +1409,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
               </FormItem>
             )}
             <FormItem>
-              <Button type="primary" onClick={this.handleChangeVGroup} disabled={!this.state.selectedVGroup || !this.state.targetNamespace || !this.state.targetCluster || (this.state.namespaceOptions.get(this.state.targetNamespace)?.clusterTypes[this.state.targetCluster] !== 'default' && !this.state.targetUnit)}>
+              <Button type="primary" onClick={this.handleChangeVGroup} disabled={this.isChangeVGroupDisabled()}>
                 {confirmButtonLabel}
               </Button>
             </FormItem>

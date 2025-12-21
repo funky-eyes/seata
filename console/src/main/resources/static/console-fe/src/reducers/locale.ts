@@ -25,7 +25,7 @@ const zhCN = Object.assign({}, fusionZhCN, I18N.zhCN);
 
 interface LocaleStateModel {
   language: string;
-  locale: any;
+  locale: ILocale;
 }
 
 export const enUsKey = 'en-US';
@@ -52,7 +52,7 @@ const getCurrentLanguage = (): string => {
   return lang;
 }
 
-const getCurrentLocaleObj = (): any => {
+const getCurrentLocaleObj = (): ILocale => {
   let lang = getCurrentLanguage();
 
   return lang === zhCnKey ? zhCN : enUS;

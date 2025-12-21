@@ -31,8 +31,6 @@ public class ClusterVO {
 
     private List<String> vgroups = new ArrayList<>();
 
-    private Map<String, List<String>> unitVgroups = new HashMap<>();
-
     private List<String> units = new ArrayList<>();
 
     private String type = "default";
@@ -43,14 +41,6 @@ public class ClusterVO {
 
     public void setVgroups(List<String> vgroups) {
         this.vgroups = vgroups;
-    }
-
-    public Map<String, List<String>> getUnitVgroups() {
-        return unitVgroups;
-    }
-
-    public void setUnitVgroups(Map<String, List<String>> unitVgroups) {
-        this.unitVgroups = unitVgroups;
     }
 
     public List<String> getUnits() {

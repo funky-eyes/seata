@@ -16,6 +16,7 @@
  */
 import requestV2 from '@/utils/requestV2';
 import request from '@/utils/request';
+import qs from 'qs';
 
 export async function fetchNamespaceV2(): Promise<any> {
   const result = await requestV2.get('/naming/namespace', {
@@ -32,8 +33,10 @@ export async function fetchClusterData(namespace: string, clusterName: string): 
   return result;
 }
 
-export async function changeGroup(namespace: string, clusterName: string, vGroup: string): Promise<any> {
-  const params: any = { namespace, clusterName, vGroup };
-  const result = await request.post('/naming/changeGroup', params);
+export async function changeGroup(namespace: string, clusterName: string, vGroup: string, unitName: string = ''): Promise<any> {
+  const params = { namespace, clusterName, unitName, vGroup };
+  const result = await request.post('/naming/changeGroup', qs.stringify(params), {
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+  });
   return result;
 }
