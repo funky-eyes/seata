@@ -480,7 +480,7 @@ public class NamingManager {
         ConcurrentMap<String, NamespaceBO> namespaceMap = new ConcurrentHashMap<>(vGroupMap.get(vGroup));
         Result<String> res = createGroup(namespace, vGroup, clusterName, unitName, false);
         if (!res.isSuccess()) {
-            LOGGER.error("add vgroup failed!" + res.getMessage());
+            LOGGER.error("add vgroup failed! {}", res.getMessage());
             return res;
         }
         Set<String> currentNamespaces = namespaceMap.keySet();
