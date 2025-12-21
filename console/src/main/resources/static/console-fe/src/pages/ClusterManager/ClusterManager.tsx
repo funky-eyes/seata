@@ -276,7 +276,6 @@ class ClusterManager extends React.Component<GlobalProps, ClusterManagerState> {
         </Form>
         {/* unit table */}
         <div style={{ marginTop: '20px' }}>
-          <h3>Units</h3>
           <Table dataSource={unitData} loading={this.state.loading}>
             <Table.Column title={members || 'Members'} dataIndex="1" cell={(val: any) => (val.namingInstanceList ? val.namingInstanceList.length : 0)} />
             <Table.Column title={clusterType || 'Cluster Type'} cell={() => (this.state.clusterData ? this.state.clusterData.clusterType : '')} />

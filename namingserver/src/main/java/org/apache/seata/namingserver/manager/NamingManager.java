@@ -80,7 +80,6 @@ public class NamingManager {
     private final ConcurrentMap<String /* namespace */, ConcurrentMap<String /* clusterName */, ClusterData>>
             namespaceClusterDataMap;
 
-
     @Value("${heartbeat.threshold:90000}")
     private int heartbeatTimeThreshold;
 
@@ -176,8 +175,7 @@ public class NamingManager {
                 ClusterData clusterData = clusterDataMap.get(clusterName);
                 if (clusterData != null && !CollectionUtils.isEmpty(clusterData.getUnitData())) {
                     Optional<Map.Entry<String, Unit>> optionalEntry =
-                            clusterData.getUnitData().entrySet().stream()
-                                    .findFirst();
+                            clusterData.getUnitData().entrySet().stream().findFirst();
                     if (optionalEntry.isPresent()) {
                         actualUnitName = optionalEntry.get().getKey();
                     }
@@ -502,7 +500,8 @@ public class NamingManager {
                                 if (optionalEntry.isPresent()) {
                                     String unit = optionalEntry.get().getKey();
                                     Unit unitData = optionalEntry.get().getValue();
-                                    result.set(removeGroup(unitData, vGroup, cluster, oldNamespace, unitData.getUnitName()));
+                                    result.set(removeGroup(
+                                            unitData, vGroup, cluster, oldNamespace, unitData.getUnitName()));
                                     notifyClusterChange(vGroup, namespace, cluster, unit, changeTime);
                                 }
                             }
@@ -553,7 +552,7 @@ public class NamingManager {
                 // Set units and type for this cluster
                 Map<String, ClusterData> clusterDataMap = namespaceClusterDataMap.get(namespace);
                 String clusterType = "default";
-                List<String> unitNames = new ArrayList<String>();
+                List<String> unitNames = new ArrayList<>();
                 if (clusterDataMap != null) {
                     ClusterData clusterData = clusterDataMap.get(cluster);
                     if (clusterData != null) {
@@ -569,14 +568,16 @@ public class NamingManager {
                 // Set vgroups based on cluster type
                 if ("RAFT".equalsIgnoreCase(clusterType)) {
                     // For RAFT clusters, collect all unique vgroups
-                    Map<String, Set<String>> clusterVgSet = data.getClusterVgroupsMap().get(namespace);
+                    Map<String, Set<String>> clusterVgSet =
+                            data.getClusterVgroupsMap().get(namespace);
                     Set<String> vgSet = clusterVgSet.get(cluster);
-                    clusterVO.setVgroups(vgSet != null ? new ArrayList<>(vgSet) : new ArrayList<String>());
+                    clusterVO.setVgroups(vgSet != null ? new ArrayList<>(vgSet) : new ArrayList<>());
                 } else {
                     // For non-RAFT clusters, set vgroups directly
-                    Map<String, Set<String>> clusterVgSet = data.getClusterVgroupsMap().get(namespace);
+                    Map<String, Set<String>> clusterVgSet =
+                            data.getClusterVgroupsMap().get(namespace);
                     Set<String> vgSet = clusterVgSet.get(cluster);
-                    clusterVO.setVgroups(vgSet != null ? new ArrayList<>(vgSet) : new ArrayList<String>());
+                    clusterVO.setVgroups(vgSet != null ? new ArrayList<>(vgSet) : new ArrayList<>());
                 }
 
                 clusterVOMap.put(cluster, clusterVO);
@@ -594,7 +595,8 @@ public class NamingManager {
         Map<String, Set<String>> clustersMap = new HashMap<>();
         Map<String, Set<String>> vgroupsMap = new HashMap<>();
         Map<String, Map<String, Set<String>>> clusterVgroupsMap = new HashMap<>(); // namespace -> cluster -> vgroups
-        Map<String, Map<String, Map<String, Set<String>>>> unitVgroupsMap = new HashMap<>(); // namespace -> cluster -> unit -> vgroups
+        Map<String, Map<String, Map<String, Set<String>>>> unitVgroupsMap =
+                new HashMap<>(); // namespace -> cluster -> unit -> vgroups
 
         // Collect all namespaces
         Set<String> allNamespaces = new HashSet<>(namespaceClusterDataMap.keySet());

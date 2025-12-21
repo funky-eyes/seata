@@ -65,6 +65,8 @@ type TransactionInfoState = {
   originalVGroups: Array<string>;
   createNamespace: string;
   createCluster: string;
+  createUnits: Array<string>;
+  createUnit: string;
 }
 
 type NamespaceData = { clusters: string[], clusterVgroups: {[key: string]: string[]}, clusterUnits: {[key: string]: string[]}, clusterTypes: {[key: string]: string} };
@@ -344,6 +346,8 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
     originalVGroups: [],
     createNamespace: '',
     createCluster: '',
+    createUnits: [],
+    createUnit: '',
   };
   componentDidMount = () => {
     // search once by default
@@ -907,12 +911,19 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
   }
 
   showCreateVGroupDialog = () => {
-    this.setState(prevState => ({
-      createVGroupDialogVisible: true,
-      vGroupName: '',
-      createNamespace: prevState.globalSessionParam.namespace || '',
-      createCluster: prevState.globalSessionParam.cluster || '',
-    }));
+    this.setState(prevState => {
+      const clusters = prevState.globalSessionParam.namespace ? prevState.namespaceOptions.get(prevState.globalSessionParam.namespace)?.clusters || [] : [];
+      const clusterUnits = prevState.globalSessionParam.namespace ? prevState.namespaceOptions.get(prevState.globalSessionParam.namespace)?.clusterUnits || {} : {};
+      const units = prevState.globalSessionParam.cluster ? clusterUnits[prevState.globalSessionParam.cluster] || [] : [];
+      return {
+        createVGroupDialogVisible: true,
+        vGroupName: '',
+        createNamespace: prevState.globalSessionParam.namespace || '',
+        createCluster: prevState.globalSessionParam.cluster || '',
+        createUnits: units,
+        createUnit: units.length > 0 ? units[0] : '',
+      };
+    });
   }
 
   closeCreateVGroupDialog = () => {
@@ -921,6 +932,8 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
       vGroupName: '',
       createNamespace: '',
       createCluster: '',
+      createUnits: [],
+      createUnit: '',
     });
   }
 
@@ -959,13 +972,16 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
   handleCreateVGroup = () => {
     const { locale } = this.props;
     const { createVGroupErrorMessage, createVGroupSuccessMessage, createVGroupFailMessage } = locale.TransactionInfo || {};
-    const { createNamespace, createCluster, vGroupName } = this.state;
+    const { createNamespace, createCluster, vGroupName, createUnit } = this.state;
     if (!createNamespace || !createCluster || !vGroupName.trim()) {
       Message.error(createVGroupErrorMessage);
       return;
     }
 
-    addGroup(createNamespace, createCluster, vGroupName.trim(), '').then(() => {
+    const clusterType = this.state.namespaceOptions.get(createNamespace)?.clusterTypes[createCluster];
+    const unitName = clusterType !== 'default' ? createUnit : '';
+
+    addGroup(createNamespace, createCluster, vGroupName.trim(), unitName).then(() => {
       Message.success(createVGroupSuccessMessage);
       this.closeCreateVGroupDialog();
       // Delay 5 seconds before reloading namespaces to get the latest vgroup list
@@ -983,11 +999,14 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
     const { locale } = this.props;
     const { changeVGroupSuccessMessage, changeVGroupFailMessage } = locale.TransactionInfo || {};
     const { selectedVGroup, targetNamespace, targetCluster, targetUnit } = this.state;
-    if (!selectedVGroup || !targetNamespace || !targetCluster || !targetUnit) {
+    if (!selectedVGroup || !targetNamespace || !targetCluster) {
       return;
     }
 
-    changeGroup(targetNamespace, targetCluster, selectedVGroup, targetUnit).then(() => {
+    const targetClusterType = this.state.namespaceOptions.get(targetNamespace)?.clusterTypes[targetCluster];
+    const unitName = targetClusterType !== 'default' ? targetUnit : '';
+
+    changeGroup(targetNamespace, targetCluster, selectedVGroup, unitName).then(() => {
       Message.success(changeVGroupSuccessMessage);
       this.closeChangeVGroupDialog();
       // Delay 5 seconds before reloading namespaces to get the latest vgroup list
@@ -1211,9 +1230,13 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                 onChange={(value: string) => {
                   this.setState(prevState => {
                     const clusters = value ? prevState.namespaceOptions.get(value)?.clusters || [] : [];
+                    const clusterUnits = prevState.namespaceOptions.get(value)?.clusterUnits || {};
+                    const units = clusters.length > 0 ? clusterUnits[clusters[0]] || [] : [];
                     return {
                       createNamespace: value,
                       createCluster: clusters.length > 0 ? clusters[0] : '',
+                      createUnits: units,
+                      createUnit: units.length > 0 ? units[0] : '',
                     };
                   });
                 }}
@@ -1225,12 +1248,33 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
               <Select
                 placeholder={selectClusterFilerPlaceholder}
                 onChange={(value: string) => {
-                  this.setState({ createCluster: value });
+                  this.setState(prevState => {
+                    const namespaceData = prevState.namespaceOptions.get(prevState.createNamespace);
+                    const clusterUnits = namespaceData ? namespaceData.clusterUnits : {};
+                    const units = clusterUnits[value] || [];
+                    return {
+                      createCluster: value,
+                      createUnits: units,
+                      createUnit: units.length > 0 ? units[0] : '',
+                    };
+                  });
                 }}
                 dataSource={this.state.namespaceOptions.get(this.state.createNamespace)?.clusters.map(value => ({ label: value, value })) || []}
                 value={this.state.createCluster}
               />
             </FormItem>
+            {this.state.namespaceOptions.get(this.state.createNamespace)?.clusterTypes[this.state.createCluster] !== 'default' && (
+              <FormItem name="createUnit" label="Unit">
+                <Select
+                  placeholder="Select unit"
+                  onChange={(value: string) => {
+                    this.setState({ createUnit: value });
+                  }}
+                  dataSource={this.state.createUnits.map(value => ({ label: value, value }))}
+                  value={this.state.createUnit}
+                />
+              </FormItem>
+            )}
             <FormItem name="vGroupName" label={vGroupNameLabel}>
               <Input
                 placeholder={createVGroupInputPlaceholder}
@@ -1312,7 +1356,7 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                     return {
                       targetNamespace: value,
                       targetClusters: clusters,
-                      targetCluster: clusters.length > 0 ? clusters[0] : '',
+                      targetCluster: '',
                       targetUnits: [],
                       targetUnit: '',
                     };
@@ -1342,19 +1386,21 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
                 value={this.state.targetCluster}
               />
             </FormItem>
-            <FormItem name="targetUnit" label="targetUnit">
-              <Select
-                hasClear
-                placeholder="Select target unit"
-                onChange={(value: string) => {
-                  this.setState({ targetUnit: value });
-                }}
-                dataSource={this.state.targetUnits.map(value => ({ label: value, value }))}
-                value={this.state.targetUnit}
-              />
-            </FormItem>
+            {this.state.targetCluster && this.state.namespaceOptions.get(this.state.targetNamespace)?.clusterTypes[this.state.targetCluster] !== 'default' && (
+              <FormItem name="targetUnit" label="targetUnit">
+                <Select
+                  hasClear
+                  placeholder="Select target unit"
+                  onChange={(value: string) => {
+                    this.setState({ targetUnit: value });
+                  }}
+                  dataSource={this.state.targetUnits.map(value => ({ label: value, value }))}
+                  value={this.state.targetUnit}
+                />
+              </FormItem>
+            )}
             <FormItem>
-              <Button type="primary" onClick={this.handleChangeVGroup} disabled={!this.state.selectedVGroup || !this.state.targetNamespace || !this.state.targetCluster || !this.state.targetUnit}>
+              <Button type="primary" onClick={this.handleChangeVGroup} disabled={!this.state.selectedVGroup || !this.state.targetNamespace || !this.state.targetCluster || (this.state.namespaceOptions.get(this.state.targetNamespace)?.clusterTypes[this.state.targetCluster] !== 'default' && !this.state.targetUnit)}>
                 {confirmButtonLabel}
               </Button>
             </FormItem>

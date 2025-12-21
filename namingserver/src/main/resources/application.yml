@@ -14,10 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-console:
-  user:
-    username: seata
-    password: seata
 server:
   port: 8081
 spring:

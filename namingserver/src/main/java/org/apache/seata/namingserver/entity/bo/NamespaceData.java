@@ -29,7 +29,8 @@ public class NamespaceData {
     private final Map<String, Set<String>> clustersMap;
     private final Map<String, Set<String>> vgroupsMap;
     private final Map<String, Map<String, Set<String>>> clusterVgroupsMap;
-    private final Map<String, Map<String, Map<String, Set<String>>>> unitVgroupsMap; // namespace -> cluster -> unit -> vgroups
+    private final Map<String, Map<String, Map<String, Set<String>>>>
+            unitVgroupsMap; // namespace -> cluster -> unit -> vgroups
 
     public NamespaceData(
             Map<String, Set<String>> clustersMap,
