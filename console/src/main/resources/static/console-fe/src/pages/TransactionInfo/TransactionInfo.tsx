@@ -912,7 +912,6 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
 
   showCreateVGroupDialog = () => {
     this.setState(prevState => {
-      const clusters = prevState.globalSessionParam.namespace ? prevState.namespaceOptions.get(prevState.globalSessionParam.namespace)?.clusters || [] : [];
       const clusterUnits = prevState.globalSessionParam.namespace ? prevState.namespaceOptions.get(prevState.globalSessionParam.namespace)?.clusterUnits || {} : {};
       const units = prevState.globalSessionParam.cluster ? clusterUnits[prevState.globalSessionParam.cluster] || [] : [];
       return {
@@ -1396,10 +1395,10 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
               />
             </FormItem>
             {this.state.targetCluster && this.state.namespaceOptions.get(this.state.targetNamespace)?.clusterTypes[this.state.targetCluster] !== 'default' && (
-              <FormItem name="targetUnit" label="targetUnit">
+              <FormItem name="targetUnit" label="Target Unit">
                 <Select
                   hasClear
-                  placeholder="Select target unit"
+                  placeholder="Select Target Unit"
                   onChange={(value: string) => {
                     this.setState({ targetUnit: value });
                   }}

@@ -182,6 +182,10 @@ public class NamingManager {
                 }
             }
         }
+        if (StringUtils.isBlank(actualUnitName)) {
+            LOGGER.error("no available unit for namespace {} and cluster {}", namespace, clusterName);
+            return new Result<>("400", "no available unit for cluster: " + clusterName);
+        }
         // Check if vGroup already exists
         if (checkExist && vGroupMap.getIfPresent(vGroup) != null) {
             LOGGER.error("vGroup {} already exists", vGroup);
@@ -476,7 +480,7 @@ public class NamingManager {
         ConcurrentMap<String, NamespaceBO> namespaceMap = new ConcurrentHashMap<>(vGroupMap.get(vGroup));
         Result<String> res = createGroup(namespace, vGroup, clusterName, unitName, false);
         if (!res.isSuccess()) {
-            LOGGER.error("add vgroup failed!" + res.getMessage());
+            LOGGER.error("add vgroup failed! {}", res.getMessage());
             return res;
         }
         Set<String> currentNamespaces = namespaceMap.keySet();
@@ -526,7 +530,7 @@ public class NamingManager {
             data.getVgroupsMap().forEach((namespace, vgroups) -> {
                 NamespaceVO namespaceVO = namespaceVOs.computeIfAbsent(namespace, k -> new NamespaceVO());
                 Set<String> clusters = data.getClustersMap().get(namespace);
-                namespaceVO.setClusters(new ArrayList<>(clusters != null ? clusters : Collections.<String>emptyList()));
+                namespaceVO.setClusters(new ArrayList<>(clusters != null ? clusters : Collections.emptyList()));
                 namespaceVO.setVgroups(new ArrayList<>(vgroups));
             });
         }
@@ -565,20 +569,10 @@ public class NamingManager {
                 }
                 clusterVO.setUnits(unitNames);
 
-                // Set vgroups based on cluster type
-                if ("RAFT".equalsIgnoreCase(clusterType)) {
-                    // For RAFT clusters, collect all unique vgroups
-                    Map<String, Set<String>> clusterVgSet =
-                            data.getClusterVgroupsMap().get(namespace);
-                    Set<String> vgSet = clusterVgSet.get(cluster);
-                    clusterVO.setVgroups(vgSet != null ? new ArrayList<>(vgSet) : new ArrayList<>());
-                } else {
-                    // For non-RAFT clusters, set vgroups directly
-                    Map<String, Set<String>> clusterVgSet =
-                            data.getClusterVgroupsMap().get(namespace);
-                    Set<String> vgSet = clusterVgSet.get(cluster);
-                    clusterVO.setVgroups(vgSet != null ? new ArrayList<>(vgSet) : new ArrayList<>());
-                }
+                // Set vgroups (same logic for all cluster types)
+                Map<String, Set<String>> clusterVgSet = data.getClusterVgroupsMap().get(namespace);
+                Set<String> vgSet = clusterVgSet != null ? clusterVgSet.get(cluster) : null;
+                clusterVO.setVgroups(vgSet != null ? new ArrayList<>(vgSet) : new ArrayList<>());
 
                 clusterVOMap.put(cluster, clusterVO);
             });
