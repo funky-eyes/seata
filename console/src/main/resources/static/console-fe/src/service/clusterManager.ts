@@ -33,10 +33,19 @@ export async function fetchClusterData(namespace: string, clusterName: string): 
   return result;
 }
 
-export async function changeGroup(namespace: string, clusterName: string, vGroup: string, unitName: string = ''): Promise<any> {
+export async function postChangeGroup(
+  namespace: string,
+  clusterName: string,
+  vGroup: string,
+  unitName: string = '',
+): Promise<any> {
   const params = { namespace, clusterName, unitName, vGroup };
   const result = await request.post('/naming/changeGroup', qs.stringify(params), {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
   });
   return result;
+}
+
+export async function changeGroup(namespace: string, clusterName: string, vGroup: string, unitName: string = ''): Promise<any> {
+  return postChangeGroup(namespace, clusterName, vGroup, unitName);
 }
