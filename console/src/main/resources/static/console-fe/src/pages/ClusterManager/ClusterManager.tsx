@@ -52,6 +52,7 @@ type ClusterManagerLocale = {
   controlEndpoint?: string;
   transactionEndpoint?: string;
   metadataDialogTitle?: string;
+  role?: string;
 };
 
 type ClusterManagerState = {
@@ -226,7 +227,7 @@ class ClusterManager extends React.Component<GlobalProps, ClusterManagerState> {
     const { locale } = this.props;
     const rawLocale = locale.ClusterManager;
     const clusterManagerLocale: ClusterManagerLocale = typeof rawLocale === 'object' && rawLocale !== null ? rawLocale : {};
-    const { title, subTitle, selectNamespaceFilerPlaceholder, selectClusterFilerPlaceholder, searchButtonLabel, unitName, members, clusterType, view, unitDialogTitle, control, transaction, weight, healthy, term, unit, operations, internal, version, metadata, controlEndpoint, transactionEndpoint, metadataDialogTitle } = clusterManagerLocale;
+    const { title, subTitle, selectNamespaceFilerPlaceholder, selectClusterFilerPlaceholder, searchButtonLabel, unitName, members, clusterType, view, unitDialogTitle, control, transaction, weight, healthy, term, unit, operations, internal, version, metadata, controlEndpoint, transactionEndpoint, metadataDialogTitle, role } = clusterManagerLocale;
     const unitData = this.state.clusterData ? Object.entries(this.state.clusterData.unitData || {}) : [];
     const { namespace } = this.state;
     const namespaceData = namespace ? this.state.namespaceOptions.get(namespace) : null;
@@ -302,6 +303,7 @@ class ClusterManager extends React.Component<GlobalProps, ClusterManagerState> {
             <Table.Column title={weight || 'Weight'} dataIndex="weight" />
             <Table.Column title={healthy || 'Healthy'} dataIndex="healthy" cell={(val: boolean) => (val ? 'Yes' : 'No')} />
             <Table.Column title={term || 'Term'} dataIndex="term" />
+            <Table.Column title={role || 'Role'} dataIndex="role" />
             <Table.Column title={unit || 'Unit'} dataIndex="unit" />
             <Table.Column title={version || 'Version'} dataIndex="version" />
             <Table.Column title={metadata || 'Metadata'} dataIndex="metadata" cell={(val: any) => (val ? <Button onClick={() => this.showMetadataDialog(val)}>View JSON</Button> : '')} />

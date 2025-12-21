@@ -17,9 +17,7 @@
 package org.apache.seata.namingserver.entity.vo.v2;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Value Object representing cluster information for the v2 API.

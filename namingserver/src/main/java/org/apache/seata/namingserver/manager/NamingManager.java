@@ -570,7 +570,8 @@ public class NamingManager {
                 clusterVO.setUnits(unitNames);
 
                 // Set vgroups (same logic for all cluster types)
-                Map<String, Set<String>> clusterVgSet = data.getClusterVgroupsMap().get(namespace);
+                Map<String, Set<String>> clusterVgSet =
+                        data.getClusterVgroupsMap().get(namespace);
                 Set<String> vgSet = clusterVgSet != null ? clusterVgSet.get(cluster) : null;
                 clusterVO.setVgroups(vgSet != null ? new ArrayList<>(vgSet) : new ArrayList<>());
 
