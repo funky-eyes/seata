@@ -29,18 +29,14 @@ public class NamespaceData {
     private final Map<String, Set<String>> clustersMap;
     private final Map<String, Set<String>> vgroupsMap;
     private final Map<String, Map<String, Set<String>>> clusterVgroupsMap;
-    private final Map<String, Map<String, Map<String, Set<String>>>>
-            unitVgroupsMap; // namespace -> cluster -> unit -> vgroups
 
     public NamespaceData(
             Map<String, Set<String>> clustersMap,
             Map<String, Set<String>> vgroupsMap,
-            Map<String, Map<String, Set<String>>> clusterVgroupsMap,
-            Map<String, Map<String, Map<String, Set<String>>>> unitVgroupsMap) {
+            Map<String, Map<String, Set<String>>> clusterVgroupsMap) {
         this.clustersMap = clustersMap;
         this.vgroupsMap = vgroupsMap;
         this.clusterVgroupsMap = clusterVgroupsMap;
-        this.unitVgroupsMap = unitVgroupsMap;
     }
 
     public Map<String, Set<String>> getClustersMap() {
@@ -53,9 +49,5 @@ public class NamespaceData {
 
     public Map<String, Map<String, Set<String>>> getClusterVgroupsMap() {
         return clusterVgroupsMap;
-    }
-
-    public Map<String, Map<String, Map<String, Set<String>>>> getUnitVgroupsMap() {
-        return unitVgroupsMap;
     }
 }

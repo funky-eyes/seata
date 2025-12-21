@@ -590,8 +590,6 @@ public class NamingManager {
         Map<String, Set<String>> clustersMap = new HashMap<>();
         Map<String, Set<String>> vgroupsMap = new HashMap<>();
         Map<String, Map<String, Set<String>>> clusterVgroupsMap = new HashMap<>(); // namespace -> cluster -> vgroups
-        Map<String, Map<String, Map<String, Set<String>>>> unitVgroupsMap =
-                new HashMap<>(); // namespace -> cluster -> unit -> vgroups
 
         // Collect all namespaces
         Set<String> allNamespaces = new HashSet<>(namespaceClusterDataMap.keySet());
@@ -602,18 +600,12 @@ public class NamingManager {
             clustersMap.computeIfAbsent(namespace, k -> new HashSet<>());
             vgroupsMap.computeIfAbsent(namespace, k -> new HashSet<>());
             clusterVgroupsMap.computeIfAbsent(namespace, k -> new HashMap<>());
-            unitVgroupsMap.computeIfAbsent(namespace, k -> new HashMap<>());
         });
 
         // Collect all clusters from namespaceClusterDataMap
         namespaceClusterDataMap.forEach((namespace, clusterDataMap) -> {
             Set<String> clusters = clustersMap.get(namespace);
             clusters.addAll(clusterDataMap.keySet());
-
-            // Initialize unitVgroupsMap for each cluster
-            clusterDataMap.forEach((clusterName, clusterData) -> {
-                unitVgroupsMap.get(namespace).computeIfAbsent(clusterName, k -> new HashMap<>());
-            });
         });
 
         // Collect vgroups and build cluster to vgroups mapping
@@ -623,23 +615,15 @@ public class NamingManager {
             Set<String> vgroups = vgroupsMap.get(namespace);
             vgroups.add(vGroup);
 
-            // Build cluster to vgroups and unit to vgroups mapping
+            // Build cluster to vgroups mapping
             Map<String, Set<String>> clusterVg = clusterVgroupsMap.get(namespace);
-            Map<String, Map<String, Set<String>>> clusterUnitVg = unitVgroupsMap.get(namespace);
 
             namespaceBO.getClusterMap().forEach((clusterName, clusterBO) -> {
                 Set<String> vgSet = clusterVg.computeIfAbsent(clusterName, k -> new HashSet<>());
                 vgSet.add(vGroup);
-
-                // For each unit in this cluster, add the vgroup
-                Map<String, Set<String>> unitVgMap = clusterUnitVg.computeIfAbsent(clusterName, k -> new HashMap<>());
-                clusterBO.getUnitNames().forEach(unitName -> {
-                    Set<String> unitVgSet = unitVgMap.computeIfAbsent(unitName, k -> new HashSet<>());
-                    unitVgSet.add(vGroup);
-                });
             });
         }));
 
-        return new NamespaceData(clustersMap, vgroupsMap, clusterVgroupsMap, unitVgroupsMap);
+        return new NamespaceData(clustersMap, vgroupsMap, clusterVgroupsMap);
     }
 }
