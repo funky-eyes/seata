@@ -526,7 +526,7 @@ public class NamingManager {
             data.getVgroupsMap().forEach((namespace, vgroups) -> {
                 NamespaceVO namespaceVO = namespaceVOs.computeIfAbsent(namespace, k -> new NamespaceVO());
                 Set<String> clusters = data.getClustersMap().get(namespace);
-                namespaceVO.setClusters(new ArrayList<>(clusters != null ? clusters : Collections.<String>emptyList()));
+                namespaceVO.setClusters(new ArrayList<>(clusters != null ? clusters : Collections.emptyList()));
                 namespaceVO.setVgroups(new ArrayList<>(vgroups));
             });
         }
