@@ -565,20 +565,10 @@ public class NamingManager {
                 }
                 clusterVO.setUnits(unitNames);
 
-                // Set vgroups based on cluster type
-                if ("RAFT".equalsIgnoreCase(clusterType)) {
-                    // For RAFT clusters, collect all unique vgroups
-                    Map<String, Set<String>> clusterVgSet =
-                            data.getClusterVgroupsMap().get(namespace);
-                    Set<String> vgSet = clusterVgSet.get(cluster);
-                    clusterVO.setVgroups(vgSet != null ? new ArrayList<>(vgSet) : new ArrayList<>());
-                } else {
-                    // For non-RAFT clusters, set vgroups directly
-                    Map<String, Set<String>> clusterVgSet =
-                            data.getClusterVgroupsMap().get(namespace);
-                    Set<String> vgSet = clusterVgSet.get(cluster);
-                    clusterVO.setVgroups(vgSet != null ? new ArrayList<>(vgSet) : new ArrayList<>());
-                }
+                // Set vgroups (same logic for all cluster types)
+                Map<String, Set<String>> clusterVgSet = data.getClusterVgroupsMap().get(namespace);
+                Set<String> vgSet = clusterVgSet != null ? clusterVgSet.get(cluster) : null;
+                clusterVO.setVgroups(vgSet != null ? new ArrayList<>(vgSet) : new ArrayList<>());
 
                 clusterVOMap.put(cluster, clusterVO);
             });
