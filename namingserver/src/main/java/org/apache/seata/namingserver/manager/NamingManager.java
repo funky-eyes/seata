@@ -182,6 +182,10 @@ public class NamingManager {
                 }
             }
         }
+        if (StringUtils.isBlank(actualUnitName)) {
+            LOGGER.error("no available unit for namespace {} and cluster {}", namespace, clusterName);
+            return new Result<>("400", "no available unit for cluster: " + clusterName);
+        }
         // Check if vGroup already exists
         if (checkExist && vGroupMap.getIfPresent(vGroup) != null) {
             LOGGER.error("vGroup {} already exists", vGroup);
