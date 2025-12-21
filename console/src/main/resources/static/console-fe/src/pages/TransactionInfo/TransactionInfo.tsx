@@ -912,7 +912,6 @@ class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState>
 
   showCreateVGroupDialog = () => {
     this.setState(prevState => {
-      const clusters = prevState.globalSessionParam.namespace ? prevState.namespaceOptions.get(prevState.globalSessionParam.namespace)?.clusters || [] : [];
       const clusterUnits = prevState.globalSessionParam.namespace ? prevState.namespaceOptions.get(prevState.globalSessionParam.namespace)?.clusterUnits || {} : {};
       const units = prevState.globalSessionParam.cluster ? clusterUnits[prevState.globalSessionParam.cluster] || [] : [];
       return {
