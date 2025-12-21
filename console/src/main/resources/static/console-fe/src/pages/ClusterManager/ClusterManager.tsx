@@ -230,7 +230,6 @@ class ClusterManager extends React.Component<GlobalProps, ClusterManagerState> {
     const unitData = this.state.clusterData ? Object.entries(this.state.clusterData.unitData || {}) : [];
     const { namespace } = this.state;
     const namespaceData = namespace ? this.state.namespaceOptions.get(namespace) : null;
-    const allClusters = namespaceData ? namespaceData.clusters : [];
     return (
       <Page
         title={title || 'Cluster Manager'}
