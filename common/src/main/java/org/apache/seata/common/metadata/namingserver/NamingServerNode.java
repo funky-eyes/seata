@@ -78,8 +78,8 @@ public class NamingServerNode extends Node {
         NamingServerNode otherNode = (NamingServerNode) obj;
 
         // other node is newer than me
-        return !Objects.equals(this.getRole(), otherNode.getRole())
-                || otherNode.term > term
+        return otherNode.term > term
+                || (otherNode.term >= term && !Objects.equals(this.getRole(), otherNode.getRole()))
                 || !StringUtils.equals(otherNode.getVersion(), this.getVersion());
     }
 
