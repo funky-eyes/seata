@@ -19,8 +19,6 @@ package org.apache.seata.server.controller;
 import org.apache.seata.common.metadata.Instance;
 import org.apache.seata.common.result.Result;
 import org.apache.seata.common.util.StringUtils;
-import org.apache.seata.config.Configuration;
-import org.apache.seata.config.ConfigurationFactory;
 import org.apache.seata.core.store.MappingDO;
 import org.apache.seata.server.session.SessionHolder;
 import org.apache.seata.server.store.VGroupMappingStoreManager;
@@ -35,8 +33,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class VGroupMappingController {
 
     private VGroupMappingStoreManager vGroupMappingStoreManager;
-
-    protected static final Configuration CONFIG = ConfigurationFactory.getInstance();
 
     @Value("${sessionMode:file}")
     String sessionMode;
