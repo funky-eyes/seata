@@ -311,7 +311,7 @@ const warnning = new Map([
     ['SAGA', 'The force delete will only delete session in server.']])],
 ])
 
-const VGROUP_REFRESH_DELAY_MS = 5000;
+const VGROUP_REFRESH_DELAY_MS = 6000;
 
 class TransactionInfo extends React.Component<GlobalProps, TransactionInfoState> {
   static displayName = 'TransactionInfo';
