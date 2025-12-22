@@ -75,11 +75,12 @@ public class NamingServerNode extends Node {
         if (Objects.isNull(obj)) {
             return false;
         }
-        NamingServerNode otherNode = (NamingServerNode)obj;
+        NamingServerNode otherNode = (NamingServerNode) obj;
 
         // other node is newer than me
-        return !Objects.equals(this.getRole(), otherNode.getRole()) || otherNode.term > term
-            || !StringUtils.equals(otherNode.getVersion(), this.getVersion());
+        return !Objects.equals(this.getRole(), otherNode.getRole())
+                || otherNode.term > term
+                || !StringUtils.equals(otherNode.getVersion(), this.getVersion());
     }
 
     public void setWeight(double weight) {

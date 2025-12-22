@@ -121,20 +121,21 @@ class NamingServerNodeTest {
         currentNode.setRole(ClusterRole.LEADER);
         currentNode.setControl(new Node.Endpoint("1.1.1.1", 888));
         currentNode.setTransaction(new Node.Endpoint("2.2.2.2", 999));
-        // When heartbeat and cluster election occur concurrently, the term is updated, but the leader status has not yet been modified.
+        // When heartbeat and cluster election occur concurrently, the term is updated, but the leader status has not
+        // yet been modified.
         NamingServerNode newerNode = new NamingServerNode();
         newerNode.setTerm(101L);
         newerNode.setControl(new Node.Endpoint("1.1.1.1", 888));
         newerNode.setTransaction(new Node.Endpoint("2.2.2.2", 999));
         newerNode.setRole(ClusterRole.LEADER);
         Assertions.assertTrue(currentNode.isChanged(newerNode));
-        NamingServerNode  newerNode2 = new NamingServerNode();
+        NamingServerNode newerNode2 = new NamingServerNode();
         newerNode2.setTerm(101L);
         newerNode2.setControl(new Node.Endpoint("1.1.1.1", 888));
         newerNode2.setTransaction(new Node.Endpoint("2.2.2.2", 999));
         newerNode2.setRole(ClusterRole.FOLLOWER);
         Assertions.assertTrue(newerNode.isChanged(newerNode2));
-        NamingServerNode   newerNode3 = new NamingServerNode();
+        NamingServerNode newerNode3 = new NamingServerNode();
         newerNode3.setTerm(101L);
         newerNode3.setControl(new Node.Endpoint("1.1.1.1", 888));
         newerNode3.setTransaction(new Node.Endpoint("2.2.2.2", 999));
