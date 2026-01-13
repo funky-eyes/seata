@@ -37,7 +37,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring-framework-bom.version}</version>
+                <version>${spring-boot.version}</version>
                 <configuration>
                     <mainClass>org.apache.seata.mockserver.MockServer</mainClass>
 <!--                    <layout>ZIP</layout>-->
