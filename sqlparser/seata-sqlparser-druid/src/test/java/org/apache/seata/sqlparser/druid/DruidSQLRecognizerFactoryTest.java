@@ -29,6 +29,7 @@ import org.apache.seata.sqlparser.druid.oracle.OracleOperateRecognizerHolder;
 import org.apache.seata.sqlparser.util.JdbcConstants;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIf;
 
 import java.util.List;
 
@@ -221,6 +222,27 @@ public class DruidSQLRecognizerFactoryTest {
                 NotSupportYetException.class, () -> recognizerFactory.create(sql9, JdbcConstants.KINGBASE));
     }
 
+    @EnabledIf("isDruidVersionSupported")
+    @Test
+    public void testIsSqlSyntaxSupportsForOscar() {
+        SQLRecognizerFactory recognizerFactory =
+                EnhancedServiceLoader.load(SQLRecognizerFactory.class, SqlParserType.SQL_PARSER_TYPE_DRUID);
+
+        String sql1 = "delete from t where id in (select id from b)";
+
+        Assertions.assertThrows(
+                NotSupportYetException.class, () -> recognizerFactory.create(sql1, JdbcConstants.OSCAR));
+
+        String sql2 = "select * from (select * from t) for update";
+        Assertions.assertThrows(
+                NotSupportYetException.class, () -> recognizerFactory.create(sql2, JdbcConstants.OSCAR));
+
+        String sql5 = "insert into a select * from b";
+        Assertions.assertThrows(
+                NotSupportYetException.class, () -> recognizerFactory.create(sql5, JdbcConstants.OSCAR));
+
+    }
+
     @Test
     public void testInsertFirstNotSupported() {
         SQLRecognizerFactory recognizerFactory =
@@ -260,4 +282,46 @@ public class DruidSQLRecognizerFactoryTest {
 
         verify(recognizerHolder, times(1)).getMultiInsertRecognizer(sql, stmt);
     }
+
+    private static boolean isDruidVersionSupported() {
+        String version = System.getProperty("druid.version");
+
+        // If no version is provided, assume it's supported (or handle as needed)
+        if (version == null || version.isEmpty()) {
+            return true;
+        }
+
+        // Split version into major.minor.patch parts
+        String[] parts = version.split("\\.");
+        if (parts.length < 2) {
+            return false; // invalid format
+        }
+
+        try {
+            int major = Integer.parseInt(parts[0]);
+            int minor = Integer.parseInt(parts[1]);
+
+            // Check if >= 1.2.5
+            if (major > 1) {
+                return true;
+            }
+            if (major == 1 && minor > 2) {
+                return true;
+            }
+            if (major == 1 && minor == 2) {
+                // For 1.2.x, check patch version if available
+                if (parts.length >= 3) {
+                    int patch = Integer.parseInt(parts[2]);
+                    return patch >= 5;
+                }
+                // If no patch version (e.g. "1.2"), treat as < 1.2.5
+                return false;
+            }
+            return false;
+        } catch (NumberFormatException e) {
+            // If version string is not numeric, treat as unsupported
+            return false;
+        }
+    }
+
 }

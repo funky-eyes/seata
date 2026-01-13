@@ -17,6 +17,11 @@
 name: "test-druid"
 
 on:
+  pull_request:
+    branches: [ test*, "*.*.*" ]
+    types: [ opened, reopened, synchronize ]
+    paths-ignore:
+      - '**.md'
   push:
     branches: [ test*, "*.*.*" ]
 
