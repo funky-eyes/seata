@@ -42,7 +42,7 @@ jobs:
       max-parallel: 3
       fail-fast: false
       matrix:
-        java: [ 25 ]
+        java: [ 8, 11, 17, 21, 25 ]
         os: [
           ubuntu-24.04,
         ]
@@ -99,7 +99,7 @@ jobs:
       max-parallel: 3
       fail-fast: false
       matrix:
-        java: [ 25 ]
+        java: [ 8, 11, 17, 21, 25 ]
         os: [
           ubuntu-24.04,
         ]
