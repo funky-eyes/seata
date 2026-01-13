@@ -301,7 +301,7 @@
                     <plugin>
                         <groupId>org.springframework.boot</groupId>
                         <artifactId>spring-boot-maven-plugin</artifactId>
-                        <version>3.5.2</version>
+                        <version>${spring-boot-for-server.version}</version>
                         <configuration>
                             <mainClass>org.apache.seata.namingserver.NamingserverApplication</mainClass>
                             <layout>ZIP</layout>
