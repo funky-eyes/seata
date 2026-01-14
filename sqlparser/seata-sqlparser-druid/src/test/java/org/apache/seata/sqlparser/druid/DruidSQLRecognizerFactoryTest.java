@@ -222,7 +222,9 @@ public class DruidSQLRecognizerFactoryTest {
                 NotSupportYetException.class, () -> recognizerFactory.create(sql9, JdbcConstants.KINGBASE));
     }
 
-    @EnabledIfSystemProperty(named = "druid.version", matches = "(1\\.[3-9]\\..*)|(2\\..*)|(1\\.2\\.[5-9].*)|(1\\.2\\.[1-9][0-9].*)")
+    @EnabledIfSystemProperty(
+            named = "druid.version",
+            matches = "(1\\.[3-9]\\..*)|(2\\..*)|(1\\.2\\.[5-9].*)|(1\\.2\\.[1-9][0-9].*)")
     @Test
     public void testIsSqlSyntaxSupportsForOscar() {
         SQLRecognizerFactory recognizerFactory =
@@ -240,7 +242,6 @@ public class DruidSQLRecognizerFactoryTest {
         String sql5 = "insert into a select * from b";
         Assertions.assertThrows(
                 NotSupportYetException.class, () -> recognizerFactory.create(sql5, JdbcConstants.OSCAR));
-
     }
 
     @Test
@@ -282,5 +283,4 @@ public class DruidSQLRecognizerFactoryTest {
 
         verify(recognizerHolder, times(1)).getMultiInsertRecognizer(sql, stmt);
     }
-
 }
