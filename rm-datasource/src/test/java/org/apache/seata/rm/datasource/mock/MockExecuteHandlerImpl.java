@@ -74,13 +74,8 @@ public class MockExecuteHandlerImpl implements MockExecuteHandler {
             SQLSelectStatement ast = (SQLSelectStatement) asts.get(0);
             SQLSelectQueryBlock queryBlock = ast.getSelect().getFirstQueryBlock();
             String tableName = "";
-            if (queryBlock.getFrom() instanceof SQLExprTableSource) {
-                MySQLSelectForUpdateRecognizer recognizer = new MySQLSelectForUpdateRecognizer(sql, ast);
-                tableName = recognizer.getTableName();
-            } else {
-                // select * from t inner join t1...
-                tableName = queryBlock.getFrom().toString();
-            }
+            // select * from t inner join t1...
+            tableName = queryBlock.getFrom().toString();
             for (Object[] meta : mockColumnsMetasReturnValue) {
                 if (tableName.equalsIgnoreCase(meta[2].toString())) {
                     metas.add(meta);
