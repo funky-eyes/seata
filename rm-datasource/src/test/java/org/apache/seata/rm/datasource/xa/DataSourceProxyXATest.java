@@ -144,8 +144,7 @@ public class DataSourceProxyXATest {
         Connection wrappedConnection = connectionProxyXA.getWrappedConnection();
         Assertions.assertTrue(wrappedConnection instanceof PooledConnection);
 
-        Connection wrappedPhysicalConn =
-                ((PooledConnection) wrappedConnection).getConnection();
+        Connection wrappedPhysicalConn = ((PooledConnection) wrappedConnection).getConnection();
         wrappedPhysicalConn = wrappedConnection.unwrap(Connection.class);
         Assertions.assertSame(wrappedPhysicalConn, connection);
 
