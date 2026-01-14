@@ -41,6 +41,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -50,6 +51,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+@DisabledIfSystemProperty(
+        named = "druid.version",
+        matches = "[0-1].[1-2].[0-24]",
+        disabledReason = "druid 1.2.24 correct support oscar")
 public class OscarUndoLogManagerTest {
 
     List<String> returnValueColumnLabels = Lists.newArrayList("log_status");
