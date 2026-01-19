@@ -20,23 +20,19 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 
 /**
  * The type parameter parser test
  *
  */
-@SpringBootTest
-@Import(DynamicPortTestConfig.class)
-public class ParameterParserTest {
+public class ParameterParserTest extends BaseSpringBootTest {
     private static ParameterParser parameterParser = null;
 
     /**
      * init
      */
     @BeforeEach
-    private void init() {
+    public void init() {
         String[] args = new String[] {"-h", "127.0.0.1", "-p", "8088", "-m", "file", "-e", "test"};
         parameterParser = new ParameterParser(args);
     }

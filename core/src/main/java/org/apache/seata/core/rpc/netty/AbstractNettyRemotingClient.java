@@ -67,6 +67,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 
 import static org.apache.seata.common.exception.FrameworkErrorCode.NoAvailableService;
@@ -90,7 +92,9 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
 
     private final CopyOnWriteArrayList<ChannelEventListener> channelEventListeners = new CopyOnWriteArrayList<>();
 
-    protected final Object mergeLock = new Object();
+    protected final ReentrantLock mergeLock = new ReentrantLock();
+    protected final Condition mergeCondition = mergeLock.newCondition();
+    protected volatile boolean isSending = false;
 
     /**
      * When sending message type is {@link MergeMessage}, will be stored to mergeMsgMap.
@@ -183,8 +187,11 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
                 LOGGER.debug("offer message: {}", rpcMessage.getBody());
             }
             if (!isSending) {
-                synchronized (mergeLock) {
-                    mergeLock.notifyAll();
+                mergeLock.lock();
+                try {
+                    mergeCondition.signalAll();
+                } finally {
+                    mergeLock.unlock();
                 }
             }
 
@@ -578,11 +585,14 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
         @Override
         public void run() {
             while (true) {
-                synchronized (mergeLock) {
-                    try {
-                        mergeLock.wait(MAX_MERGE_SEND_MILLS);
-                    } catch (InterruptedException e) {
-                    }
+                mergeLock.lock();
+                try {
+                    mergeCondition.await(MAX_MERGE_SEND_MILLS, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    LOGGER.warn("MergedSendRunnable wait interrupted", e);
+                } finally {
+                    mergeLock.unlock();
                 }
                 isSending = true;
                 basketMap.forEach((address, basket) -> {
@@ -665,10 +675,13 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
 
         @Override
         public void channelWritabilityChanged(ChannelHandlerContext ctx) {
-            synchronized (lock) {
+            AbstractNettyRemotingClient.super.writabilityLock.lock();
+            try {
                 if (ctx.channel().isWritable()) {
-                    lock.notifyAll();
+                    AbstractNettyRemotingClient.super.writabilityCondition.signalAll();
                 }
+            } finally {
+                AbstractNettyRemotingClient.super.writabilityLock.unlock();
             }
             ctx.fireChannelWritabilityChanged();
         }
@@ -681,8 +694,13 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("channel inactive: {}", ctx.channel());
             }
-            clientChannelManager.releaseChannel(
-                    ctx.channel(), NetUtil.toStringAddress(ctx.channel().remoteAddress()));
+            timerExecutor.execute(() -> {
+                try {
+                    clientChannelManager.releaseChannel(ctx.channel(), getAddressFromChannel(ctx.channel()));
+                } catch (Throwable throwable) {
+                    LOGGER.error("release channel error: {}", throwable.getMessage(), throwable);
+                }
+            });
             super.channelInactive(ctx);
         }
 
@@ -701,7 +719,18 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
                     } catch (Exception exx) {
                         LOGGER.error(exx.getMessage());
                     } finally {
-                        clientChannelManager.releaseChannel(ctx.channel(), getAddressFromContext(ctx));
+                        try {
+                            timerExecutor.execute(() -> {
+                                try {
+                                    clientChannelManager.releaseChannel(
+                                            ctx.channel(), getAddressFromChannel(ctx.channel()));
+                                } catch (Throwable throwable) {
+                                    LOGGER.error("release channel error: {}", throwable.getMessage(), throwable);
+                                }
+                            });
+                        } catch (Exception e) {
+                            LOGGER.error("failed to schedule releaseChannel: {}", e.getMessage(), e);
+                        }
                     }
                 }
                 if (idleStateEvent == IdleStateEvent.WRITER_IDLE_STATE_EVENT) {
@@ -723,7 +752,13 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
                     FrameworkErrorCode.ExceptionCaught.getErrCode(),
                     NetUtil.toStringAddress(ctx.channel().remoteAddress()) + "connect exception. " + cause.getMessage(),
                     cause);
-            clientChannelManager.releaseChannel(ctx.channel(), getAddressFromChannel(ctx.channel()));
+            timerExecutor.execute(() -> {
+                try {
+                    clientChannelManager.releaseChannel(ctx.channel(), getAddressFromChannel(ctx.channel()));
+                } catch (Throwable throwable) {
+                    LOGGER.error("release channel error: {}", throwable.getMessage(), throwable);
+                }
+            });
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("remove exception rm channel:{}", ctx.channel());
             }

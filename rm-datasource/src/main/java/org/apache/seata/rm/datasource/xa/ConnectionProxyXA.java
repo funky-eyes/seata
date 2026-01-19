@@ -56,8 +56,6 @@ public class ConnectionProxyXA extends AbstractConnectionProxyXA implements Hold
 
     private volatile boolean xaActive = false;
 
-    private volatile boolean xaEnded = false;
-
     private volatile boolean kept = false;
 
     private volatile boolean rollBacked = false;
@@ -72,6 +70,8 @@ public class ConnectionProxyXA extends AbstractConnectionProxyXA implements Hold
     private boolean shouldBeHeld = false;
 
     private final ResourceLock resourceLock = new ResourceLock();
+
+    private volatile boolean combine = false;
 
     /**
      * Constructor of Connection Proxy for XA mode.
@@ -117,9 +117,9 @@ public class ConnectionProxyXA extends AbstractConnectionProxyXA implements Hold
     }
 
     private void xaEnd(XAXid xaXid, int flags) throws XAException {
-        if (!xaEnded) {
+        if (xaActive) {
             xaResource.end(xaXid, flags);
-            xaEnded = true;
+            xaActive = false;
         }
     }
 
@@ -161,6 +161,7 @@ public class ConnectionProxyXA extends AbstractConnectionProxyXA implements Hold
      * @throws XAException XAException
      */
     public void xaRollback(XAXid xaXid) throws XAException {
+        xaEnd(xaXid, XAResource.TMFAIL);
         xaResource.rollback(xaXid);
         releaseIfNecessary();
     }
@@ -227,6 +228,9 @@ public class ConnectionProxyXA extends AbstractConnectionProxyXA implements Hold
     @Override
     public void commit() throws SQLException {
         try (ResourceLock ignored = resourceLock.obtain()) {
+            if (combine) {
+                return;
+            }
             if (currentAutoCommitStatus || isReadOnly()) {
                 // Ignore the committing on an autocommit session and read-only transaction.
                 return;
@@ -239,6 +243,9 @@ public class ConnectionProxyXA extends AbstractConnectionProxyXA implements Hold
 
     @Override
     public void rollback() throws SQLException {
+        if (combine) {
+            return;
+        }
         if (currentAutoCommitStatus || isReadOnly()) {
             // Ignore the committing on an autocommit session and read-only transaction.
             return;
@@ -293,13 +300,13 @@ public class ConnectionProxyXA extends AbstractConnectionProxyXA implements Hold
     }
 
     private void cleanXABranchContext() {
-        xaEnded = false;
         branchRegisterTime = null;
         prepareTime = null;
         xaActive = false;
         if (!isHeld()) {
             xaBranchXid = null;
         }
+        combine = false;
     }
 
     private void checkTimeout(Long now) throws XAException {
@@ -312,6 +319,9 @@ public class ConnectionProxyXA extends AbstractConnectionProxyXA implements Hold
     @Override
     public void close() throws SQLException {
         try (ResourceLock ignored = resourceLock.obtain()) {
+            if (combine) {
+                return;
+            }
             try {
                 if (xaActive && this.xaBranchXid != null) {
                     // XA End: Success
@@ -434,5 +444,9 @@ public class ConnectionProxyXA extends AbstractConnectionProxyXA implements Hold
      */
     public ResourceLock getResourceLock() {
         return resourceLock;
+    }
+
+    public void setCombine(boolean combine) {
+        this.combine = combine;
     }
 }

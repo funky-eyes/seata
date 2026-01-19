@@ -23,29 +23,36 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.seata.compressor.zstd.ZstdUtil.MAX_COMPRESSED_SIZE;
-
 /**
  * the Zstd Util test
  */
 public class ZstdUtilTest {
 
+    private final int MAX_COMPRESSED_SIZE = 4 * 1024 * 1024; // 4MB
+
     @Test
-    public void test_compress() {
+    public void testCompress() {
         Assertions.assertThrows(NullPointerException.class, () -> {
             ZstdUtil.compress(null);
         });
     }
 
     @Test
-    public void test_decompress() {
+    public void testDecompress() {
         Assertions.assertThrows(NullPointerException.class, () -> {
             ZstdUtil.decompress(null);
         });
     }
 
     @Test
-    public void test_decompress_with_len_illegal() {
+    public void testCompressEqualDecompress() {
+        byte[] compress = ZstdUtil.compress("aa".getBytes());
+        byte[] decompress = ZstdUtil.decompress(compress);
+        Assertions.assertEquals("aa", new String(decompress));
+    }
+
+    @Test
+    public void testDecompressWithLenIllegal() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             // https://github.com/facebook/zstd/blob/dev/doc/zstd_compression_format.md#zstandard-frames
             List<Byte> bytes = new ArrayList<>();
@@ -63,8 +70,8 @@ public class ZstdUtilTest {
     }
 
     @Test
-    public void test_decompress_with_len() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+    public void testDecompressWithLen() {
+        Assertions.assertDoesNotThrow(() -> {
             byte[] data = new byte[MAX_COMPRESSED_SIZE + 1];
             for (int i = 0; i < data.length; i++) {
                 data[i] = (byte) ('A' + i % 26);
@@ -80,5 +87,32 @@ public class ZstdUtilTest {
         byte[] compressedData = Zstd.compress(data);
         byte[] decompressedData = ZstdUtil.decompress(compressedData);
         Assertions.assertEquals(len, decompressedData.length);
+    }
+
+    @Test
+    public void testDecompressWithFakeFrameContentSizeOOM() {
+        // Construct a fake zstd header with the frame content size set to 1GB, while the actual content is only 4MB.
+        byte[] magic = new byte[] {(byte) 0x28, (byte) 0xB5, (byte) 0x2F, (byte) 0xFD};
+        byte[] frameHeaderDescriptor = new byte[magic.length + 1];
+        System.arraycopy(magic, 0, frameHeaderDescriptor, 0, magic.length);
+        frameHeaderDescriptor[magic.length] = (byte) 0xA0;
+        // frame content size: 1GB = 0x40000000
+        byte[] frameContentSize = new byte[] {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x40};
+        // The actual content is only 4MB.
+        byte[] fakeContent = new byte[4 * 1024 * 1024];
+        for (int i = 0; i < fakeContent.length; i++) {
+            fakeContent[i] = (byte) ('A' + i % 26);
+        }
+        byte[] frameContent = new byte[frameHeaderDescriptor.length + frameContentSize.length + fakeContent.length];
+        System.arraycopy(frameHeaderDescriptor, 0, frameContent, 0, frameHeaderDescriptor.length);
+        System.arraycopy(frameContentSize, 0, frameContent, frameHeaderDescriptor.length, frameContentSize.length);
+        System.arraycopy(
+                fakeContent,
+                0,
+                frameContent,
+                frameHeaderDescriptor.length + frameContentSize.length,
+                fakeContent.length);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> ZstdUtil.decompress(frameContent));
+        Assertions.assertTrue(Zstd.decompressedSize(frameContent) > MAX_COMPRESSED_SIZE);
     }
 }

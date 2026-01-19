@@ -667,11 +667,13 @@ public interface ConfigurationKeys {
     /**
      * The constant TRANSPORT_TYPE
      */
+    @Deprecated
     String TRANSPORT_TYPE = TRANSPORT_PREFIX + "type";
 
     /**
      * The constant TRANSPORT_SERVER
      */
+    @Deprecated
     String TRANSPORT_SERVER = TRANSPORT_PREFIX + "server";
 
     /**
@@ -1136,6 +1138,19 @@ public interface ConfigurationKeys {
     String SERVER_RAFT_COMPRESSOR = SERVER_RAFT + "compressor";
 
     /**
+     * The constant SERVER_HTTP.
+     */
+    String SERVER_HTTP = SERVER_PREFIX + "http.";
+
+    String SERVER_HTTP_FILTER_PREFIX = SERVER_HTTP + "filter.";
+
+    /**
+     * The constant SERVER_HTTP_FILTER_XSS_FILTER_KEYWORDS.
+     *
+     */
+    String SERVER_HTTP_FILTER_XSS_FILTER_KEYWORDS = SERVER_HTTP_FILTER_PREFIX + "xss.keywords";
+
+    /**
      * The constant IS_USE_CLOUD_NAMESPACE_PARSING.
      */
     String IS_USE_CLOUD_NAMESPACE_PARSING = "isUseCloudNamespaceParsing";
@@ -1215,7 +1230,7 @@ public interface ConfigurationKeys {
     /**
      * The constant VGROUP_TABLE_NAME
      */
-    String VGROUP_TABLE_NAME = STORE_DB_PREFIX + FILE_CONFIG_SPLIT_CHAR + "vgroup-table";
+    String VGROUP_TABLE_NAME = STORE_DB_PREFIX + "vgroupTable";
 
     /**
      * The constant NAMESPACE_KEY

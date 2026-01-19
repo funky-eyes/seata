@@ -45,7 +45,7 @@ public interface StarterConstants {
     String SAGA_ASYNC_THREAD_POOL_PREFIX = SAGA_STATE_MACHINE_PREFIX + ".async-thread-pool";
 
     String REGISTRY_PREFIX = SEATA_PREFIX + ".registry";
-    String REGISTRY_PREFERED_NETWORKS = ConfigurationKeys.FILE_ROOT_REGISTRY + ".preferredNetworks";
+    String REGISTRY_PREFERRED_NETWORKS = ConfigurationKeys.FILE_ROOT_REGISTRY + ".preferredNetworks";
     String REGISTRY_NACOS_PREFIX = REGISTRY_PREFIX + ".nacos";
     String REGISTRY_RAFT_PREFIX = REGISTRY_PREFIX + ".raft";
     String REGISTRY_EUREKA_PREFIX = REGISTRY_PREFIX + ".eureka";
@@ -76,6 +76,12 @@ public interface StarterConstants {
     String SERVER_RAFT_SSL_CLIENT_KEYSTORE_PREFIX = SERVER_RAFT_SSL_PREFIX + ".client.keystore";
     String SERVER_RAFT_SSL_SERVER_KEYSTORE_PREFIX = SERVER_RAFT_SSL_PREFIX + ".server.keystore";
     String SERVER_RECOVERY_PREFIX = SERVER_PREFIX + ".recovery";
+
+    String SERVER_HTTP_PREFIX = SERVER_PREFIX + ".http";
+
+    String SERVER_HTTP_FILTER_PREFIX = SERVER_HTTP_PREFIX + ".filter";
+
+    String SERVER_HTTP_FILTER_XSS_PREFIX = SERVER_HTTP_FILTER_PREFIX + ".xss";
 
     String METRICS_PREFIX = SEATA_PREFIX + ".metrics";
 

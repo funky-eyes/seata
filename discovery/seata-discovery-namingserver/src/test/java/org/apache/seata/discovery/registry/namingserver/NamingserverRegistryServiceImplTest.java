@@ -16,12 +16,18 @@
  */
 package org.apache.seata.discovery.registry.namingserver;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
+import okhttp3.MediaType;
+import okhttp3.Protocol;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.apache.http.entity.ContentType;
 import org.apache.http.protocol.HTTP;
+import org.apache.seata.common.exception.RetryableException;
 import org.apache.seata.common.holder.ObjectHolder;
 import org.apache.seata.common.metadata.Cluster;
 import org.apache.seata.common.metadata.ClusterRole;
+import org.apache.seata.common.metadata.Instance;
 import org.apache.seata.common.metadata.Node;
 import org.apache.seata.common.metadata.namingserver.MetaResponse;
 import org.apache.seata.common.metadata.namingserver.NamingServerNode;
@@ -31,14 +37,19 @@ import org.apache.seata.config.Configuration;
 import org.apache.seata.config.ConfigurationFactory;
 import org.apache.seata.discovery.registry.RegistryService;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.mockito.Answers;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
@@ -53,7 +64,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.seata.common.Constants.OBJECT_KEY_SPRING_CONFIGURABLE_ENVIRONMENT;
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 
 class NamingserverRegistryServiceImplTest {
 
@@ -64,9 +83,10 @@ class NamingserverRegistryServiceImplTest {
         System.setProperty("registry.seata.namespace", "dev");
         System.setProperty("registry.seata.cluster", "cluster1");
         System.setProperty("registry.seata.server-addr", "127.0.0.1:8080");
+        System.setProperty("registry.seata.username", "seata");
+        System.setProperty("registry.seata.password", "seata");
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 
-        // 获取应用程序环境
         ConfigurableEnvironment environment = context.getEnvironment();
         MutablePropertySources propertySources = environment.getPropertySources();
         Properties customProperties = new Properties();
@@ -82,6 +102,8 @@ class NamingserverRegistryServiceImplTest {
         System.clearProperty("registry.seata.namespace");
         System.clearProperty("registry.seata.cluster");
         System.clearProperty("registry.seata.server-addr");
+        System.clearProperty("registry.seata.username");
+        System.clearProperty("registry.seata.password");
     }
 
     @Test
@@ -90,6 +112,32 @@ class NamingserverRegistryServiceImplTest {
         InetSocketAddress inetSocketAddress = new InetSocketAddress("127.0.0.1", 8080);
         namingserverRegistryService.register(inetSocketAddress);
         namingserverRegistryService.unregister(inetSocketAddress);
+    }
+
+    @Test
+    public void testWatchCoversRefreshToken() throws Exception {
+
+        NamingserverRegistryServiceImpl spyService = Mockito.spy(NamingserverRegistryServiceImpl.getInstance());
+        doReturn("127.0.0.1:8081").when(spyService).getNamingAddr();
+
+        ResponseBody body = ResponseBody.create("", MediaType.get("application/json"));
+
+        Response mockResponse = new Response.Builder()
+                .request(new Request.Builder().url("http://localhost").build())
+                .protocol(Protocol.HTTP_1_1)
+                .code(200)
+                .message("OK")
+                .body(body)
+                .build();
+
+        try (MockedStatic<HttpClientUtil> mockedStatic = mockStatic(HttpClientUtil.class)) {
+
+            mockedStatic
+                    .when(() -> HttpClientUtil.doPost(anyString(), anyString(), anyMap(), anyInt()))
+                    .thenReturn(mockResponse);
+
+            spyService.watch("testGroup");
+        }
     }
 
     @Test
@@ -361,9 +409,135 @@ class NamingserverRegistryServiceImplTest {
         Map<String, String> header = new HashMap<>();
         header.put(HTTP.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED.getMimeType());
         try {
-            CloseableHttpResponse response = HttpClientUtil.doGet(url, paraMap, header, 30000);
+            Response response = HttpClientUtil.doGet(url, paraMap, header, 30000);
         } catch (Exception e) {
             throw new RemoteException();
+        }
+    }
+
+    @Test
+    void testDoHealthCheck_success() {
+        ResponseBody body = ResponseBody.create("", MediaType.get("application/json"));
+
+        Response mockResponse = new Response.Builder()
+                .request(new Request.Builder().url("http://localhost").build())
+                .protocol(Protocol.HTTP_1_1)
+                .code(200)
+                .message("OK")
+                .body(body)
+                .build();
+
+        try (MockedStatic<HttpClientUtil> mockedStatic = mockStatic(HttpClientUtil.class)) {
+
+            mockedStatic
+                    .when(() -> HttpClientUtil.doGet(any(), any(), any(), anyInt()))
+                    .thenReturn(mockResponse);
+
+            NamingserverRegistryServiceImpl service =
+                    mock(NamingserverRegistryServiceImpl.class, Answers.CALLS_REAL_METHODS);
+
+            boolean result = service.doHealthCheck("127.0.0.1:8080");
+
+            assertTrue(result);
+        }
+    }
+
+    @Test
+    void testUnregister_success() {
+        ResponseBody body = ResponseBody.create("", MediaType.get("application/json"));
+
+        Response mockResponse = new Response.Builder()
+                .request(new Request.Builder().url("http://localhost").build())
+                .protocol(Protocol.HTTP_1_1)
+                .code(200)
+                .message("OK")
+                .body(body)
+                .build();
+
+        try (MockedStatic<HttpClientUtil> mockedStatic = mockStatic(HttpClientUtil.class)) {
+
+            mockedStatic
+                    .when(() -> HttpClientUtil.doPost(any(), anyString(), any(), anyInt()))
+                    .thenReturn(mockResponse);
+
+            NamingserverRegistryServiceImpl service =
+                    mock(NamingserverRegistryServiceImpl.class, Answers.CALLS_REAL_METHODS);
+
+            service.unregister(Instance.getInstance());
+        }
+    }
+
+    @Test
+    void testRefreshGroup_withResponse() throws RetryableException, IOException {
+        NamingserverRegistryServiceImpl spyService = Mockito.spy(NamingserverRegistryServiceImpl.getInstance());
+        doReturn("127.0.0.1:8081").when(spyService).getNamingAddr();
+
+        ResponseBody body = ResponseBody.create("{\"clusterList\":[],\"term\":1}", MediaType.get("application/json"));
+
+        Response mockResponse = new Response.Builder()
+                .request(new Request.Builder().url("http://localhost").build())
+                .protocol(Protocol.HTTP_1_1)
+                .code(200)
+                .message("OK")
+                .body(body)
+                .build();
+
+        try (MockedStatic<HttpClientUtil> mockedStatic = mockStatic(HttpClientUtil.class)) {
+
+            mockedStatic
+                    .when(() -> HttpClientUtil.doGet(any(), any(), any(), anyInt()))
+                    .thenReturn(mockResponse);
+
+            spyService.refreshGroup("testGroup");
+        }
+    }
+
+    @Test
+    void testRefreshGroup_withNoBody() throws RetryableException, IOException {
+        NamingserverRegistryServiceImpl spyService = Mockito.spy(NamingserverRegistryServiceImpl.getInstance());
+        doReturn("127.0.0.1:8081").when(spyService).getNamingAddr();
+
+        ResponseBody body = ResponseBody.create("", MediaType.get("application/json"));
+
+        Response mockResponse = new Response.Builder()
+                .request(new Request.Builder().url("http://localhost").build())
+                .protocol(Protocol.HTTP_1_1)
+                .code(200)
+                .message("OK")
+                .body(body)
+                .build();
+
+        try (MockedStatic<HttpClientUtil> mockedStatic = mockStatic(HttpClientUtil.class)) {
+
+            mockedStatic
+                    .when(() -> HttpClientUtil.doGet(any(), any(), any(), anyInt()))
+                    .thenReturn(mockResponse);
+
+            Assertions.assertThrows(IOException.class, () -> spyService.refreshGroup("testGroup"));
+        }
+    }
+
+    @Test
+    void testRefreshGroup_withNoResponse() throws RetryableException, IOException {
+        NamingserverRegistryServiceImpl spyService = Mockito.spy(NamingserverRegistryServiceImpl.getInstance());
+        doReturn("127.0.0.1:8081").when(spyService).getNamingAddr();
+
+        ResponseBody body = ResponseBody.create("", MediaType.get("application/json"));
+
+        Response mockResponse = new Response.Builder()
+                .request(new Request.Builder().url("http://localhost").build())
+                .protocol(Protocol.HTTP_1_1)
+                .code(200)
+                .message("OK")
+                .body(body)
+                .build();
+
+        try (MockedStatic<HttpClientUtil> mockedStatic = mockStatic(HttpClientUtil.class)) {
+            mockedStatic
+                    .when(() -> HttpClientUtil.doGet(any(), any(), any(), anyInt()))
+                    .thenReturn(null);
+
+            Assertions.assertThrows(NamingRegistryException.class, () -> spyService.refreshGroup("testGroup"));
         }
     }
 
@@ -385,4 +559,3 @@ class NamingserverRegistryServiceImplTest {
         }
     }
 }
-;

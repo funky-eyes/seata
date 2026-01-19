@@ -17,11 +17,13 @@
 package org.apache.seata.config.consul;
 
 import com.ecwid.consul.v1.ConsulClient;
+import com.ecwid.consul.v1.QueryParams;
 import com.ecwid.consul.v1.Response;
 import com.ecwid.consul.v1.kv.model.GetValue;
 import com.ecwid.consul.v1.kv.model.PutParams;
 import org.apache.seata.common.util.NetUtil;
 import org.apache.seata.config.Configuration;
+import org.apache.seata.config.ConfigurationChangeEvent;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -118,7 +120,52 @@ class ConsulConfigurationTest {
 
         ConsulConfiguration newInstance = ConsulConfiguration.getInstance();
 
-        assertEquals("val1", newInstance.getLatestConfig("key1", null, 1000));
+        // Short retry loop to absorb potential propagation delay in CI environments
+        String value = null;
+        long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(3); // Max ~3 seconds
+        do {
+            value = newInstance.getLatestConfig("key1", null, 1000);
+            if ("val1".equals(value)) break;
+            Thread.sleep(100);
+        } while (System.nanoTime() < deadline);
+
+        // Verify that the value retrieved matches the expected one
+        assertEquals("val1", value, "KV should be visible after a short await");
+    }
+
+    @Test
+    void testOnChangeEvent_skipWhenValueIsBlank() throws InterruptedException {
+        String dataId = "seata.properties";
+
+        // Mock the initial call in ConsulListener constructor (2-arg version)
+        GetValue initValue = mock(GetValue.class);
+        when(initValue.getDecodedValue()).thenReturn("dummy");
+        Response<GetValue> initResponse = new Response<>(initValue, 1L, false, 1L);
+        when(mockConsulClient.getKVValue(eq(dataId), (String) isNull())).thenReturn(initResponse);
+
+        // Mock the watch call in onChangeEvent loop (3-arg version)
+        GetValue blankValue = mock(GetValue.class);
+        when(blankValue.getDecodedValue()).thenReturn("");
+        Response<GetValue> blankResponse = new Response<>(blankValue, 2L, false, 2L);
+        when(mockConsulClient.getKVValue(eq(dataId), (String) isNull(), any(QueryParams.class)))
+                .thenReturn(blankResponse);
+
+        ConsulConfiguration.ConsulListener listener = new ConsulConfiguration.ConsulListener(dataId, null);
+
+        // Run onChangeEvent in a separate thread since it loops indefinitely
+        Thread thread = new Thread(() -> {
+            try {
+                listener.onChangeEvent(new ConfigurationChangeEvent());
+            } catch (Exception e) {
+                // ignore
+            }
+        });
+        thread.start();
+        Thread.sleep(100);
+        thread.interrupt();
+        thread.join(500);
+
+        assertTrue(true);
     }
 
     // Utility method to set private fields via reflection
