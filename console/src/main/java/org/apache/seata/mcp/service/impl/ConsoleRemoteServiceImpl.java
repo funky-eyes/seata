@@ -47,6 +47,8 @@ import static org.apache.seata.mcp.core.utils.UrlUtils.objectToQueryParamMap;
 @Service
 public class ConsoleRemoteServiceImpl implements ConsoleApiService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConsoleRemoteServiceImpl.class);
+
     private final JwtTokenUtils jwtTokenUtils;
 
     private final RestTemplate restTemplate;
@@ -64,10 +66,8 @@ public class ConsoleRemoteServiceImpl implements ConsoleApiService {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
         this.namingServerProperties = namingServerProperties;
-        logger.info("ConsoleRemoteServiceImpl initialized.");
+        LOGGER.info("ConsoleRemoteServiceImpl initialized.");
     }
-
-    private final Logger logger = LoggerFactory.getLogger(ConsoleRemoteServiceImpl.class);
 
     public String getToken() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -111,13 +111,13 @@ public class ConsoleRemoteServiceImpl implements ConsoleApiService {
                 String errorMsg = String.format(
                         "MCP GET request failed with status: %s, response: %s",
                         response.getStatusCode(), response.getBody());
-                logger.warn(errorMsg);
+                LOGGER.warn(errorMsg);
                 throw new ServiceCallException(errorMsg, response.getStatusCode());
             }
             return responseBody;
         } catch (RestClientException e) {
             String errorMsg = "MCP GET Call NameSpace Failed.";
-            logger.error(errorMsg, e);
+            LOGGER.error(errorMsg, e);
             throw new ServiceCallException(errorMsg);
         }
     }
@@ -151,13 +151,13 @@ public class ConsoleRemoteServiceImpl implements ConsoleApiService {
                 String errorMsg = String.format(
                         "MCP GET request failed with status: %s, response: %s",
                         response.getStatusCode(), response.getBody());
-                logger.warn(errorMsg);
+                LOGGER.warn(errorMsg);
                 throw new ServiceCallException(errorMsg, response.getStatusCode());
             }
             return responseBody;
         } catch (RestClientException e) {
             String errorMsg = "MCP GET Call TC Failed.";
-            logger.error(errorMsg, e);
+            LOGGER.error(errorMsg, e);
             throw new ServiceCallException(errorMsg);
         }
     }
@@ -191,13 +191,13 @@ public class ConsoleRemoteServiceImpl implements ConsoleApiService {
                 String errorMsg = String.format(
                         "MCP DELETE request returned non-success status: %s, response: %s",
                         response.getStatusCode(), response.getBody());
-                logger.warn(errorMsg);
+                LOGGER.warn(errorMsg);
                 throw new ServiceCallException(errorMsg, response.getStatusCode());
             }
             return responseBody;
         } catch (RestClientException e) {
             String errorMsg = "MCP DELETE Call TC Failed.";
-            logger.error(errorMsg, e);
+            LOGGER.error(errorMsg, e);
             throw new ServiceCallException(errorMsg);
         }
     }
@@ -231,13 +231,13 @@ public class ConsoleRemoteServiceImpl implements ConsoleApiService {
                 String errorMsg = String.format(
                         "MCP PUT request returned non-success status: %s, response: %s",
                         response.getStatusCode(), response.getBody());
-                logger.warn(errorMsg);
+                LOGGER.warn(errorMsg);
                 throw new ServiceCallException(errorMsg, response.getStatusCode());
             }
             return responseBody;
         } catch (RestClientException e) {
             String errorMsg = "MCP PUT Call TC Failed.";
-            logger.error(errorMsg, e);
+            LOGGER.error(errorMsg, e);
             throw new ServiceCallException(errorMsg);
         }
     }

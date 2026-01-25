@@ -52,7 +52,7 @@ import static org.apache.seata.mcp.core.utils.UrlUtils.objectToQueryParamMap;
 @Service
 public class ConsoleLocalServiceImpl implements ConsoleApiService {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConsoleLocalServiceImpl.class);
 
     private final NamingManager namingManager;
 
@@ -64,7 +64,7 @@ public class ConsoleLocalServiceImpl implements ConsoleApiService {
         this.namingManager = namingManager;
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
-        logger.info("ConsoleLocalServiceImpl initialized.");
+        LOGGER.info("ConsoleLocalServiceImpl initialized.");
     }
 
     public String getResult(
@@ -109,13 +109,13 @@ public class ConsoleLocalServiceImpl implements ConsoleApiService {
                             String errorMsg = String.format(
                                     "MCP request failed with status: %s, response: %s",
                                     response.getStatusCode(), response.getBody());
-                            logger.warn(errorMsg);
+                            LOGGER.warn(errorMsg);
                             throw new ServiceCallException(errorMsg, response.getStatusCode());
                         }
                         return responseBody;
                     } catch (RestClientException e) {
                         String errorMsg = "MCP Call TC Failed.";
-                        logger.error(errorMsg, e);
+                        LOGGER.error(errorMsg, e);
                         throw new ServiceCallException(errorMsg);
                     }
                 }
@@ -161,7 +161,7 @@ public class ConsoleLocalServiceImpl implements ConsoleApiService {
         try {
             namespace = objectMapper.writeValueAsString(namingManager.namespace());
         } catch (JsonProcessingException e) {
-            logger.error("Get NameSpace failed: {}", e.getMessage());
+            LOGGER.error("Get NameSpace failed: {}", e.getMessage());
             return "Failed to get namespace";
         }
         return namespace;
