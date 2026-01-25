@@ -17,7 +17,6 @@
 package org.apache.seata.mcp.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.seata.common.NamingServerLocalMarker;
 import org.apache.seata.common.exception.AuthenticationFailedException;
 import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.console.config.WebSecurityConfig;
@@ -44,7 +43,7 @@ import java.util.Map;
 import static org.apache.seata.mcp.core.utils.UrlUtils.buildUrl;
 import static org.apache.seata.mcp.core.utils.UrlUtils.objectToQueryParamMap;
 
-@ConditionalOnMissingBean(NamingServerLocalMarker.class)
+@ConditionalOnMissingBean(name = "consoleLocalServiceImpl")
 @Service
 public class ConsoleRemoteServiceImpl implements ConsoleApiService {
 
@@ -65,6 +64,7 @@ public class ConsoleRemoteServiceImpl implements ConsoleApiService {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
         this.namingServerProperties = namingServerProperties;
+        logger.info("ConsoleRemoteServiceImpl initialized.");
     }
 
     private final Logger logger = LoggerFactory.getLogger(ConsoleRemoteServiceImpl.class);

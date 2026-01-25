@@ -26,7 +26,6 @@ import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.mcp.core.props.NameSpaceDetail;
 import org.apache.seata.mcp.exception.ServiceCallException;
 import org.apache.seata.mcp.service.ConsoleApiService;
-import org.apache.seata.mcp.service.impl.ConsoleRemoteServiceImpl;
 import org.apache.seata.namingserver.manager.NamingManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +47,7 @@ import static org.apache.seata.common.Constants.RAFT_GROUP_HEADER;
 import static org.apache.seata.mcp.core.utils.UrlUtils.buildUrl;
 import static org.apache.seata.mcp.core.utils.UrlUtils.objectToQueryParamMap;
 
-@ConditionalOnBean(ConsoleRemoteServiceImpl.class)
+@ConditionalOnBean(NamingServerLocalMarkerImpl.class)
 @Primary
 @Service
 public class ConsoleLocalServiceImpl implements ConsoleApiService {
@@ -65,6 +64,7 @@ public class ConsoleLocalServiceImpl implements ConsoleApiService {
         this.namingManager = namingManager;
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
+        logger.info("ConsoleLocalServiceImpl initialized.");
     }
 
     public String getResult(
