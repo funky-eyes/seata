@@ -125,9 +125,12 @@ public class DmTableMetaCache extends OracleTableMetaCache {
 
     protected void processPrimaries(TableMeta tableMeta, ResultSet rs) throws SQLException {
         // Collect primary key column names that couldn't be matched directly by PK_NAME
+        // In Oracle/DM: when primary key constraint name differs from unique index name,
+        // we need to match by column names instead
         Set<String> unmatchedPkColumns = new LinkedHashSet<>();
 
         // Iterate through each row of getPrimaryKeys() result set
+        // For composite primary key, there will be multiple rows with same PK_NAME
         while (rs.next()) {
             String pkConstraintName = getStringSafely(rs, "PK_NAME");
             String pkColName = getStringSafely(rs, "COLUMN_NAME");
@@ -136,29 +139,35 @@ public class DmTableMetaCache extends OracleTableMetaCache {
             }
 
             // Strategy 1: Try direct match by PK constraint name
+            // If the index name matches the primary key constraint name, mark it as PRIMARY
             if (StringUtils.isNotBlank(pkConstraintName)
                     && tableMeta.getAllIndexes().containsKey(pkConstraintName)) {
                 IndexMeta index = tableMeta.getAllIndexes().get(pkConstraintName);
                 index.setIndextype(IndexType.PRIMARY);
             } else {
-                // Save columns for fallback column-based matching
+                // Save columns for Strategy 2: fallback column-based matching
                 if (StringUtils.isNotBlank(pkColName)) {
                     unmatchedPkColumns.add(pkColName.toUpperCase());
                 }
             }
         }
 
-        // Strategy 2: fallback - match by column set equality (order-insensitive, deduped)
+        // Strategy 2: Fallback - find index whose columns match the primary key columns
+        // This handles the case where PK constraint name differs from unique index name
         if (!unmatchedPkColumns.isEmpty()) {
             for (IndexMeta index : tableMeta.getAllIndexes().values()) {
+                // Only check UNIQUE indexes as candidates (primary key is always unique)
                 if (index.getIndextype().value() == IndexType.UNIQUE.value()) {
+                    // Build index column set, normalized to uppercase and deduplicated
                     Set<String> indexColsSet = index.getValues().stream()
                             .filter(col -> col != null && StringUtils.isNotBlank(col.getColumnName()))
                             .map(col -> col.getColumnName().toUpperCase())
                             .collect(Collectors.toSet());
 
+                    // If sets are equal, this index exactly matches primary key columns
                     if (indexColsSet.equals(unmatchedPkColumns)) {
                         index.setIndextype(IndexType.PRIMARY);
+                        // Each table has only one primary key
                         break;
                     }
                 }
