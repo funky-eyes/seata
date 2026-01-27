@@ -332,4 +332,86 @@ public class DmTableMetaCacheTest {
         Assertions.assertNotNull(tableMeta);
         Assertions.assertEquals(originalName, tableMeta.getOriginalTableName());
     }
+
+    @Test
+    public void testCompositeIndexWithDifferentColumnOrder() throws SQLException {
+        // BUG修复验证：列顺序不同导致List.equals失败导致漏判主键索引
+        // 场景：复合主键 (ID, USER_ID)，唯一索引的列顺序相反 (USER_ID, ID)
+        // 修复前：List.equals 会因为顺序不同返回 FALSE，导致主键索引无法识别
+        // 修复后：使用 Set.equals，应该返回 TRUE，正确识别为 PRIMARY
+
+        Object[][] compositeIndexDiffOrder = new Object[][] {
+            new Object[] {"idx_id_userid", "id", false, "", 3, 1, "A", 34}, // 顺序 1
+            new Object[] {"idx_id_userid", "user_id", false, "", 3, 2, "A", 34} // 顺序 2
+        };
+        Object[][] compositePKMetas = new Object[][] {
+            new Object[] {"id"}, // PK 顺序 1
+            new Object[] {"user_id"} // PK 顺序 2
+        };
+        Object[][] compositeColumnMetas = new Object[][] {
+            new Object[] {"", "", "dt2", "id", Types.INTEGER, "INTEGER", 64, 0, 10, 1, "", "", 0, 0, 64, 1, "NO", "YES"
+            },
+            new Object[] {
+                "", "", "dt2", "user_id", Types.INTEGER, "INTEGER", 64, 0, 10, 0, "", "", 0, 0, 64, 2, "YES", "NO"
+            }
+        };
+        Object[][] compositeTableMetas = new Object[][] {new Object[] {"", "t", "dt2"}};
+
+        MockDriver mockDriver =
+                new MockDriver(compositeColumnMetas, compositeIndexDiffOrder, compositePKMetas, compositeTableMetas);
+        DruidDataSource dataSource = new DruidDataSource();
+        dataSource.setUrl("jdbc:mock:dm");
+        dataSource.setDriver(mockDriver);
+
+        DataSourceProxy proxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
+        TableMetaCache tableMetaCache = TableMetaCacheFactory.getTableMetaCache(JdbcConstants.DM);
+
+        TableMeta tableMeta = tableMetaCache.getTableMeta(proxy.getPlainConnection(), "t.dt2", proxy.getResourceId());
+
+        Assertions.assertNotNull(tableMeta);
+        IndexMeta compositeIndex = tableMeta.getAllIndexes().get("idx_id_userid");
+        Assertions.assertNotNull(compositeIndex);
+        // 关键断言：应该识别为 PRIMARY（修复后），而不是漏判为 UNIQUE
+        Assertions.assertEquals(
+                IndexType.PRIMARY,
+                compositeIndex.getIndextype(),
+                "Composite index with different column order should be recognized as PRIMARY");
+    }
+
+    @Test
+    public void testCompositeIndexWithExtraColumnsNotMarkedAsPrimary() throws SQLException {
+        // BUG修复验证：联合索引包含主键列但有额外列，不应该被标记为 PRIMARY
+        // 场景：主键 (ID)，唯一索引 (ID, NAME) - 包含主键列但额外有 NAME 列
+        // 修复前：Oracle 的实现会因为 matchCols == pkcol.size() 而误判为 PRIMARY
+        // 修复后：使用 Set.equals，集合 {ID, NAME} != {ID}，不会被标记为 PRIMARY
+
+        Object[][] mixedIndexMetas = new Object[][] {
+            new Object[] {"idx_id", "id", false, "", 3, 1, "A", 34},
+            new Object[] {"uk_id_name", "id", false, "", 3, 1, "A", 34}, // 唯一索引包含主键列
+            new Object[] {"uk_id_name", "name1", false, "", 3, 2, "A", 34} // 但还有额外列
+        };
+
+        MockDriver mockDriver = new MockDriver(columnMetas, mixedIndexMetas, pkMetas, tableMetas);
+        DruidDataSource dataSource = new DruidDataSource();
+        dataSource.setUrl("jdbc:mock:dm");
+        dataSource.setDriver(mockDriver);
+
+        DataSourceProxy proxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
+        TableMetaCache tableMetaCache = TableMetaCacheFactory.getTableMetaCache(JdbcConstants.DM);
+
+        TableMeta tableMeta = tableMetaCache.getTableMeta(proxy.getPlainConnection(), "t.dt1", proxy.getResourceId());
+
+        Assertions.assertNotNull(tableMeta);
+        IndexMeta pkIndex = tableMeta.getAllIndexes().get("idx_id");
+        Assertions.assertNotNull(pkIndex);
+        Assertions.assertEquals(IndexType.PRIMARY, pkIndex.getIndextype(), "Single column PK index should be PRIMARY");
+
+        IndexMeta mixedIndex = tableMeta.getAllIndexes().get("uk_id_name");
+        Assertions.assertNotNull(mixedIndex);
+        // 关键断言：应该仍是 UNIQUE（不应被误判为 PRIMARY）
+        Assertions.assertEquals(
+                IndexType.UNIQUE,
+                mixedIndex.getIndextype(),
+                "Composite index with extra columns should NOT be marked as PRIMARY");
+    }
 }
