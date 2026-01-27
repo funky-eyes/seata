@@ -332,4 +332,31 @@ public class KingbaseTableMetaCacheTest {
         Assertions.assertNotNull(tableMeta);
         Assertions.assertEquals(originalName, tableMeta.getOriginalTableName());
     }
+
+    @Test
+    public void testGetTableMetaWithPrimaryKeyConstraintDifferentName() throws SQLException {
+        // PK_NAME is "pk_constraint", but the corresponding index name is "idx_id"
+        Object[][] constraintPKMetas =
+                new Object[][] {new Object[] {"pk_constraint", "id"} // PK_NAME="pk_constraint", COLUMN_NAME="id"
+                };
+        Object[][] constraintIndexMetas = new Object[][] {
+            new Object[] {"idx_id", "id", false, "", 3, 0, "A", 34} // Index name is "idx_id", not "pk_constraint"
+        };
+
+        MockDriver mockDriver = new MockDriver(COLUMN_METAS, constraintIndexMetas, constraintPKMetas, TABLE_METAS);
+        DruidDataSource dataSource = new DruidDataSource();
+        dataSource.setUrl("jdbc:mock:kingbase");
+        dataSource.setDriver(mockDriver);
+
+        DataSourceProxy proxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
+        TableMetaCache tableMetaCache = TableMetaCacheFactory.getTableMetaCache(JdbcConstants.KINGBASE);
+
+        TableMeta tableMeta = tableMetaCache.getTableMeta(proxy.getPlainConnection(), "kb.kt1", proxy.getResourceId());
+
+        Assertions.assertNotNull(tableMeta);
+        // The index "idx_id" should be marked as PRIMARY even though PK_NAME is "pk_constraint"
+        IndexMeta idxId = tableMeta.getAllIndexes().get("idx_id");
+        Assertions.assertNotNull(idxId);
+        Assertions.assertEquals(IndexType.PRIMARY, idxId.getIndextype());
+    }
 }
