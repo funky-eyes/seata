@@ -43,7 +43,7 @@ jobs:
           MODE: standalone
           SPRING_SECURITY_ENABLED: false
         options: --health-cmd="curl -f http://localhost:8848/nacos" --health-interval=10s --health-timeout=5s --health-retries=3 --health-start-period=30s
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.03
     strategy:
       fail-fast: false
       matrix:

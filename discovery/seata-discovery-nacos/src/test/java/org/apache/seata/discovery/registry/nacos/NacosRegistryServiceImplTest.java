@@ -30,7 +30,6 @@ import org.apache.seata.config.exception.ConfigNotFoundException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
@@ -47,7 +46,6 @@ import static org.mockito.Mockito.*;
 /**
  * The type Nacos registry serivce impl test
  */
-@Disabled
 public class NacosRegistryServiceImplTest {
 
     private NamingService mockedNamingService;
