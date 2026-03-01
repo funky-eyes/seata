@@ -72,7 +72,7 @@ jobs:
         id: cache-maven-repository
         with:
          path: ~/.m2/repository
-         key: ${{ runner.os }}-maven-java${{ matrix.java }}-${{ hashFiles('**/pom.xml') }}-${{ github.run_id }}
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ env.TODAY }}
          restore-keys: |
            ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
            ${{ runner.os }}-maven-
