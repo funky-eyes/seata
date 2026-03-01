@@ -105,7 +105,7 @@ jobs:
         if: steps.cache-maven-repository.outputs.cache-hit != 'true'
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-java${{ matrix.java }}-${{ hashFiles('**/pom.xml') }}-${{ github.run_id }}
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ env.TODAY }}
       # step 8
       - name: "Codecov"
         if: matrix.java == '8'
