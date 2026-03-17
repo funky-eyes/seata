@@ -25,6 +25,11 @@ import java.util.concurrent.ThreadFactory;
  * keeps using {@link NamedThreadFactory}. A dedicated JDK 21+ module can provide
  * another implementation that returns a virtual-thread-backed {@link ThreadFactory}
  * without requiring any source-level change in business modules.
+ * <p>
+ * Implementations are allowed to interpret the daemon flag or naming metadata
+ * differently when the underlying JDK thread model has different semantics.
+ * For example, a virtual-thread provider may not be able to preserve the exact
+ * daemon behavior exposed by the default platform-thread implementation.
  */
 public interface ThreadFactoryProvider {
 

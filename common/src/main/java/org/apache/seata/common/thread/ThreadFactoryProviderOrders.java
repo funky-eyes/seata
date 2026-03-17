@@ -16,18 +16,15 @@
  */
 package org.apache.seata.common.thread;
 
-import org.apache.seata.common.loader.LoadLevel;
-
-import java.util.concurrent.ThreadFactory;
-
 /**
- * Default SPI implementation that preserves the current Seata thread model.
+ * Shared order constants for {@link ThreadFactoryProvider} SPI implementations.
  */
-@LoadLevel(name = "named", order = ThreadFactoryProviderOrders.DEFAULT_PROVIDER_ORDER)
-public class NamedThreadFactoryProvider implements ThreadFactoryProvider {
+public final class ThreadFactoryProviderOrders {
 
-    @Override
-    public ThreadFactory newThreadFactory(String threadPrefix, int totalSize, boolean daemon) {
-        return new NamedThreadFactory(threadPrefix, totalSize, daemon);
-    }
+    /**
+     * Default provider priority. Higher-priority alternatives should use a smaller value.
+     */
+    public static final int DEFAULT_PROVIDER_ORDER = 0;
+
+    private ThreadFactoryProviderOrders() {}
 }

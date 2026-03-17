@@ -74,7 +74,7 @@ public abstract class AbstractSeataInstanceStrategy implements SeataInstanceStra
             VGroupMappingStoreManager vGroupMappingStoreManager = SessionHolder.getRootVGroupMappingManager();
             // load vgroup mapping relationship
             instance.addMetadata("vGroup", vGroupMappingStoreManager.loadVGroups());
-            EXECUTOR_SERVICE = ThreadPoolExecutorFactory.newScheduledThreadPoolExecutor("scheduledExcuter", 1, true);
+            EXECUTOR_SERVICE = ThreadPoolExecutorFactory.newScheduledThreadPoolExecutor("scheduledExecutor", 1, true);
             EXECUTOR_SERVICE.scheduleAtFixedRate(
                     () -> {
                         try {

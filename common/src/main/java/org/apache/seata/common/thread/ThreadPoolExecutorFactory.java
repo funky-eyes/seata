@@ -37,9 +37,6 @@ import java.util.concurrent.TimeUnit;
  */
 public final class ThreadPoolExecutorFactory {
 
-    private static final ThreadFactoryProvider THREAD_FACTORY_PROVIDER =
-            EnhancedServiceLoader.load(ThreadFactoryProvider.class);
-
     private ThreadPoolExecutorFactory() {}
 
     /**
@@ -62,7 +59,8 @@ public final class ThreadPoolExecutorFactory {
      * @return the managed thread factory
      */
     public static ThreadFactory newThreadFactory(String threadPrefix, int totalSize, boolean daemon) {
-        return THREAD_FACTORY_PROVIDER.newThreadFactory(threadPrefix, totalSize, daemon);
+        Objects.requireNonNull(threadPrefix, "threadPrefix must not be null");
+        return ThreadFactoryProviderHolder.THREAD_FACTORY_PROVIDER.newThreadFactory(threadPrefix, totalSize, daemon);
     }
 
     /**
@@ -106,6 +104,7 @@ public final class ThreadPoolExecutorFactory {
             TimeUnit unit,
             BlockingQueue<Runnable> workQueue,
             boolean daemon) {
+        validateThreadPoolArguments(threadPrefix, corePoolSize, maximumPoolSize, keepAliveTime, unit);
         return new ThreadPoolExecutor(
                 corePoolSize,
                 maximumPoolSize,
@@ -161,6 +160,7 @@ public final class ThreadPoolExecutorFactory {
             BlockingQueue<Runnable> workQueue,
             boolean daemon,
             RejectedExecutionHandler rejectedHandler) {
+        validateThreadPoolArguments(threadPrefix, corePoolSize, maximumPoolSize, keepAliveTime, unit);
         return new ThreadPoolExecutor(
                 corePoolSize,
                 maximumPoolSize,
@@ -192,6 +192,7 @@ public final class ThreadPoolExecutorFactory {
      */
     public static ScheduledThreadPoolExecutor newScheduledThreadPoolExecutor(
             String threadPrefix, int corePoolSize, boolean daemon) {
+        validateScheduledThreadPoolArguments(threadPrefix, corePoolSize);
         return new ScheduledThreadPoolExecutor(corePoolSize, newThreadFactory(threadPrefix, corePoolSize, daemon));
     }
 
@@ -206,9 +207,45 @@ public final class ThreadPoolExecutorFactory {
      */
     public static ScheduledThreadPoolExecutor newScheduledThreadPoolExecutor(
             String threadPrefix, int corePoolSize, boolean daemon, RejectedExecutionHandler rejectedHandler) {
+        validateScheduledThreadPoolArguments(threadPrefix, corePoolSize);
         return new ScheduledThreadPoolExecutor(
                 corePoolSize,
                 newThreadFactory(threadPrefix, corePoolSize, daemon),
                 Objects.requireNonNull(rejectedHandler, "rejectedHandler must not be null"));
+    }
+
+    private static void validateThreadPoolArguments(
+            String threadPrefix, int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit) {
+        Objects.requireNonNull(threadPrefix, "threadPrefix must not be null");
+        Objects.requireNonNull(unit, "timeUnit must not be null");
+        if (corePoolSize <= 0) {
+            throw new IllegalArgumentException("corePoolSize must be greater than zero");
+        }
+        if (maximumPoolSize <= 0) {
+            throw new IllegalArgumentException("maximumPoolSize must be greater than zero");
+        }
+        if (maximumPoolSize < corePoolSize) {
+            throw new IllegalArgumentException("maximumPoolSize must be greater than or equal to corePoolSize");
+        }
+        if (keepAliveTime < 0) {
+            throw new IllegalArgumentException("keepAliveTime must not be negative");
+        }
+    }
+
+    private static void validateScheduledThreadPoolArguments(String threadPrefix, int corePoolSize) {
+        Objects.requireNonNull(threadPrefix, "threadPrefix must not be null");
+        if (corePoolSize <= 0) {
+            throw new IllegalArgumentException("corePoolSize must be greater than zero");
+        }
+    }
+
+    /**
+     * Lazy holder used to defer SPI resolution until the factory is first used.
+     */
+    private static final class ThreadFactoryProviderHolder {
+        private static final ThreadFactoryProvider THREAD_FACTORY_PROVIDER =
+                EnhancedServiceLoader.load(ThreadFactoryProvider.class);
+
+        private ThreadFactoryProviderHolder() {}
     }
 }
