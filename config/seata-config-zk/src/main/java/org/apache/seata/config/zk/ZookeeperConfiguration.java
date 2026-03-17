@@ -23,7 +23,7 @@ import org.apache.curator.framework.recipes.cache.CuratorCache;
 import org.apache.curator.framework.recipes.cache.CuratorCacheListener;
 import org.apache.curator.retry.RetryNTimes;
 import org.apache.seata.common.exception.NotSupportYetException;
-import org.apache.seata.common.thread.NamedThreadFactory;
+import org.apache.seata.common.thread.ThreadPoolExecutorFactory;
 import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.config.AbstractConfiguration;
@@ -49,7 +49,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.seata.config.ConfigurationKeys.FILE_CONFIG_SPLIT_CHAR;
@@ -79,13 +78,13 @@ public class ZookeeperConfiguration extends AbstractConfiguration {
     private static final String DEFAULT_CONFIG_PATH = ROOT_PATH + "/seata.properties";
     private static final String FILE_CONFIG_KEY_PREFIX =
             FILE_ROOT_CONFIG + FILE_CONFIG_SPLIT_CHAR + CONFIG_TYPE + FILE_CONFIG_SPLIT_CHAR;
-    private static final ExecutorService CONFIG_EXECUTOR = new ThreadPoolExecutor(
+    private static final ExecutorService CONFIG_EXECUTOR = ThreadPoolExecutorFactory.newThreadPoolExecutor(
+            "ZKConfigThread",
             THREAD_POOL_NUM,
             THREAD_POOL_NUM,
             Integer.MAX_VALUE,
             TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<>(),
-            new NamedThreadFactory("ZKConfigThread", THREAD_POOL_NUM));
+            new LinkedBlockingQueue<>());
     private static volatile CuratorFramework zkClient;
     private static final int MAP_INITIAL_CAPACITY = 8;
     private static final ConcurrentMap<String, ConcurrentMap<ConfigurationChangeListener, NodeCacheListenerImpl>>

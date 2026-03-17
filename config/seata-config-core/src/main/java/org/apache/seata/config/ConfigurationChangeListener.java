@@ -16,11 +16,10 @@
  */
 package org.apache.seata.config;
 
-import org.apache.seata.common.thread.NamedThreadFactory;
+import org.apache.seata.common.thread.ThreadPoolExecutorFactory;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -40,13 +39,13 @@ public interface ConfigurationChangeListener {
     /**
      * The constant EXECUTOR_SERVICE.
      */
-    ExecutorService EXECUTOR_SERVICE = new ThreadPoolExecutor(
+    ExecutorService EXECUTOR_SERVICE = ThreadPoolExecutorFactory.newThreadPoolExecutor(
+            "configListenerOperate",
             CORE_LISTENER_THREAD,
             MAX_LISTENER_THREAD,
             Integer.MAX_VALUE,
             TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<>(),
-            new NamedThreadFactory("configListenerOperate", MAX_LISTENER_THREAD));
+            new LinkedBlockingQueue<>());
 
     /**
      * Process.

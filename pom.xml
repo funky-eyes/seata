@@ -130,6 +130,16 @@
     </dependencyManagement>
 
     <profiles>
+        <!-- profile: onlyBuildOnJDK21+ -->
+        <profile>
+            <id>JDK21Plus</id>
+            <activation>
+                <jdk>[21,)</jdk>
+            </activation>
+            <modules>
+                <module>common-jdk21</module>
+            </modules>
+        </profile>
         <!-- profile: onlyBuildOnJDK25+ -->
         <profile>
             <id>JDK25Plus</id>
