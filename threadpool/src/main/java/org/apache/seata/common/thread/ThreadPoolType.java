@@ -16,15 +16,36 @@
  */
 package org.apache.seata.common.thread;
 
+import org.apache.seata.common.DefaultValues;
+import org.apache.seata.common.util.StringUtils;
+
 /**
- * Shared order constants for {@link ThreadPoolProvider} SPI implementations.
+ * Supported Seata thread pool modes.
  */
-public final class ThreadPoolProviderOrders {
+public enum ThreadPoolType {
+    AUTO(DefaultValues.DEFAULT_TRANSPORT_THREADPOOL),
+    PLATFORM("platform"),
+    VIRTUAL("virtual");
 
-    /**
-     * Default provider priority. Higher-priority alternatives should use a smaller value.
-     */
-    public static final int DEFAULT_PROVIDER_ORDER = 0;
+    private final String code;
 
-    private ThreadPoolProviderOrders() {}
+    ThreadPoolType(String code) {
+        this.code = code;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public static ThreadPoolType from(String code) {
+        if (StringUtils.isBlank(code)) {
+            return AUTO;
+        }
+        for (ThreadPoolType threadPoolType : values()) {
+            if (threadPoolType.code.equalsIgnoreCase(code)) {
+                return threadPoolType;
+            }
+        }
+        return AUTO;
+    }
 }

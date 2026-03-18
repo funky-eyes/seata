@@ -39,6 +39,7 @@
         <module>bom</module>
         <module>common</module>
         <module>config</module>
+        <module>threadpool</module>
 <!--        <module>console</module>-->
         <module>core</module>
         <module>compatible</module>

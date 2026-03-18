@@ -20,6 +20,7 @@ import org.apache.seata.common.loader.LoadLevel;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -47,5 +48,12 @@ public class PlatformThreadPoolProvider implements ThreadPoolProvider {
                 workQueue,
                 new NamedThreadFactory(threadPrefix, maximumPoolSize, daemon),
                 rejectedHandler);
+    }
+
+    @Override
+    public ScheduledThreadPoolExecutor newScheduledThreadPoolExecutor(
+            String threadPrefix, int corePoolSize, boolean daemon, RejectedExecutionHandler rejectedHandler) {
+        return new ScheduledThreadPoolExecutor(
+                corePoolSize, new NamedThreadFactory(threadPrefix, corePoolSize, daemon), rejectedHandler);
     }
 }

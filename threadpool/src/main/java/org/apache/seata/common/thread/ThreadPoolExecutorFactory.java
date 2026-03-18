@@ -29,50 +29,20 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Central factory used by Seata managed thread pools.
- * <p>
- * All business modules create business thread pools through this entry so that the
- * underlying {@link ThreadPoolProvider} can switch between platform and virtual
- * implementations according to runtime configuration and JDK capability.
  */
 public final class ThreadPoolExecutorFactory {
 
     private ThreadPoolExecutorFactory() {}
 
-    /**
-     * Create a managed thread factory with daemon threads enabled.
-     *
-     * @param threadPrefix the logical thread name prefix
-     * @param totalSize the expected thread count for naming purposes
-     * @return the managed thread factory
-     */
     public static ThreadFactory newThreadFactory(String threadPrefix, int totalSize) {
         return newThreadFactory(threadPrefix, totalSize, true);
     }
 
-    /**
-     * Create a managed thread factory.
-     *
-     * @param threadPrefix the logical thread name prefix
-     * @param totalSize the expected thread count for naming purposes
-     * @param daemon whether daemon threads should be requested
-     * @return the managed thread factory
-     */
     public static ThreadFactory newThreadFactory(String threadPrefix, int totalSize, boolean daemon) {
         Objects.requireNonNull(threadPrefix, "threadPrefix must not be null");
         return new NamedThreadFactory(threadPrefix, totalSize, daemon);
     }
 
-    /**
-     * Create a managed {@link ThreadPoolExecutor} that keeps the default abort policy.
-     *
-     * @param threadPrefix the logical thread name prefix
-     * @param corePoolSize the core pool size
-     * @param maximumPoolSize the maximum pool size
-     * @param keepAliveTime the thread keep alive time
-     * @param unit the keep alive time unit
-     * @param workQueue the task queue
-     * @return the managed thread pool executor
-     */
     public static ThreadPoolExecutor newThreadPoolExecutor(
             String threadPrefix,
             int corePoolSize,
@@ -83,18 +53,6 @@ public final class ThreadPoolExecutorFactory {
         return newThreadPoolExecutor(threadPrefix, corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, true);
     }
 
-    /**
-     * Create a managed {@link ThreadPoolExecutor} that keeps the default abort policy.
-     *
-     * @param threadPrefix the logical thread name prefix
-     * @param corePoolSize the core pool size
-     * @param maximumPoolSize the maximum pool size
-     * @param keepAliveTime the thread keep alive time
-     * @param unit the keep alive time unit
-     * @param workQueue the task queue
-     * @param daemon whether daemon threads should be requested
-     * @return the managed thread pool executor
-     */
     public static ThreadPoolExecutor newThreadPoolExecutor(
             String threadPrefix,
             int corePoolSize,
@@ -114,18 +72,6 @@ public final class ThreadPoolExecutorFactory {
                 new ThreadPoolExecutor.AbortPolicy());
     }
 
-    /**
-     * Create a managed {@link ThreadPoolExecutor} with a custom rejection handler.
-     *
-     * @param threadPrefix the logical thread name prefix
-     * @param corePoolSize the core pool size
-     * @param maximumPoolSize the maximum pool size
-     * @param keepAliveTime the thread keep alive time
-     * @param unit the keep alive time unit
-     * @param workQueue the task queue
-     * @param rejectedHandler the rejection handler
-     * @return the managed thread pool executor
-     */
     public static ThreadPoolExecutor newThreadPoolExecutor(
             String threadPrefix,
             int corePoolSize,
@@ -138,19 +84,6 @@ public final class ThreadPoolExecutorFactory {
                 threadPrefix, corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, true, rejectedHandler);
     }
 
-    /**
-     * Create a managed {@link ThreadPoolExecutor} with a custom rejection handler.
-     *
-     * @param threadPrefix the logical thread name prefix
-     * @param corePoolSize the core pool size
-     * @param maximumPoolSize the maximum pool size
-     * @param keepAliveTime the thread keep alive time
-     * @param unit the keep alive time unit
-     * @param workQueue the task queue
-     * @param daemon whether daemon threads should be requested
-     * @param rejectedHandler the rejection handler
-     * @return the managed thread pool executor
-     */
     public static ThreadPoolExecutor newThreadPoolExecutor(
             String threadPrefix,
             int corePoolSize,
@@ -173,47 +106,24 @@ public final class ThreadPoolExecutorFactory {
                         Objects.requireNonNull(rejectedHandler, "rejectedHandler must not be null"));
     }
 
-    /**
-     * Create a managed {@link ScheduledThreadPoolExecutor} with daemon threads enabled.
-     *
-     * @param threadPrefix the logical thread name prefix
-     * @param corePoolSize the core pool size
-     * @return the managed scheduled executor
-     */
     public static ScheduledThreadPoolExecutor newScheduledThreadPoolExecutor(String threadPrefix, int corePoolSize) {
         return newScheduledThreadPoolExecutor(threadPrefix, corePoolSize, true);
     }
 
-    /**
-     * Create a managed {@link ScheduledThreadPoolExecutor}.
-     *
-     * @param threadPrefix the logical thread name prefix
-     * @param corePoolSize the core pool size
-     * @param daemon whether daemon threads should be requested
-     * @return the managed scheduled executor
-     */
     public static ScheduledThreadPoolExecutor newScheduledThreadPoolExecutor(
             String threadPrefix, int corePoolSize, boolean daemon) {
-        validateScheduledThreadPoolArguments(threadPrefix, corePoolSize);
-        return new ScheduledThreadPoolExecutor(corePoolSize, newThreadFactory(threadPrefix, corePoolSize, daemon));
+        return newScheduledThreadPoolExecutor(threadPrefix, corePoolSize, daemon, new ThreadPoolExecutor.AbortPolicy());
     }
 
-    /**
-     * Create a managed {@link ScheduledThreadPoolExecutor} with a custom rejection handler.
-     *
-     * @param threadPrefix the logical thread name prefix
-     * @param corePoolSize the core pool size
-     * @param daemon whether daemon threads should be requested
-     * @param rejectedHandler the rejection handler
-     * @return the managed scheduled executor
-     */
     public static ScheduledThreadPoolExecutor newScheduledThreadPoolExecutor(
             String threadPrefix, int corePoolSize, boolean daemon, RejectedExecutionHandler rejectedHandler) {
         validateScheduledThreadPoolArguments(threadPrefix, corePoolSize);
-        return new ScheduledThreadPoolExecutor(
-                corePoolSize,
-                newThreadFactory(threadPrefix, corePoolSize, daemon),
-                Objects.requireNonNull(rejectedHandler, "rejectedHandler must not be null"));
+        return resolveThreadPoolProvider()
+                .newScheduledThreadPoolExecutor(
+                        threadPrefix,
+                        corePoolSize,
+                        daemon,
+                        Objects.requireNonNull(rejectedHandler, "rejectedHandler must not be null"));
     }
 
     private static void validateThreadPoolArguments(
@@ -249,9 +159,6 @@ public final class ThreadPoolExecutorFactory {
         return ThreadPoolProviderHolder.PLATFORM_THREAD_POOL_PROVIDER;
     }
 
-    /**
-     * Lazy holder used to defer SPI resolution until the factory is first used.
-     */
     private static final class ThreadPoolProviderHolder {
         private static final ThreadPoolProvider PLATFORM_THREAD_POOL_PROVIDER =
                 EnhancedServiceLoader.load(ThreadPoolProvider.class, ThreadPoolType.PLATFORM.getCode());

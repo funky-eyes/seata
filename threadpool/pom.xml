@@ -26,20 +26,20 @@
         <version>${revision}</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>seata-threadpool-loom</artifactId>
+    <artifactId>seata-threadpool</artifactId>
     <packaging>jar</packaging>
-    <name>seata-threadpool-loom ${project.version}</name>
-    <description>Loom-backed thread pool provider for Seata managed thread pools</description>
-
-    <properties>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
-    </properties>
+    <name>seata-threadpool ${project.version}</name>
+    <description>Managed thread pool factory for Seata</description>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.seata</groupId>
-            <artifactId>seata-threadpool</artifactId>
+            <artifactId>seata-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.seata</groupId>
+            <artifactId>seata-config-core</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

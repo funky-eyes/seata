@@ -67,6 +67,7 @@ public class ThreadPoolExecutorFactoryTest {
 
     @Test
     public void testNewScheduledThreadPoolExecutor() {
+        ThreadPoolRuntimeEnvironment.setThreadPoolTypeSupplier(() -> "platform");
         ScheduledThreadPoolExecutor executor =
                 ThreadPoolExecutorFactory.newScheduledThreadPoolExecutor("scheduleTest", 1, true);
         try {
@@ -104,6 +105,24 @@ public class ThreadPoolExecutorFactoryTest {
                 "autoFallback", 1, 2, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
         try {
             assertThat(executor).isInstanceOf(PlatformThreadPoolExecutor.class);
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
+    public void testVirtualScheduledThreadPoolFallsBackToPlatformWithoutLoomProvider() {
+        ThreadPoolRuntimeEnvironment.setThreadPoolTypeSupplier(() -> "virtual");
+        ThreadPoolRuntimeEnvironment.setJdkFeatureSupplier(() -> 21);
+
+        ScheduledThreadPoolExecutor executor =
+                ThreadPoolExecutorFactory.newScheduledThreadPoolExecutor("virtualScheduleFallback", 1, true);
+        try {
+            Thread thread = executor.getThreadFactory().newThread(() -> {});
+
+            assertThat(executor.getCorePoolSize()).isEqualTo(1);
+            assertThat(thread.getName()).startsWith("virtualScheduleFallback");
+            assertThat(thread.isDaemon()).isTrue();
         } finally {
             executor.shutdownNow();
         }

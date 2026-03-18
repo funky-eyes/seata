@@ -18,27 +18,15 @@ package org.apache.seata.common.thread;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
- * SPI abstraction used by Seata managed business thread pools.
+ * SPI abstraction used by Seata managed thread pools.
  */
 public interface ThreadPoolProvider {
 
-    /**
-     * Create a managed thread pool executor.
-     *
-     * @param threadPrefix the logical thread name prefix
-     * @param corePoolSize the core pool size
-     * @param maximumPoolSize the maximum pool size
-     * @param keepAliveTime the keep alive time
-     * @param unit the keep alive time unit
-     * @param workQueue the work queue
-     * @param daemon whether daemon threads should be requested when supported
-     * @param rejectedHandler the rejection handler
-     * @return the managed executor
-     */
     ThreadPoolExecutor newThreadPoolExecutor(
             String threadPrefix,
             int corePoolSize,
@@ -48,4 +36,7 @@ public interface ThreadPoolProvider {
             BlockingQueue<Runnable> workQueue,
             boolean daemon,
             RejectedExecutionHandler rejectedHandler);
+
+    ScheduledThreadPoolExecutor newScheduledThreadPoolExecutor(
+            String threadPrefix, int corePoolSize, boolean daemon, RejectedExecutionHandler rejectedHandler);
 }

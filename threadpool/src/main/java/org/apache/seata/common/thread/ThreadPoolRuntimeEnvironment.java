@@ -18,14 +18,14 @@ package org.apache.seata.common.thread;
 
 import org.apache.seata.common.ConfigurationKeys;
 import org.apache.seata.common.DefaultValues;
+import org.apache.seata.config.Configuration;
+import org.apache.seata.config.ConfigurationFactory;
 
-import java.lang.reflect.Method;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
 /**
- * Runtime helper used to resolve the thread pool mode without adding a hard dependency
- * from the common module to the config module.
+ * Runtime helper used to resolve the thread pool mode.
  */
 final class ThreadPoolRuntimeEnvironment {
 
@@ -65,16 +65,8 @@ final class ThreadPoolRuntimeEnvironment {
     }
 
     private static String loadConfiguredThreadPoolType() {
-        try {
-            Class<?> configurationFactoryClass = Class.forName("org.apache.seata.config.ConfigurationFactory");
-            Object configuration =
-                    configurationFactoryClass.getMethod("getInstance").invoke(null);
-            Method getConfigMethod = configuration.getClass().getMethod("getConfig", String.class, String.class);
-            return (String) getConfigMethod.invoke(
-                    configuration, ConfigurationKeys.TRANSPORT_THREADPOOL, DefaultValues.DEFAULT_TRANSPORT_THREADPOOL);
-        } catch (Exception ignored) {
-            return System.getProperty(
-                    ConfigurationKeys.TRANSPORT_THREADPOOL, DefaultValues.DEFAULT_TRANSPORT_THREADPOOL);
-        }
+        Configuration configuration = ConfigurationFactory.getInstance();
+        return configuration.getConfig(
+                ConfigurationKeys.TRANSPORT_THREADPOOL, DefaultValues.DEFAULT_TRANSPORT_THREADPOOL);
     }
 }

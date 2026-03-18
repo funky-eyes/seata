@@ -21,7 +21,7 @@ import com.ecwid.consul.v1.QueryParams;
 import com.ecwid.consul.v1.Response;
 import com.ecwid.consul.v1.kv.model.GetValue;
 import com.ecwid.consul.v1.kv.model.PutParams;
-import org.apache.seata.common.thread.ThreadPoolExecutorFactory;
+import org.apache.seata.common.thread.NamedThreadFactory;
 import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.common.util.NetUtil;
 import org.apache.seata.common.util.StringUtils;
@@ -46,6 +46,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.seata.config.ConfigurationKeys.FILE_CONFIG_SPLIT_CHAR;
@@ -83,13 +84,13 @@ public class ConsulConfiguration extends AbstractConfiguration {
     private static final long CAS = 0L;
 
     private ConsulConfiguration() {
-        consulNotifierExecutor = ThreadPoolExecutorFactory.newThreadPoolExecutor(
-                "consul-config-executor",
+        consulNotifierExecutor = new ThreadPoolExecutor(
                 THREAD_POOL_NUM,
                 THREAD_POOL_NUM,
                 Integer.MAX_VALUE,
                 TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>());
+                new LinkedBlockingQueue<>(),
+                new NamedThreadFactory("consul-config-executor", THREAD_POOL_NUM));
         initSeataConfig();
     }
 
@@ -319,13 +320,13 @@ public class ConsulConfiguration extends AbstractConfiguration {
         private final ConfigurationChangeListener listener;
         private final String dataId;
         private long consulIndex;
-        private final ExecutorService executor = ThreadPoolExecutorFactory.newThreadPoolExecutor(
-                "consulListener",
+        private final ExecutorService executor = new ThreadPoolExecutor(
                 CORE_LISTENER_THREAD,
                 MAX_LISTENER_THREAD,
                 0L,
                 TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>());
+                new LinkedBlockingQueue<>(),
+                new NamedThreadFactory("consulListener", MAX_LISTENER_THREAD));
 
         /**
          * Instantiates a new Consul listener.

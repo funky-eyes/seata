@@ -17,7 +17,7 @@
 package org.apache.seata.config;
 
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.seata.common.thread.ThreadPoolExecutorFactory;
+import org.apache.seata.common.thread.NamedThreadFactory;
 import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.config.ConfigFuture.ConfigOperation;
@@ -40,6 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -121,13 +122,13 @@ public class FileConfiguration extends AbstractConfiguration {
             }
         }
         this.name = name;
-        configOperateExecutor = ThreadPoolExecutorFactory.newThreadPoolExecutor(
-                "configOperate",
+        configOperateExecutor = new ThreadPoolExecutor(
                 CORE_CONFIG_OPERATE_THREAD,
                 MAX_CONFIG_OPERATE_THREAD,
                 Integer.MAX_VALUE,
                 TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>());
+                new LinkedBlockingQueue<>(),
+                new NamedThreadFactory("configOperate", MAX_CONFIG_OPERATE_THREAD));
     }
 
     private File getConfigFile(String name) {
@@ -366,13 +367,13 @@ public class FileConfiguration extends AbstractConfiguration {
 
         private final Map<String, Set<ConfigurationChangeListener>> dataIdMap = new HashMap<>();
 
-        private final ExecutorService executor = ThreadPoolExecutorFactory.newThreadPoolExecutor(
-                "fileListener",
+        private final ExecutorService executor = new ThreadPoolExecutor(
                 CORE_LISTENER_THREAD,
                 MAX_LISTENER_THREAD,
                 0L,
                 TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>());
+                new LinkedBlockingQueue<>(),
+                new NamedThreadFactory("fileListener", MAX_LISTENER_THREAD));
 
         /**
          * Instantiates a new FileListener.

@@ -21,7 +21,7 @@ import com.ctrip.framework.apollo.ConfigService;
 import com.ctrip.framework.apollo.enums.PropertyChangeType;
 import com.ctrip.framework.apollo.model.ConfigChange;
 import org.apache.seata.common.exception.NotSupportYetException;
-import org.apache.seata.common.thread.ThreadPoolExecutorFactory;
+import org.apache.seata.common.thread.NamedThreadFactory;
 import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.config.AbstractConfiguration;
@@ -38,6 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.seata.config.ConfigurationKeys.FILE_CONFIG_SPLIT_CHAR;
@@ -77,13 +78,13 @@ public class ApolloConfiguration extends AbstractConfiguration {
             synchronized (ApolloConfiguration.class) {
                 if (config == null) {
                     config = ConfigService.getConfig(FILE_CONFIG.getConfig(getApolloNamespaceKey(), DEFAULT_NAMESPACE));
-                    configOperateExecutor = ThreadPoolExecutorFactory.newThreadPoolExecutor(
-                            "apolloConfigOperate",
+                    configOperateExecutor = new ThreadPoolExecutor(
                             CORE_CONFIG_OPERATE_THREAD,
                             MAX_CONFIG_OPERATE_THREAD,
                             Integer.MAX_VALUE,
                             TimeUnit.MILLISECONDS,
-                            new LinkedBlockingQueue<>());
+                            new LinkedBlockingQueue<>(),
+                            new NamedThreadFactory("apolloConfigOperate", MAX_CONFIG_OPERATE_THREAD));
                     config.addChangeListener(changeEvent -> {
                         for (String key : changeEvent.changedKeys()) {
                             if (!LISTENER_SERVICE_MAP.containsKey(key)) {
