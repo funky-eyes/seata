@@ -137,7 +137,7 @@
                 <jdk>[21,)</jdk>
             </activation>
             <modules>
-                <module>common-jdk21</module>
+                <module>threadpool-loom</module>
             </modules>
         </profile>
         <!-- profile: onlyBuildOnJDK25+ -->

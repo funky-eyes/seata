@@ -16,18 +16,25 @@
  */
 package org.apache.seata.common.thread;
 
-import org.apache.seata.common.loader.LoadLevel;
-
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Default SPI implementation that preserves the current Seata thread model.
+ * Historical platform-thread-backed thread pool implementation.
  */
-@LoadLevel(name = "named", order = ThreadFactoryProviderOrders.DEFAULT_PROVIDER_ORDER)
-public class NamedThreadFactoryProvider implements ThreadFactoryProvider {
+public class PlatformThreadPoolExecutor extends ThreadPoolExecutor {
 
-    @Override
-    public ThreadFactory newThreadFactory(String threadPrefix, int totalSize, boolean daemon) {
-        return new NamedThreadFactory(threadPrefix, totalSize, daemon);
+    public PlatformThreadPoolExecutor(
+            int corePoolSize,
+            int maximumPoolSize,
+            long keepAliveTime,
+            TimeUnit unit,
+            BlockingQueue<Runnable> workQueue,
+            ThreadFactory threadFactory,
+            RejectedExecutionHandler rejectedHandler) {
+        super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, rejectedHandler);
     }
 }

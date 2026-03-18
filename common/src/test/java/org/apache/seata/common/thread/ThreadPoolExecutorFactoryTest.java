@@ -16,7 +16,6 @@
  */
 package org.apache.seata.common.thread;
 
-import org.apache.seata.common.loader.EnhancedServiceLoader;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -35,7 +34,7 @@ public class ThreadPoolExecutorFactoryTest {
 
     @AfterEach
     public void tearDown() {
-        EnhancedServiceLoader.unload(ThreadFactoryProvider.class);
+        ThreadPoolRuntimeEnvironment.reset();
     }
 
     @Test
@@ -50,11 +49,13 @@ public class ThreadPoolExecutorFactoryTest {
 
     @Test
     public void testNewThreadPoolExecutor() {
+        ThreadPoolRuntimeEnvironment.setThreadPoolTypeSupplier(() -> "platform");
         ThreadPoolExecutor executor = ThreadPoolExecutorFactory.newThreadPoolExecutor(
                 "poolTest", 1, 2, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
         try {
             Thread thread = executor.getThreadFactory().newThread(() -> {});
 
+            assertThat(executor).isInstanceOf(PlatformThreadPoolExecutor.class);
             assertThat(executor.getCorePoolSize()).isEqualTo(1);
             assertThat(executor.getMaximumPoolSize()).isEqualTo(2);
             assertThat(thread.getName()).startsWith("poolTest");
@@ -74,6 +75,35 @@ public class ThreadPoolExecutorFactoryTest {
             assertThat(executor.getCorePoolSize()).isEqualTo(1);
             assertThat(thread.getName()).startsWith("scheduleTest");
             assertThat(thread.isDaemon()).isTrue();
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
+    public void testVirtualThreadPoolFallsBackToPlatformWithoutLoomProvider() {
+        ThreadPoolRuntimeEnvironment.setThreadPoolTypeSupplier(() -> "virtual");
+        ThreadPoolRuntimeEnvironment.setJdkFeatureSupplier(() -> 21);
+
+        ThreadPoolExecutor executor = ThreadPoolExecutorFactory.newThreadPoolExecutor(
+                "virtualFallback", 1, 2, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+        try {
+            assertThat(executor).isInstanceOf(PlatformThreadPoolExecutor.class);
+            assertThat(executor.getMaximumPoolSize()).isEqualTo(2);
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
+    public void testAutoThreadPoolFallsBackToPlatformBeforeLoomAvailable() {
+        ThreadPoolRuntimeEnvironment.setThreadPoolTypeSupplier(() -> "auto");
+        ThreadPoolRuntimeEnvironment.setJdkFeatureSupplier(() -> 25);
+
+        ThreadPoolExecutor executor = ThreadPoolExecutorFactory.newThreadPoolExecutor(
+                "autoFallback", 1, 2, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+        try {
+            assertThat(executor).isInstanceOf(PlatformThreadPoolExecutor.class);
         } finally {
             executor.shutdownNow();
         }

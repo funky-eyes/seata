@@ -17,14 +17,14 @@
 package org.apache.seata.common.thread;
 
 /**
- * Shared order constants for {@link ThreadFactoryProvider} SPI implementations.
+ * Shared order constants for {@link ThreadPoolProvider} SPI implementations.
  */
-public final class ThreadFactoryProviderOrders {
+public final class ThreadPoolProviderOrders {
 
     /**
      * Default provider priority. Higher-priority alternatives should use a smaller value.
      */
     public static final int DEFAULT_PROVIDER_ORDER = 0;
 
-    private ThreadFactoryProviderOrders() {}
+    private ThreadPoolProviderOrders() {}
 }

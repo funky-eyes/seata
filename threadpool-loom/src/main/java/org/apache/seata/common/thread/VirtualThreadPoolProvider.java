@@ -18,25 +18,27 @@ package org.apache.seata.common.thread;
 
 import org.apache.seata.common.loader.LoadLevel;
 
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
- * JDK 21+ SPI implementation that creates virtual-thread-backed factories.
- * <p>
- * The daemon flag is intentionally ignored because the virtual thread builder
- * does not expose daemon configuration. The total size is also only relevant
- * for the default named implementation, so virtual threads use a monotonic
- * prefix-based naming strategy instead.
+ * JDK 21+ SPI implementation that creates virtual-thread-backed business pools.
  */
 @LoadLevel(name = "virtual", order = Integer.MIN_VALUE)
-public class VirtualThreadFactoryProvider implements ThreadFactoryProvider {
+public class VirtualThreadPoolProvider implements ThreadPoolProvider {
 
     @Override
-    public ThreadFactory newThreadFactory(String threadPrefix, int totalSize, boolean daemon) {
-        return Thread.ofVirtual().name(normalizePrefix(threadPrefix), 0).factory();
-    }
-
-    private String normalizePrefix(String threadPrefix) {
-        return threadPrefix.endsWith("-") ? threadPrefix : threadPrefix + "-";
+    public ThreadPoolExecutor newThreadPoolExecutor(
+            String threadPrefix,
+            int corePoolSize,
+            int maximumPoolSize,
+            long keepAliveTime,
+            TimeUnit unit,
+            BlockingQueue<Runnable> workQueue,
+            boolean daemon,
+            RejectedExecutionHandler rejectedHandler) {
+        return new VirtualThreadPoolExecutor(threadPrefix, corePoolSize, daemon, rejectedHandler);
     }
 }

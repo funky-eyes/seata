@@ -17,6 +17,7 @@
 package org.apache.seata.common.thread;
 
 import org.apache.seata.common.loader.EnhancedServiceLoader;
+import org.apache.seata.common.loader.EnhancedServiceNotFoundException;
 
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
@@ -29,11 +30,9 @@ import java.util.concurrent.TimeUnit;
 /**
  * Central factory used by Seata managed thread pools.
  * <p>
- * All business modules create thread pools through this entry so that the
- * underlying {@link ThreadFactory} can be replaced by SPI. The default provider
- * keeps the historical {@link NamedThreadFactory} behavior for JDK 8 compatibility,
- * while higher-priority providers can transparently switch worker threads to
- * another implementation, such as JDK 21 virtual threads.
+ * All business modules create business thread pools through this entry so that the
+ * underlying {@link ThreadPoolProvider} can switch between platform and virtual
+ * implementations according to runtime configuration and JDK capability.
  */
 public final class ThreadPoolExecutorFactory {
 
@@ -60,7 +59,7 @@ public final class ThreadPoolExecutorFactory {
      */
     public static ThreadFactory newThreadFactory(String threadPrefix, int totalSize, boolean daemon) {
         Objects.requireNonNull(threadPrefix, "threadPrefix must not be null");
-        return ThreadFactoryProviderHolder.THREAD_FACTORY_PROVIDER.newThreadFactory(threadPrefix, totalSize, daemon);
+        return new NamedThreadFactory(threadPrefix, totalSize, daemon);
     }
 
     /**
@@ -104,14 +103,15 @@ public final class ThreadPoolExecutorFactory {
             TimeUnit unit,
             BlockingQueue<Runnable> workQueue,
             boolean daemon) {
-        validateThreadPoolArguments(threadPrefix, corePoolSize, maximumPoolSize, keepAliveTime, unit);
-        return new ThreadPoolExecutor(
+        return newThreadPoolExecutor(
+                threadPrefix,
                 corePoolSize,
                 maximumPoolSize,
                 keepAliveTime,
                 unit,
-                Objects.requireNonNull(workQueue, "workQueue must not be null"),
-                newThreadFactory(threadPrefix, maximumPoolSize, daemon));
+                workQueue,
+                daemon,
+                new ThreadPoolExecutor.AbortPolicy());
     }
 
     /**
@@ -161,14 +161,16 @@ public final class ThreadPoolExecutorFactory {
             boolean daemon,
             RejectedExecutionHandler rejectedHandler) {
         validateThreadPoolArguments(threadPrefix, corePoolSize, maximumPoolSize, keepAliveTime, unit);
-        return new ThreadPoolExecutor(
-                corePoolSize,
-                maximumPoolSize,
-                keepAliveTime,
-                unit,
-                Objects.requireNonNull(workQueue, "workQueue must not be null"),
-                newThreadFactory(threadPrefix, maximumPoolSize, daemon),
-                Objects.requireNonNull(rejectedHandler, "rejectedHandler must not be null"));
+        return resolveThreadPoolProvider()
+                .newThreadPoolExecutor(
+                        threadPrefix,
+                        corePoolSize,
+                        maximumPoolSize,
+                        keepAliveTime,
+                        unit,
+                        Objects.requireNonNull(workQueue, "workQueue must not be null"),
+                        daemon,
+                        Objects.requireNonNull(rejectedHandler, "rejectedHandler must not be null"));
     }
 
     /**
@@ -239,13 +241,31 @@ public final class ThreadPoolExecutorFactory {
         }
     }
 
+    private static ThreadPoolProvider resolveThreadPoolProvider() {
+        ThreadPoolType threadPoolType = ThreadPoolRuntimeEnvironment.resolveThreadPoolType();
+        if (threadPoolType == ThreadPoolType.VIRTUAL && ThreadPoolProviderHolder.VIRTUAL_THREAD_POOL_PROVIDER != null) {
+            return ThreadPoolProviderHolder.VIRTUAL_THREAD_POOL_PROVIDER;
+        }
+        return ThreadPoolProviderHolder.PLATFORM_THREAD_POOL_PROVIDER;
+    }
+
     /**
      * Lazy holder used to defer SPI resolution until the factory is first used.
      */
-    private static final class ThreadFactoryProviderHolder {
-        private static final ThreadFactoryProvider THREAD_FACTORY_PROVIDER =
-                EnhancedServiceLoader.load(ThreadFactoryProvider.class);
+    private static final class ThreadPoolProviderHolder {
+        private static final ThreadPoolProvider PLATFORM_THREAD_POOL_PROVIDER =
+                EnhancedServiceLoader.load(ThreadPoolProvider.class, ThreadPoolType.PLATFORM.getCode());
+        private static final ThreadPoolProvider VIRTUAL_THREAD_POOL_PROVIDER =
+                loadOptional(ThreadPoolType.VIRTUAL.getCode());
 
-        private ThreadFactoryProviderHolder() {}
+        private ThreadPoolProviderHolder() {}
+    }
+
+    private static ThreadPoolProvider loadOptional(String activateName) {
+        try {
+            return EnhancedServiceLoader.load(ThreadPoolProvider.class, activateName);
+        } catch (EnhancedServiceNotFoundException ignored) {
+            return null;
+        }
     }
 }
