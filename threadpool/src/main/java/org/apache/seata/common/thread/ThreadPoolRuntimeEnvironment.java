@@ -71,9 +71,22 @@ final class ThreadPoolRuntimeEnvironment {
 
     static int javaFeatureVersion() {
         String specVersion = System.getProperty("java.specification.version", "1.8");
+        if (specVersion != null) {
+            specVersion = specVersion.trim();
+        }
         if (specVersion.startsWith("1.")) {
             // Java 8 and earlier: "1.8", "1.7", etc.
-            return Integer.parseInt(specVersion.substring(2));
+            // Be tolerant of values like "1.8 ", "1.8.0", or "1.x".
+            String legacyPart = specVersion.substring(2);
+            int dotIndex = legacyPart.indexOf('.');
+            if (dotIndex >= 0) {
+                legacyPart = legacyPart.substring(0, dotIndex);
+            }
+            try {
+                return Integer.parseInt(legacyPart);
+            } catch (NumberFormatException e) {
+                return 8;
+            }
         }
         // Java 9+: "9", "11", "17", "21", "25", etc.
         try {
