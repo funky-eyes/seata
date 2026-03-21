@@ -31,7 +31,7 @@ import org.apache.seata.common.exception.RetryableException;
 import org.apache.seata.common.metadata.Metadata;
 import org.apache.seata.common.metadata.MetadataResponse;
 import org.apache.seata.common.metadata.Node;
-import org.apache.seata.common.thread.NamedThreadFactory;
+import org.apache.seata.common.thread.ThreadPoolExecutorFactory;
 import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.common.util.HttpClientUtil;
 import org.apache.seata.common.util.NetUtil;
@@ -162,13 +162,8 @@ public class RaftRegistryServiceImpl implements RegistryService<ConfigChangeList
         if (REFRESH_METADATA_EXECUTOR == null) {
             synchronized (INIT_ADDRESSES) {
                 if (REFRESH_METADATA_EXECUTOR == null) {
-                    REFRESH_METADATA_EXECUTOR = new ThreadPoolExecutor(
-                            1,
-                            1,
-                            0L,
-                            TimeUnit.MILLISECONDS,
-                            new LinkedBlockingQueue<>(),
-                            new NamedThreadFactory("refreshMetadata", 1, true));
+                    REFRESH_METADATA_EXECUTOR = ThreadPoolExecutorFactory.newThreadPoolExecutor(
+                            "refreshMetadata", 1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), true);
                     REFRESH_METADATA_EXECUTOR.execute(() -> {
                         long metadataMaxAgeMs = CONFIG.getLong(getMetadataMaxAgeMs(), 30000L);
                         long currentTime = System.currentTimeMillis();
