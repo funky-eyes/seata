@@ -31,8 +31,7 @@ final class ThreadPoolRuntimeEnvironment {
 
     private static final Supplier<String> DEFAULT_THREAD_POOL_TYPE_SUPPLIER =
             ThreadPoolRuntimeEnvironment::loadConfiguredThreadPoolType;
-    private static final IntSupplier DEFAULT_JDK_FEATURE_SUPPLIER =
-            () -> Runtime.version().feature();
+    private static final IntSupplier DEFAULT_JDK_FEATURE_SUPPLIER = ThreadPoolRuntimeEnvironment::javaFeatureVersion;
 
     private static volatile Supplier<String> threadPoolTypeSupplier = DEFAULT_THREAD_POOL_TYPE_SUPPLIER;
     private static volatile IntSupplier jdkFeatureSupplier = DEFAULT_JDK_FEATURE_SUPPLIER;
@@ -68,5 +67,32 @@ final class ThreadPoolRuntimeEnvironment {
         Configuration configuration = ConfigurationFactory.getInstance();
         return configuration.getConfig(
                 ConfigurationKeys.TRANSPORT_THREADPOOL, DefaultValues.DEFAULT_TRANSPORT_THREADPOOL);
+    }
+
+    static int javaFeatureVersion() {
+        String specVersion = System.getProperty("java.specification.version", "1.8");
+        if (specVersion != null) {
+            specVersion = specVersion.trim();
+        }
+        if (specVersion.startsWith("1.")) {
+            // Java 8 and earlier: "1.8", "1.7", etc.
+            // Be tolerant of values like "1.8 ", "1.8.0", or "1.x".
+            String legacyPart = specVersion.substring(2);
+            int dotIndex = legacyPart.indexOf('.');
+            if (dotIndex >= 0) {
+                legacyPart = legacyPart.substring(0, dotIndex);
+            }
+            try {
+                return Integer.parseInt(legacyPart);
+            } catch (NumberFormatException e) {
+                return 8;
+            }
+        }
+        // Java 9+: "9", "11", "17", "21", "25", etc.
+        try {
+            return Integer.parseInt(specVersion);
+        } catch (NumberFormatException e) {
+            return 8;
+        }
     }
 }

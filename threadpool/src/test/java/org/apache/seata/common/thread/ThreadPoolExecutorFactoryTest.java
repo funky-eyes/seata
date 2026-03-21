@@ -18,6 +18,8 @@ package org.apache.seata.common.thread;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -125,6 +127,22 @@ public class ThreadPoolExecutorFactoryTest {
             assertThat(thread.isDaemon()).isTrue();
         } finally {
             executor.shutdownNow();
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource({"1.8, 8", "1.7, 7", "9, 9", "11, 11", "17, 17", "21, 21", "25, 25"})
+    public void testJavaFeatureVersionParsing(String specVersion, int expectedFeature) {
+        String previousVersion = System.getProperty("java.specification.version");
+        try {
+            System.setProperty("java.specification.version", specVersion);
+            assertThat(ThreadPoolRuntimeEnvironment.javaFeatureVersion()).isEqualTo(expectedFeature);
+        } finally {
+            if (previousVersion != null) {
+                System.setProperty("java.specification.version", previousVersion);
+            } else {
+                System.clearProperty("java.specification.version");
+            }
         }
     }
 }
