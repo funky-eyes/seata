@@ -23,8 +23,19 @@ import org.apache.seata.common.util.StringUtils;
  * Supported Seata thread pool modes.
  */
 public enum ThreadPoolType {
+    /**
+     * Automatic selection: uses virtual threads when running on JDK 25 or later (with the loom extension
+     * present), otherwise falls back to platform threads.
+     */
     AUTO(DefaultValues.DEFAULT_TRANSPORT_THREADPOOL),
+    /**
+     * Always uses platform (OS) threads regardless of the JDK version.
+     */
     PLATFORM("platform"),
+    /**
+     * Prefers virtual threads when running on JDK 21 or later (with the loom extension present),
+     * otherwise falls back to platform threads.
+     */
     VIRTUAL("virtual");
 
     private final String code;
