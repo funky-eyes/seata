@@ -41,7 +41,7 @@ public class ThreadPoolExecutorFactoryTest {
     }
 
     @Test
-    public void testNewThreadFactoryReturnsNamedThreadFactory() {
+    public void testNewThreadFactoryCreatesThreadsWithExpectedName() {
         ThreadFactory threadFactory = ThreadPoolExecutorFactory.newThreadFactory("factoryTest", 2, true);
 
         Thread thread = threadFactory.newThread(() -> {});

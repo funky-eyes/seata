@@ -27,7 +27,8 @@ final class VirtualThreadFactoryHelper {
 
     static ThreadFactory newThreadFactory(String threadPrefix, boolean daemon) {
         if (!daemon) {
-            throw new IllegalArgumentException("Virtual threads are always daemon threads");
+            throw new IllegalArgumentException(
+                    "Virtual threads are always daemon threads; daemon=false is not supported");
         }
         return Thread.ofVirtual().name(normalizePrefix(threadPrefix), 1).factory();
     }
