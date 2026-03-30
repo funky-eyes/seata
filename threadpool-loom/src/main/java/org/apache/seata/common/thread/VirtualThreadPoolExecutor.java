@@ -16,8 +16,8 @@
  */
 package org.apache.seata.common.thread;
 
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -27,18 +27,21 @@ import java.util.concurrent.TimeUnit;
 public class VirtualThreadPoolExecutor extends ThreadPoolExecutor {
 
     public VirtualThreadPoolExecutor(
-            String threadPrefix, int corePoolSize, boolean daemon, RejectedExecutionHandler rejectedHandler) {
+            String threadPrefix,
+            int corePoolSize,
+            int maximumPoolSize,
+            long keepAliveTime,
+            TimeUnit unit,
+            BlockingQueue<Runnable> workQueue,
+            boolean daemon,
+            RejectedExecutionHandler rejectedHandler) {
         super(
                 corePoolSize,
-                Integer.MAX_VALUE,
-                0L,
-                TimeUnit.MILLISECONDS,
-                new SynchronousQueue<>(),
-                Thread.ofVirtual().name(normalizePrefix(threadPrefix), 1).factory(),
+                maximumPoolSize,
+                keepAliveTime,
+                unit,
+                workQueue,
+                VirtualThreadFactoryHelper.newThreadFactory(threadPrefix, daemon),
                 rejectedHandler);
-    }
-
-    private static String normalizePrefix(String threadPrefix) {
-        return threadPrefix.endsWith("-") ? threadPrefix : threadPrefix + "-";
     }
 }

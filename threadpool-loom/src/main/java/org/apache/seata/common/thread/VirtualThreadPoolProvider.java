@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * JDK 21+ SPI implementation that creates virtual-thread-backed business pools.
+ * Virtual threads are always daemon threads, so {@code daemon=false} is rejected.
  */
 @LoadLevel(name = "virtual", order = Integer.MIN_VALUE)
 public class VirtualThreadPoolProvider implements ThreadPoolProvider {
@@ -40,12 +41,13 @@ public class VirtualThreadPoolProvider implements ThreadPoolProvider {
             BlockingQueue<Runnable> workQueue,
             boolean daemon,
             RejectedExecutionHandler rejectedHandler) {
-        return new VirtualThreadPoolExecutor(threadPrefix, corePoolSize, daemon, rejectedHandler);
+        return new VirtualThreadPoolExecutor(
+                threadPrefix, corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, daemon, rejectedHandler);
     }
 
     @Override
     public ScheduledThreadPoolExecutor newScheduledThreadPoolExecutor(
             String threadPrefix, int corePoolSize, boolean daemon, RejectedExecutionHandler rejectedHandler) {
-        return new VirtualScheduledThreadPoolExecutor(threadPrefix, corePoolSize, rejectedHandler);
+        return new VirtualScheduledThreadPoolExecutor(threadPrefix, corePoolSize, daemon, rejectedHandler);
     }
 }
