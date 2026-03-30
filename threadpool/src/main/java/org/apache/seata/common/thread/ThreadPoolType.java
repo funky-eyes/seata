@@ -16,7 +16,6 @@
  */
 package org.apache.seata.common.thread;
 
-import org.apache.seata.common.DefaultValues;
 import org.apache.seata.common.util.StringUtils;
 
 /**
@@ -27,7 +26,7 @@ public enum ThreadPoolType {
      * Automatic selection: uses virtual threads when running on JDK 25 or later (with the loom extension
      * present), otherwise falls back to platform threads.
      */
-    AUTO(DefaultValues.DEFAULT_TRANSPORT_THREADPOOL),
+    AUTO("auto"),
     /**
      * Always uses platform (OS) threads regardless of the JDK version.
      */

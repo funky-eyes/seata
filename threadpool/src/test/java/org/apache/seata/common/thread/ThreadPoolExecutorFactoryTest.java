@@ -16,6 +16,7 @@
  */
 package org.apache.seata.common.thread;
 
+import org.apache.seata.common.DefaultValues;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -40,7 +41,7 @@ public class ThreadPoolExecutorFactoryTest {
     }
 
     @Test
-    public void testNewThreadFactoryUsesDefaultProvider() {
+    public void testNewThreadFactoryReturnsNamedThreadFactory() {
         ThreadFactory threadFactory = ThreadPoolExecutorFactory.newThreadFactory("factoryTest", 2, true);
 
         Thread thread = threadFactory.newThread(() -> {});
@@ -78,6 +79,31 @@ public class ThreadPoolExecutorFactoryTest {
             assertThat(executor.getCorePoolSize()).isEqualTo(1);
             assertThat(thread.getName()).startsWith("scheduleTest");
             assertThat(thread.isDaemon()).isTrue();
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
+    public void testNewThreadPoolExecutorAllowsZeroCorePoolSize() {
+        ThreadPoolRuntimeEnvironment.setThreadPoolTypeSupplier(() -> "platform");
+        ThreadPoolExecutor executor = ThreadPoolExecutorFactory.newThreadPoolExecutor(
+                "zeroCorePool", 0, 1, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+        try {
+            assertThat(executor.getCorePoolSize()).isZero();
+            assertThat(executor.getMaximumPoolSize()).isEqualTo(1);
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
+    public void testNewScheduledThreadPoolExecutorAllowsZeroCorePoolSize() {
+        ThreadPoolRuntimeEnvironment.setThreadPoolTypeSupplier(() -> "platform");
+        ScheduledThreadPoolExecutor executor =
+                ThreadPoolExecutorFactory.newScheduledThreadPoolExecutor("zeroSchedule", 0, true);
+        try {
+            assertThat(executor.getCorePoolSize()).isZero();
         } finally {
             executor.shutdownNow();
         }
@@ -144,5 +170,12 @@ public class ThreadPoolExecutorFactoryTest {
                 System.clearProperty("java.specification.version");
             }
         }
+    }
+
+    @Test
+    public void testThreadPoolTypeAutoCodeIsStable() {
+        assertThat(ThreadPoolType.AUTO.getCode()).isEqualTo("auto");
+        assertThat(ThreadPoolType.from(DefaultValues.DEFAULT_TRANSPORT_THREADPOOL))
+                .isEqualTo(ThreadPoolType.AUTO);
     }
 }

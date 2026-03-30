@@ -16,16 +16,23 @@
  */
 package org.apache.seata.common.thread;
 
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
 
 /**
- * Virtual-thread-backed scheduled thread pool implementation.
+ * Helper for creating consistently named virtual-thread factories.
  */
-public class VirtualScheduledThreadPoolExecutor extends ScheduledThreadPoolExecutor {
+final class VirtualThreadFactoryHelper {
 
-    public VirtualScheduledThreadPoolExecutor(
-            String threadPrefix, int corePoolSize, boolean daemon, RejectedExecutionHandler rejectedHandler) {
-        super(corePoolSize, VirtualThreadFactoryHelper.newThreadFactory(threadPrefix, daemon), rejectedHandler);
+    private VirtualThreadFactoryHelper() {}
+
+    static ThreadFactory newThreadFactory(String threadPrefix, boolean daemon) {
+        if (!daemon) {
+            throw new IllegalArgumentException("Virtual threads are always daemon threads");
+        }
+        return Thread.ofVirtual().name(normalizePrefix(threadPrefix), 1).factory();
+    }
+
+    private static String normalizePrefix(String threadPrefix) {
+        return threadPrefix.endsWith("-") ? threadPrefix : threadPrefix + "-";
     }
 }

@@ -130,8 +130,8 @@ public final class ThreadPoolExecutorFactory {
             String threadPrefix, int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit) {
         Objects.requireNonNull(threadPrefix, "threadPrefix must not be null");
         Objects.requireNonNull(unit, "timeUnit must not be null");
-        if (corePoolSize <= 0) {
-            throw new IllegalArgumentException("corePoolSize must be greater than zero");
+        if (corePoolSize < 0) {
+            throw new IllegalArgumentException("corePoolSize must not be negative");
         }
         if (maximumPoolSize <= 0) {
             throw new IllegalArgumentException("maximumPoolSize must be greater than zero");
@@ -146,8 +146,8 @@ public final class ThreadPoolExecutorFactory {
 
     private static void validateScheduledThreadPoolArguments(String threadPrefix, int corePoolSize) {
         Objects.requireNonNull(threadPrefix, "threadPrefix must not be null");
-        if (corePoolSize <= 0) {
-            throw new IllegalArgumentException("corePoolSize must be greater than zero");
+        if (corePoolSize < 0) {
+            throw new IllegalArgumentException("corePoolSize must not be negative");
         }
     }
 
