@@ -77,6 +77,8 @@ public class DataSourceProxyXA extends AbstractDataSourceProxyXA {
             setShouldBeHeld(true);
         } else if (DBType.OSCAR.name().equalsIgnoreCase(dbType)) {
             setShouldBeHeld(true);
+        } else if (DBType.DM.name().equalsIgnoreCase(dbType)) {
+            setShouldBeHeld(true);
         }
         Optional.ofNullable(DefaultResourceManager.get().getResourceManager(BranchType.XA))
                 .ifPresent(resourceManager -> {

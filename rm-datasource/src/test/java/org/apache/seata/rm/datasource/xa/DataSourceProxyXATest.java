@@ -109,6 +109,13 @@ public class DataSourceProxyXATest {
         tearDown();
     }
 
+    @Test
+    public void testGetDmXaConnection() throws SQLException, ClassNotFoundException {
+        testGetXaConnection(
+                mock(XAConnection.class).getClass(), "jdbc:dm:xxx", "dm.jdbc.driver.DmdbConnection");
+        tearDown();
+    }
+
     private XAConnection testGetXaConnection(
             Class<? extends XAConnection> xaConnectionClass, String mockJdbcUrl, String connectionClassName)
             throws SQLException, ClassNotFoundException {
@@ -130,7 +137,8 @@ public class DataSourceProxyXATest {
         String dbType = dataSourceProxyXA.getDbType();
         if (DBType.MYSQL.name().equalsIgnoreCase(dbType)
                 || DBType.MARIADB.name().equalsIgnoreCase(dbType)
-                || DBType.OSCAR.name().equalsIgnoreCase(dbType)) {
+                || DBType.OSCAR.name().equalsIgnoreCase(dbType)
+                || DBType.DM.name().equalsIgnoreCase(dbType)) {
             Assertions.assertTrue(dataSourceProxyXA.isShouldBeHeld());
         }
         Connection connFromDataSourceProxyXA = dataSourceProxyXA.getConnection();
