@@ -101,7 +101,7 @@ public class XAUtils {
                 throw new SQLException("xa not support dbType: " + dbType);
             }
             constructor.setAccessible(true);
-            List<Object> params = getInitargsByDBType(dbType, physicalConnection);
+            List<Object> params = getInitargsByDBType(dbType, constructor, physicalConnection);
             return constructor.newInstance(params.toArray(new Object[0]));
         } catch (Exception e) {
             LOGGER.warn("Failed to create XA Connection " + xaConnectionClassName + " on " + physicalConnection);
@@ -130,6 +130,16 @@ public class XAUtils {
                     Class<?> kingbaseConnectionClass = Class.forName("com.kingbase8.core.BaseConnection");
                     return xaConnectionClass.getConstructor(kingbaseConnectionClass);
                 case JdbcConstants.DM:
+                    try {
+                        Class<?> dmConnectionClass = Class.forName("dm.jdbc.driver.DmdbConnection");
+                        try {
+                            return xaConnectionClass.getConstructor(dmConnectionClass);
+                        } catch (NoSuchMethodException e) {
+                            // ignore and try with generic connection
+                        }
+                    } catch (ClassNotFoundException ignore) {
+                        // ignore and try with generic connection
+                    }
                     return xaConnectionClass.getConstructor(Connection.class);
                 case JdbcConstants.OSCAR:
                     return xaConnectionClass.getConstructor(Connection.class);
@@ -141,7 +151,8 @@ public class XAUtils {
         }
     }
 
-    private static <T> List<T> getInitargsByDBType(String dbType, Object... params) throws SQLException {
+    private static <T> List<T> getInitargsByDBType(
+            String dbType, Constructor<XAConnection> constructor, Object... params) throws SQLException {
         List result = new ArrayList<>();
         if (params.length == 0) {
             return null;
@@ -165,11 +176,28 @@ public class XAUtils {
                     result.add(params[0]);
                     return (List<T>) result;
                 case JdbcConstants.DM:
-                    Class<?> dmConnectionClass = Class.forName("dm.jdbc.driver.DmdbConnection");
-                    if (dmConnectionClass.isInstance(params[0])) {
-                        result.add(dmConnectionClass.cast(params[0]));
+                    if (constructor.getParameterTypes().length == 0) {
+                        throw new SQLException("xa reflect not support dbType: " + dbType);
+                    }
+                    Class<?> dmConnectionClass = constructor.getParameterTypes()[0];
+                    Object dmConnection = params[0];
+                    if (!dmConnectionClass.isInstance(dmConnection)) {
+                        try {
+                            dmConnection = ((Connection) dmConnection).unwrap(dmConnectionClass);
+                        } catch (Exception ignore) {
+                            // continue to verification below
+                        }
+                    }
+                    if (dmConnection != null && dmConnectionClass.isInstance(dmConnection)) {
+                        result.add(dmConnectionClass.cast(dmConnection));
                         return (List<T>) result;
                     }
+                    String actualType = dmConnection == null
+                            ? "null"
+                            : dmConnection.getClass().getName();
+                    throw new SQLException("xa reflect not support dbType: " + dbType
+                            + ", expect connection type " + dmConnectionClass.getName()
+                            + " but got " + actualType);
                 default:
                     throw new SQLException("xa reflect not support dbType: " + dbType);
             }

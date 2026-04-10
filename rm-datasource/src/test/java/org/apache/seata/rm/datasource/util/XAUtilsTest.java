@@ -114,6 +114,26 @@ public class XAUtilsTest {
     }
 
     @Test
+    public void testCreateXAConnectionDMWithWrappedConnection() throws Exception {
+        when(mockDataSourceResource.getDbType()).thenReturn(DM);
+        Connection wrappedConnection = mock(Connection.class);
+        Class<?> dmConnectionClass = Class.forName("dm.jdbc.driver.DmdbConnection");
+        Connection dmConnection =
+                (Connection) dmConnectionClass.getDeclaredConstructor().newInstance();
+        Class<? extends Connection> dmConnectionType = dmConnectionClass.asSubclass(Connection.class);
+        when(wrappedConnection.unwrap(dmConnectionType)).thenAnswer(invocation -> dmConnectionType.cast(dmConnection));
+
+        try (MockedConstruction<?> xaConstruction = mockConstruction(
+                Class.forName("dm.jdbc.driver.DmdbXAConnection").asSubclass(XAConnection.class), (mock, context) -> {
+                    Object param = context.arguments().get(0);
+                    assertSame(dmConnection, param);
+                })) {
+            XAConnection result = XAUtils.createXAConnection(wrappedConnection, mockDataSourceResource);
+            assertNotNull(result);
+        }
+    }
+
+    @Test
     public void testCreateXAConnectionOscar() throws SQLException, ClassNotFoundException {
         testCreateXAConnectionForDbType(OSCAR, "com.oscar.jdbc.OscarJdbc2Connection", "com.oscar.xa.Jdbc3XAConnection");
     }
