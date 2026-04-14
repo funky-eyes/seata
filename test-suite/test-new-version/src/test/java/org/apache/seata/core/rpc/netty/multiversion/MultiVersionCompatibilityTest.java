@@ -287,6 +287,7 @@ public abstract class MultiVersionCompatibilityTest {
         clientBootstrap.start();
 
         clientChannel = clientBootstrap.getNewChannel(new InetSocketAddress(host, port));
+        awaitChannelReady(clientChannel, connectTimeout);
         LOGGER.info("V2 Client connected to {}:{} (using NettyClientBootstrap)", host, port);
     }
 
@@ -298,7 +299,7 @@ public abstract class MultiVersionCompatibilityTest {
     protected void sendRequest(Object request) {
         if (clientChannel != null && clientChannel.isActive()) {
             RpcMessage rpcMessage = buildRequestMessage(request);
-            clientChannel.writeAndFlush(rpcMessage);
+            writeAndFlush(rpcMessage, "request");
         }
     }
 
@@ -313,7 +314,7 @@ public abstract class MultiVersionCompatibilityTest {
             rpcMessage.setCodec(ProtocolConstants.CONFIGURED_CODEC);
             rpcMessage.setCompressor(ProtocolConstants.CONFIGURED_COMPRESSOR);
             rpcMessage.setBody(HeartbeatMessage.PING);
-            clientChannel.writeAndFlush(rpcMessage);
+            writeAndFlush(rpcMessage, "heartbeat");
         }
     }
 
@@ -364,6 +365,7 @@ public abstract class MultiVersionCompatibilityTest {
 
     @NotNull
     protected RegisterTMResponse doSendRegister(String extraData) throws InterruptedException {
+        resetResponseLatch();
         RegisterTMRequest request = new RegisterTMRequest("testApp", "testGroup");
         if (StringUtils.isNotBlank(extraData)) {
             request.setExtraData(extraData);
@@ -380,6 +382,35 @@ public abstract class MultiVersionCompatibilityTest {
 
         RegisterTMResponse tmResponse = (RegisterTMResponse) response;
         return tmResponse;
+    }
+
+    private void awaitChannelReady(Channel channel, long timeoutMillis) {
+        Assertions.assertNotNull(channel, "Client channel should be created");
+
+        long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMillis);
+        while (System.nanoTime() < deadline) {
+            if (channel.isActive() && channel.isWritable()) {
+                return;
+            }
+            try {
+                TimeUnit.MILLISECONDS.sleep(50);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                Assertions.fail("Interrupted while waiting for client channel readiness");
+            }
+        }
+
+        Assertions.assertTrue(channel.isActive(), "Client channel should become active before sending requests");
+        Assertions.assertTrue(channel.isWritable(), "Client channel should become writable before sending requests");
+    }
+
+    private void writeAndFlush(RpcMessage rpcMessage, String messageType) {
+        ChannelFuture writeFuture = clientChannel.writeAndFlush(rpcMessage);
+        Assertions.assertTrue(
+                writeFuture.awaitUninterruptibly(5, TimeUnit.SECONDS),
+                "Should flush " + messageType + " to the channel within timeout");
+        Assertions.assertTrue(
+                writeFuture.isSuccess(), "Should send " + messageType + " successfully: " + writeFuture.cause());
     }
 
     /**

@@ -18,6 +18,7 @@ package org.apache.seata.common.thread;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -30,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Tests for loom-backed thread pool providers.
  */
+@EnabledIfSystemProperty(named = "java.specification.version", matches = "(21|2[2-9]|[3-9][0-9])")
 public class VirtualThreadPoolProviderTest {
 
     @AfterEach
