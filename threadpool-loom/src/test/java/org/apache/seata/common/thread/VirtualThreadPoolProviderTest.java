@@ -18,6 +18,8 @@ package org.apache.seata.common.thread;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -30,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Tests for loom-backed thread pool providers.
  */
+@EnabledForJreRange(min = JRE.JAVA_21)
 public class VirtualThreadPoolProviderTest {
 
     @AfterEach

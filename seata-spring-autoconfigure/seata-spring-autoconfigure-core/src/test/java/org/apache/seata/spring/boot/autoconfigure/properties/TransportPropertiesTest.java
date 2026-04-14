@@ -24,6 +24,7 @@ public class TransportPropertiesTest {
     @Test
     public void testTransportProperties() {
         TransportProperties transportProperties = new TransportProperties();
+        Assertions.assertEquals("auto", transportProperties.getThreadpool());
         transportProperties.setServer("server");
         transportProperties.setType("type");
         transportProperties.setSerialization("serialization");
