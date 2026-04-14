@@ -410,8 +410,7 @@ public abstract class MultiVersionCompatibilityTest {
                 writeFuture.awaitUninterruptibly(5, TimeUnit.SECONDS),
                 "Should flush " + messageType + " to the channel within timeout");
         Assertions.assertTrue(
-                writeFuture.isSuccess(),
-                "Should send " + messageType + " successfully: " + writeFuture.cause());
+                writeFuture.isSuccess(), "Should send " + messageType + " successfully: " + writeFuture.cause());
     }
 
     /**
