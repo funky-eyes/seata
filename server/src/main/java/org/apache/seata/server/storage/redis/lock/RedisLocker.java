@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 import static org.apache.seata.common.Constants.ROW_LOCK_KEY_SPLIT_CHAR;
@@ -187,9 +186,7 @@ public class RedisLocker extends AbstractLocker {
                 return false;
             }
             String xidLockKey = buildXidLockKey(needLockXid);
-            StringJoiner lockKeysString = new StringJoiner(ROW_LOCK_KEY_SPLIT_CHAR);
-            needLockKeys.forEach(lockKeysString::add);
-            jedis.hset(xidLockKey, branchId.toString(), lockKeysString.toString());
+            jedis.hset(xidLockKey, branchId.toString(), RedisLockKeyHelper.joinStoredLockKeys(needLockKeys));
             return true;
         }
     }
@@ -247,13 +244,11 @@ public class RedisLocker extends AbstractLocker {
             try (Pipeline pipeline = jedis.pipelined()) {
                 branchAndLockKeys.values().forEach(k -> {
                     if (StringUtils.isNotEmpty(k)) {
-                        if (k.contains(ROW_LOCK_KEY_SPLIT_CHAR)) {
-                            String[] keys = k.split(ROW_LOCK_KEY_SPLIT_CHAR);
-                            for (String key : keys) {
-                                pipeline.hset(key, STATUS, String.valueOf(lockStatus.getCode()));
-                            }
-                        } else {
+                        List<String> keys = RedisLockKeyHelper.splitStoredLockKeys(k);
+                        if (keys.isEmpty()) {
                             pipeline.hset(k, STATUS, String.valueOf(lockStatus.getCode()));
+                        } else {
+                            keys.forEach(key -> pipeline.hset(key, STATUS, String.valueOf(lockStatus.getCode())));
                         }
                     }
                 });
@@ -281,11 +276,11 @@ public class RedisLocker extends AbstractLocker {
                 }
                 rowKeys.forEach(rowKeyStr -> {
                     if (StringUtils.isNotEmpty(rowKeyStr)) {
-                        if (rowKeyStr.contains(ROW_LOCK_KEY_SPLIT_CHAR)) {
-                            String[] keys = rowKeyStr.split(ROW_LOCK_KEY_SPLIT_CHAR);
-                            pipelined.del(keys);
-                        } else {
+                        List<String> keys = RedisLockKeyHelper.splitStoredLockKeys(rowKeyStr);
+                        if (keys.isEmpty()) {
                             pipelined.del(rowKeyStr);
+                        } else {
+                            pipelined.del(keys.toArray(new String[0]));
                         }
                     }
                 });

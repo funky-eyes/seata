@@ -27,6 +27,8 @@ local xidLockKey = KEYS[1];
 local branchId = KEYS[2];
 
 local rowKeys = {}
+local rowLockKeyPrefix = 'SEATA_ROW_LOCK_'
+local nextRowLockKeyBoundary = ';' .. rowLockKeyPrefix
 
 -- get table length
 local function table_len(t)
@@ -37,28 +39,21 @@ local function table_len(t)
     return len;
 end
 
--- split
-local function split(target, sep)
+local function split_row_lock_keys(target)
     local str = tostring(target)
-    local separator = tostring(sep)
     local strB, arrayIndex = 1, 1
     local targetArray = {}
-    if (separator == nil)
-    then
-        return false
-    end
-    local condition = true
-    while (condition)
+    while (strB <= string.len(str))
     do
-        local si, sd = string.find(str, separator, strB)
+        local si, _ = string.find(str, nextRowLockKeyBoundary, strB, true)
         if (si)
         then
             targetArray[arrayIndex] = string.sub(str, strB, si - 1)
             arrayIndex = arrayIndex + 1
-            strB = sd + 1
+            strB = si + 1
         else
             targetArray[arrayIndex] = string.sub(str, strB, string.len(str))
-            condition = false
+            break
         end
     end
     return targetArray
@@ -101,11 +96,11 @@ for _, value in pairs(rowKeys) do
         return true
     end
 
-    local start, _ = string.find(rowKeyStr, ';')
+    local start, _ = string.find(rowKeyStr, nextRowLockKeyBoundary, 1, true)
     if (start)
-    -- rowKeyStr contains ';'
+    -- rowKeyStr contains multiple stored row lock keys
     then
-        local keys = split(rowKeyStr, ';')
+        local keys = split_row_lock_keys(rowKeyStr)
         redis.call('DEL', unpack(keys))
     else
         redis.call('DEL', rowKeyStr)
@@ -113,7 +108,6 @@ for _, value in pairs(rowKeys) do
 end
 
 return true
-
 
 
 

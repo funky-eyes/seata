@@ -29,6 +29,7 @@ import org.apache.seata.server.console.impl.AbstractLockService;
 import org.apache.seata.server.console.service.GlobalLockService;
 import org.apache.seata.server.session.BranchSession;
 import org.apache.seata.server.storage.redis.JedisPooledFactory;
+import org.apache.seata.server.storage.redis.lock.RedisLockKeyHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -36,11 +37,9 @@ import org.springframework.stereotype.Component;
 import redis.clients.jedis.Jedis;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.seata.common.Constants.ROW_LOCK_KEY_SPLIT_CHAR;
 import static org.apache.seata.common.exception.FrameworkErrorCode.ParameterRequired;
 import static org.apache.seata.common.util.StringUtils.isNotBlank;
 import static org.apache.seata.core.constants.RedisKeyConstants.DEFAULT_REDIS_SEATA_GLOBAL_LOCK_PREFIX;
@@ -125,7 +124,7 @@ public class GlobalLockRedisServiceImpl extends AbstractLockService implements G
             Map<String, String> mapGlobalKeys = jedis.hgetAll(key);
             if (CollectionUtils.isNotEmpty(mapGlobalKeys)) {
                 List<String> rowLockKeys = new ArrayList<>();
-                mapGlobalKeys.forEach((k, v) -> rowLockKeys.addAll(Arrays.asList(v.split(ROW_LOCK_KEY_SPLIT_CHAR))));
+                mapGlobalKeys.forEach((k, v) -> rowLockKeys.addAll(RedisLockKeyHelper.splitStoredLockKeys(v)));
                 for (String rowLoclKey : rowLockKeys) {
                     Map<String, String> mapRowLockKey = jedis.hgetAll(rowLoclKey);
                     GlobalLockVO vo = (GlobalLockVO) BeanUtils.mapToObject(mapRowLockKey, GlobalLockVO.class);
