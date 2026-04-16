@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.apache.seata.common.Constants.ROW_LOCK_KEY_SPLIT_CHAR;
 import static org.apache.seata.core.exception.TransactionExceptionCode.LockKeyConflictFailFast;
 
 /**

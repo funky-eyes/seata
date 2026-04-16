@@ -41,7 +41,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.apache.seata.common.Constants.ROW_LOCK_KEY_SPLIT_CHAR;
 import static org.apache.seata.core.constants.RedisKeyConstants.DEFAULT_REDIS_SEATA_GLOBAL_LOCK_PREFIX;
 import static org.apache.seata.core.constants.RedisKeyConstants.DEFAULT_REDIS_SEATA_ROW_LOCK_PREFIX;
 import static org.apache.seata.core.exception.TransactionExceptionCode.LockKeyConflictFailFast;
@@ -244,12 +243,8 @@ public class RedisLocker extends AbstractLocker {
             try (Pipeline pipeline = jedis.pipelined()) {
                 branchAndLockKeys.values().forEach(k -> {
                     if (StringUtils.isNotEmpty(k)) {
-                        List<String> keys = RedisLockKeyHelper.splitStoredLockKeys(k);
-                        if (keys.isEmpty()) {
-                            pipeline.hset(k, STATUS, String.valueOf(lockStatus.getCode()));
-                        } else {
-                            keys.forEach(key -> pipeline.hset(key, STATUS, String.valueOf(lockStatus.getCode())));
-                        }
+                        RedisLockKeyHelper.splitStoredLockKeys(k)
+                                .forEach(key -> pipeline.hset(key, STATUS, String.valueOf(lockStatus.getCode())));
                     }
                 });
                 pipeline.sync();
@@ -277,11 +272,7 @@ public class RedisLocker extends AbstractLocker {
                 rowKeys.forEach(rowKeyStr -> {
                     if (StringUtils.isNotEmpty(rowKeyStr)) {
                         List<String> keys = RedisLockKeyHelper.splitStoredLockKeys(rowKeyStr);
-                        if (keys.isEmpty()) {
-                            pipelined.del(rowKeyStr);
-                        } else {
-                            pipelined.del(keys.toArray(new String[0]));
-                        }
+                        pipelined.del(keys.toArray(new String[0]));
                     }
                 });
                 pipelined.sync();

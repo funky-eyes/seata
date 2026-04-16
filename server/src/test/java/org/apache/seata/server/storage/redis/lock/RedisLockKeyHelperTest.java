@@ -36,8 +36,7 @@ class RedisLockKeyHelperTest {
 
     @Test
     void shouldKeepSqlServerResourceIdSemicolonInsideSingleKey() {
-        String lockKey =
-                "SEATA_ROW_LOCK_jdbc:sqlserver://127.0.0.1:1433;databaseName=lxk^^^BPM_ACT_RU_TASK^^^123";
+        String lockKey = "SEATA_ROW_LOCK_jdbc:sqlserver://127.0.0.1:1433;databaseName=lxk^^^BPM_ACT_RU_TASK^^^123";
 
         Assertions.assertEquals(Collections.singletonList(lockKey), RedisLockKeyHelper.splitStoredLockKeys(lockKey));
     }
