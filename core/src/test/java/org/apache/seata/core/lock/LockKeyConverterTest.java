@@ -14,26 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.seata.spring.boot.autoconfigure.properties.client;
+package org.apache.seata.core.lock;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class LockPropertiesTest {
+class LockKeyConverterTest {
 
     @Test
-    public void testLockProperties() {
-        LockProperties lockProperties = new LockProperties();
-        lockProperties.setRetryInterval(1);
-        Assertions.assertEquals(1, lockProperties.getRetryInterval());
+    void shouldEncodeAndDecodeLockKeyWithSemicolon() {
+        String lockKey = "t_order:pk;001";
 
-        lockProperties.setRetryTimes(1);
-        Assertions.assertEquals(1, lockProperties.getRetryTimes());
+        String encoded = LockKeyConverter.encode(lockKey);
 
-        lockProperties.setRetryPolicyBranchRollbackOnConflict(true);
-        Assertions.assertEquals(true, lockProperties.isRetryPolicyBranchRollbackOnConflict());
+        Assertions.assertTrue(LockKeyConverter.isEncoded(encoded));
+        Assertions.assertFalse(encoded.contains(";"));
+        Assertions.assertEquals(lockKey, LockKeyConverter.decodeIfNecessary(encoded));
+    }
 
-        lockProperties.setLockKeyBase64Encode(true);
-        Assertions.assertTrue(lockProperties.isLockKeyBase64Encode());
+    @Test
+    void shouldKeepPlainLockKeyUnchanged() {
+        String lockKey = "t_order:1";
+
+        Assertions.assertEquals(lockKey, LockKeyConverter.decodeIfNecessary(lockKey));
+    }
+
+    @Test
+    void shouldKeepInvalidEncodedPrefixUnchanged() {
+        String lockKey = LockKeyConverter.BASE64_PREFIX + "not*base64";
+
+        Assertions.assertEquals(lockKey, LockKeyConverter.decodeIfNecessary(lockKey));
     }
 }

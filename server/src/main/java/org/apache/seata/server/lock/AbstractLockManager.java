@@ -20,6 +20,7 @@ import org.apache.seata.common.XID;
 import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.common.util.StringUtils;
 import org.apache.seata.core.exception.TransactionException;
+import org.apache.seata.core.lock.LockKeyConverter;
 import org.apache.seata.core.lock.Locker;
 import org.apache.seata.core.lock.RowLock;
 import org.apache.seata.core.model.LockStatus;
@@ -161,6 +162,7 @@ public abstract class AbstractLockManager implements LockManager {
 
         String[] tableGroupedLockKeys = lockKey.split(";");
         for (String tableGroupedLockKey : tableGroupedLockKeys) {
+            tableGroupedLockKey = LockKeyConverter.decodeIfNecessary(tableGroupedLockKey);
             int idx = tableGroupedLockKey.indexOf(":");
             if (idx < 0) {
                 return locks;

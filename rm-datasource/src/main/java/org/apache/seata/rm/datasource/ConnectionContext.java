@@ -16,6 +16,7 @@
  */
 package org.apache.seata.rm.datasource;
 
+import org.apache.seata.common.DefaultValues;
 import org.apache.seata.common.LockStrategyMode;
 import org.apache.seata.common.exception.JsonParseException;
 import org.apache.seata.common.exception.ShouldNeverHappenException;
@@ -23,8 +24,11 @@ import org.apache.seata.common.json.JsonSerializer;
 import org.apache.seata.common.json.JsonSerializerFactory;
 import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.common.util.StringUtils;
+import org.apache.seata.config.ConfigurationFactory;
+import org.apache.seata.core.constants.ConfigurationKeys;
 import org.apache.seata.core.context.GlobalLockConfigHolder;
 import org.apache.seata.core.exception.TransactionException;
+import org.apache.seata.core.lock.LockKeyConverter;
 import org.apache.seata.core.model.GlobalLockConfig;
 import org.apache.seata.rm.datasource.undo.SQLUndoLog;
 
@@ -103,7 +107,7 @@ public class ConnectionContext {
      * @param lockKey the lock key
      */
     void appendLockKey(String lockKey) {
-        lockKeysBuffer.computeIfAbsent(currentSavepoint, k -> new HashSet<>()).add(lockKey);
+        lockKeysBuffer.computeIfAbsent(currentSavepoint, k -> new HashSet<>()).add(encodeLockKey(lockKey));
     }
 
     /**
@@ -412,5 +416,15 @@ public class ConnectionContext {
     @Override
     public String toString() {
         return StringUtils.toString(this);
+    }
+
+    private String encodeLockKey(String lockKey) {
+        if (ConfigurationFactory.getInstance()
+                .getBoolean(
+                        ConfigurationKeys.CLIENT_LOCK_KEY_BASE64_ENCODE,
+                        DefaultValues.DEFAULT_CLIENT_LOCK_KEY_BASE64_ENCODE)) {
+            return LockKeyConverter.encode(lockKey);
+        }
+        return lockKey;
     }
 }

@@ -19,6 +19,7 @@ package org.apache.seata.spring.boot.autoconfigure.properties.client;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import static org.apache.seata.common.DefaultValues.DEFAULT_CLIENT_LOCK_KEY_BASE64_ENCODE;
 import static org.apache.seata.common.DefaultValues.DEFAULT_CLIENT_LOCK_RETRY_INTERVAL;
 import static org.apache.seata.common.DefaultValues.DEFAULT_CLIENT_LOCK_RETRY_POLICY_BRANCH_ROLLBACK_ON_CONFLICT;
 import static org.apache.seata.common.DefaultValues.DEFAULT_CLIENT_LOCK_RETRY_TIMES;
@@ -30,6 +31,7 @@ public class LockProperties {
     private int retryInterval = DEFAULT_CLIENT_LOCK_RETRY_INTERVAL;
     private int retryTimes = DEFAULT_CLIENT_LOCK_RETRY_TIMES;
     private boolean retryPolicyBranchRollbackOnConflict = DEFAULT_CLIENT_LOCK_RETRY_POLICY_BRANCH_ROLLBACK_ON_CONFLICT;
+    private boolean lockKeyBase64Encode = DEFAULT_CLIENT_LOCK_KEY_BASE64_ENCODE;
 
     public int getRetryInterval() {
         return retryInterval;
@@ -55,6 +57,15 @@ public class LockProperties {
 
     public LockProperties setRetryPolicyBranchRollbackOnConflict(boolean retryPolicyBranchRollbackOnConflict) {
         this.retryPolicyBranchRollbackOnConflict = retryPolicyBranchRollbackOnConflict;
+        return this;
+    }
+
+    public boolean isLockKeyBase64Encode() {
+        return lockKeyBase64Encode;
+    }
+
+    public LockProperties setLockKeyBase64Encode(boolean lockKeyBase64Encode) {
+        this.lockKeyBase64Encode = lockKeyBase64Encode;
         return this;
     }
 }

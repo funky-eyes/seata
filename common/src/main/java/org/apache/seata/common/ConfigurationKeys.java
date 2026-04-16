@@ -193,6 +193,10 @@ public interface ConfigurationKeys {
      */
     String CLIENT_LOCK_RETRY_POLICY_BRANCH_ROLLBACK_ON_CONFLICT =
             CLIENT_RM_LOCK_PREFIX + "retryPolicyBranchRollbackOnConflict";
+    /**
+     * The constant CLIENT_LOCK_KEY_BASE64_ENCODE.
+     */
+    String CLIENT_LOCK_KEY_BASE64_ENCODE = CLIENT_RM_LOCK_PREFIX + "lockKeyBase64Encode";
 
     /**
      * The constant SERVICE_SESSION_RELOAD_READ_SIZE

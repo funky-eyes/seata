@@ -27,8 +27,6 @@
 local xidLockKey = KEYS[1];
 local status = KEYS[2];
 local code = ARGV[1];
-local rowLockKeyPrefix = 'SEATA_ROW_LOCK_'
-local nextRowLockKeyBoundary = ';' .. rowLockKeyPrefix
 
 -- get table length
 local function table_len(t)
@@ -39,23 +37,28 @@ local function table_len(t)
     return len;
 end
 
--- split on row lock key boundaries instead of plain ';' so resourceId semicolons are preserved
-local function split_row_lock_keys(target)
+-- split
+local function split(target, sep)
     local str = tostring(target)
-    local strLen = string.len(str)
+    local separator = tostring(sep)
     local strB, arrayIndex = 1, 1
     local targetArray = {}
-    while (strB <= strLen)
+    if (separator == nil)
+    then
+        return false
+    end
+    local condition = true
+    while (condition)
     do
-        local si, _ = string.find(str, nextRowLockKeyBoundary, strB, true)
+        local si, sd = string.find(str, separator, strB)
         if (si)
         then
             targetArray[arrayIndex] = string.sub(str, strB, si - 1)
             arrayIndex = arrayIndex + 1
-            strB = si + 1
+            strB = sd + 1
         else
-            targetArray[arrayIndex] = string.sub(str, strB, strLen)
-            break
+            targetArray[arrayIndex] = string.sub(str, strB, string.len(str))
+            condition = false
         end
     end
     return targetArray
@@ -66,11 +69,11 @@ for i = 1, table_len(branchAndLockKeys) do
     if (i % 2 == 0)
     then
         local k = tostring(branchAndLockKeys[i])
-        local start, _ = string.find(k, nextRowLockKeyBoundary, 1, true)
+        local start, _ = string.find(k, ';')
         if (start)
-        -- k contains multiple stored row lock keys
+        -- k contains ';'
         then
-            local keys = split_row_lock_keys(k)
+            local keys = split(k, ';')
             for _, key in pairs(keys)
             do
                 redis.call('HSET', key, status, code)

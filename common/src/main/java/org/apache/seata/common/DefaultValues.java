@@ -41,6 +41,10 @@ public interface DefaultValues {
      */
     boolean DEFAULT_CLIENT_LOCK_RETRY_POLICY_BRANCH_ROLLBACK_ON_CONFLICT = true;
     /**
+     * The constant DEFAULT_CLIENT_LOCK_KEY_BASE64_ENCODE.
+     */
+    boolean DEFAULT_CLIENT_LOCK_KEY_BASE64_ENCODE = false;
+    /**
      * The constant DEFAULT_LOG_EXCEPTION_RATE.
      */
     int DEFAULT_LOG_EXCEPTION_RATE = 100;

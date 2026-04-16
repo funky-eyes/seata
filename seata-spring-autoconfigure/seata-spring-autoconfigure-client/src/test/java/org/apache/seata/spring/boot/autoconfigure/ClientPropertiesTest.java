@@ -64,6 +64,7 @@ public class ClientPropertiesTest {
         assertEquals(10, context.getBean(LockProperties.class).getRetryInterval());
         assertEquals(30, context.getBean(LockProperties.class).getRetryTimes());
         assertTrue(context.getBean(LockProperties.class).isRetryPolicyBranchRollbackOnConflict());
+        assertFalse(context.getBean(LockProperties.class).isLockKeyBase64Encode());
     }
 
     @Test

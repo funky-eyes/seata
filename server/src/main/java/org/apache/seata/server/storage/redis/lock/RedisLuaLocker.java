@@ -37,8 +37,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
+import static org.apache.seata.common.Constants.ROW_LOCK_KEY_SPLIT_CHAR;
 import static org.apache.seata.core.exception.TransactionExceptionCode.LockKeyConflictFailFast;
 
 /**
@@ -120,11 +122,12 @@ public class RedisLuaLocker extends RedisLocker {
                 args.add(lockDO.getPk());
             }
             String xidLockKey = buildXidLockKey(needLockXid);
+            StringJoiner lockKeysString = new StringJoiner(ROW_LOCK_KEY_SPLIT_CHAR);
+            needLockDOs.stream().map(lockDO -> buildLockKey(lockDO.getRowKey())).forEach(lockKeysString::add);
+
             keys.add(xidLockKey);
             keys.add(branchId.toString());
-            args.add(RedisLockKeyHelper.joinStoredLockKeys(needLockDOs.stream()
-                    .map(lockDO -> buildLockKey(lockDO.getRowKey()))
-                    .collect(Collectors.toList())));
+            args.add(lockKeysString.toString());
             // reset args index 2
             args.set(1, String.valueOf(args.size()));
 
