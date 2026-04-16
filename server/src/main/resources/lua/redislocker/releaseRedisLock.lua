@@ -39,6 +39,7 @@ local function table_len(t)
     return len;
 end
 
+-- split on row lock key boundaries instead of plain ';' so resourceId semicolons are preserved
 local function split_row_lock_keys(target)
     local str = tostring(target)
     local strB, arrayIndex = 1, 1
@@ -108,7 +109,6 @@ for _, value in pairs(rowKeys) do
 end
 
 return true
-
 
 
 

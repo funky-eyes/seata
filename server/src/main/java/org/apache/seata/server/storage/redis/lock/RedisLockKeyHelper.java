@@ -27,6 +27,8 @@ import static org.apache.seata.core.constants.RedisKeyConstants.DEFAULT_REDIS_SE
 
 /**
  * Utility for Redis global lock row key serialization.
+ * Splits stored lock keys on {@code ;SEATA_ROW_LOCK_} boundaries so semicolons inside resourceIds
+ * (for example SQL Server JDBC URLs) are preserved.
  */
 public final class RedisLockKeyHelper {
 
