@@ -42,9 +42,10 @@ end
 -- split on row lock key boundaries instead of plain ';' so resourceId semicolons are preserved
 local function split_row_lock_keys(target)
     local str = tostring(target)
+    local strLen = string.len(str)
     local strB, arrayIndex = 1, 1
     local targetArray = {}
-    while (strB <= string.len(str))
+    while (strB <= strLen)
     do
         local si, _ = string.find(str, nextRowLockKeyBoundary, strB, true)
         if (si)
@@ -53,7 +54,7 @@ local function split_row_lock_keys(target)
             arrayIndex = arrayIndex + 1
             strB = si + 1
         else
-            targetArray[arrayIndex] = string.sub(str, strB, string.len(str))
+            targetArray[arrayIndex] = string.sub(str, strB, strLen)
             break
         end
     end
