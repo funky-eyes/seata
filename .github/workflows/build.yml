@@ -29,6 +29,8 @@ on:
 env:
   SEATA_PREVIOUS_RAFT_VERSION: 2.6.0
   SEATA_PREVIOUS_RAFT_SERVER_ARCHIVE_URL: https://archive.apache.org/dist/incubator/seata/2.6.0/apache-seata-2.6.0-incubating-bin.tar.gz
+permissions:
+  contents: read
 
 jobs:
   raft-changes:

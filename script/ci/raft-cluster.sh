@@ -178,23 +178,23 @@ EOF_ENV
 }
 
 wait_for_cluster() {
-  local control_csv="$1"
+  local metadata_csv="$1"
   local output_json="$workspace/cluster-metadata.json"
-  python3 - "$control_csv" "$group" "$output_json" <<'PY'
+  python3 - "$metadata_csv" "$group" "$output_json" <<'PY'
 import json
 import sys
 import time
 import urllib.error
 import urllib.request
 
-controls = sys.argv[1].split(',')
+metadata_addresses = sys.argv[1].split(',')
 group = sys.argv[2]
 outfile = sys.argv[3]
 deadline = time.time() + 180
 last_error = None
 while time.time() < deadline:
-    for control in controls:
-        url = f"http://{control}/metadata/v1/cluster?group={group}"
+    for metadata_address in metadata_addresses:
+        url = f"http://{metadata_address}/metadata/v1/cluster?group={group}"
         try:
             with urllib.request.urlopen(url, timeout=5) as response:
                 if response.status != 200:
@@ -240,10 +240,11 @@ start_cluster() {
   tx_ports=(8091 8092 8093)
   internal_ports=(9091 9092 9093)
 
-  local internal_csv control_csv tx_csv
+  local internal_csv control_csv metadata_csv tx_csv
   internal_csv="${host_ip}:${internal_ports[0]},${host_ip}:${internal_ports[1]},${host_ip}:${internal_ports[2]}"
   control_csv="${host_ip}:${controls[0]},${host_ip}:${controls[1]},${host_ip}:${controls[2]}"
   tx_csv="${host_ip}:${tx_ports[0]},${host_ip}:${tx_ports[1]},${host_ip}:${tx_ports[2]}"
+  metadata_csv="$tx_csv"
 
   local i
   for i in 1 2 3; do
@@ -294,7 +295,7 @@ EOF_NODE
     echo "$!" >> "$pids_file"
   done
 
-  wait_for_cluster "$tx_csv"
+  wait_for_cluster "$metadata_csv"
 
   local leader_control leader_tx leader_term
   leader_control="$(python3 - "$workspace/cluster-metadata.json" <<'PY'
@@ -325,9 +326,9 @@ PY
   )"
 
   if [[ -n "$env_file" ]]; then
-    write_cluster_env "$env_file" "$control_csv" "$tx_csv" "$tx_csv" "$leader_control" "$leader_tx" "$leader_term"
+    write_cluster_env "$env_file" "$control_csv" "$metadata_csv" "$tx_csv" "$leader_control" "$leader_tx" "$leader_term"
   else
-    write_cluster_env /dev/stdout "$control_csv" "$tx_csv" "$tx_csv" "$leader_control" "$leader_tx" "$leader_term"
+    write_cluster_env /dev/stdout "$control_csv" "$metadata_csv" "$tx_csv" "$leader_control" "$leader_tx" "$leader_term"
   fi
 }
 
