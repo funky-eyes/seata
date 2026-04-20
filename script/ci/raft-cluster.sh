@@ -206,7 +206,7 @@ while time.time() < deadline:
                     with open(outfile, 'w', encoding='utf-8') as handle:
                         json.dump(payload, handle)
                     sys.exit(0)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             last_error = exc
     time.sleep(2)
 message = f"Timed out waiting for raft cluster readiness. Last error: {last_error}"
