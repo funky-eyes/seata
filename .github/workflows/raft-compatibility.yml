@@ -61,7 +61,7 @@ jobs:
         run: chmod +x ./script/ci/raft-cluster.sh
       - name: "Build current server-only distribution"
         run: |
-          ./mvnw -pl distribution -am -Prelease-seata,release-seata-server -DskipTests package \
+          ./mvnw -pl distribution -am -Prelease-seata-server -DskipTests package \
                  -e -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
           echo "SEATA_CURRENT_SERVER_ARCHIVE=$(ls distribution/target/apache-seata-server-*-bin.tar.gz | head -n 1)" >> "$GITHUB_ENV"
       - name: "Start current raft cluster"
@@ -73,7 +73,7 @@ jobs:
       - name: "Run current client raft compatibility test"
         run: |
           ./mvnw -pl test-suite/test-new-version -am \
-                 -Dtest=ExternalRaftClusterIT test \
+                 -DfailIfNoTests=false -Dtest=ExternalRaftClusterIT test \
                  -e -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       - name: "Stop current raft cluster"
         if: always()
@@ -109,7 +109,7 @@ jobs:
       - name: "Run current client against previous raft server"
         run: |
           ./mvnw -pl test-suite/test-new-version -am \
-                 -Dtest=ExternalRaftClusterIT test \
+                 -DfailIfNoTests=false -Dtest=ExternalRaftClusterIT test \
                  -e -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       - name: "Stop previous raft cluster"
         if: always()
@@ -138,7 +138,7 @@ jobs:
         run: chmod +x ./script/ci/raft-cluster.sh
       - name: "Build current server-only distribution"
         run: |
-          ./mvnw -pl distribution -am -Prelease-seata,release-seata-server -DskipTests package \
+          ./mvnw -pl distribution -am -Prelease-seata-server -DskipTests package \
                  -e -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
           echo "SEATA_CURRENT_SERVER_ARCHIVE=$(ls distribution/target/apache-seata-server-*-bin.tar.gz | head -n 1)" >> "$GITHUB_ENV"
       - name: "Start current raft cluster"
@@ -150,7 +150,7 @@ jobs:
       - name: "Run previous stable client against current raft server"
         run: |
           ./mvnw -pl test-suite/test-previous-version -am \
-                 -Dtest=PreviousVersionRaftCompatibilityIT test \
+                 -DfailIfNoTests=false -Dtest=PreviousVersionRaftCompatibilityIT test \
                  -e -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       - name: "Stop current raft cluster"
         if: always()
