@@ -293,6 +293,7 @@ EOF_NODE
       --serverNode "$i" \
       > "$node_dir/logs/server.out" 2>&1 &
     echo "$!" >> "$pids_file"
+    echo "$!" > "$node_dir/pid"
   done
 
   wait_for_cluster "$metadata_csv"
