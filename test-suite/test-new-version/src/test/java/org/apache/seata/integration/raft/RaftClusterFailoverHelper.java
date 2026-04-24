@@ -84,8 +84,10 @@ final class RaftClusterFailoverHelper {
                 if (leader == null || response.getTerm() <= oldTerm) {
                     continue;
                 }
-                String leaderAddress = leader.getTransaction().getHost() + ":" + leader.getTransaction().getPort();
-                String leaderControlAddress = leader.getControl().getHost() + ":" + leader.getControl().getPort();
+                String leaderAddress = leader.getTransaction().getHost() + ":"
+                        + leader.getTransaction().getPort();
+                String leaderControlAddress = leader.getControl().getHost() + ":"
+                        + leader.getControl().getPort();
                 if (!oldLeaderAddress.equals(leaderAddress) && !oldLeaderControlAddress.equals(leaderControlAddress)) {
                     return leaderAddress;
                 }

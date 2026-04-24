@@ -112,7 +112,7 @@ class ExternalRaftClusterIT {
     }
 
     private static void waitForClientLeaderSwitch(String expectedLeaderAddress) throws Exception {
-        RegistryService registryService = RegistryFactory.getInstance();
+        RegistryService<?> registryService = RegistryFactory.getInstance();
         InetSocketAddress expectedLeader = toSocketAddress(expectedLeaderAddress);
         long deadline = System.currentTimeMillis() + CLIENT_FAILOVER_TIMEOUT_MS;
         while (System.currentTimeMillis() < deadline) {
