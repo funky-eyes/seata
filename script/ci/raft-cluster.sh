@@ -37,6 +37,7 @@ distribution=""
 workspace=""
 env_file=""
 group="default"
+readiness_mode="metadata"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -54,6 +55,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --group)
       group="$2"
+      shift 2
+      ;;
+    --readiness-mode)
+      readiness_mode="$2"
       shift 2
       ;;
     *)
@@ -214,6 +219,34 @@ raise SystemExit(message)
 PY
 }
 
+wait_for_tx_ports() {
+  local tx_csv="$1"
+  python3 - "$tx_csv" <<'PY'
+import socket
+import sys
+import time
+
+addresses = [entry.strip() for entry in sys.argv[1].split(',') if entry.strip()]
+deadline = time.time() + 180
+remaining = set(addresses)
+last_error = None
+while time.time() < deadline and remaining:
+    for address in list(remaining):
+        host, port = address.rsplit(':', 1)
+        try:
+            with socket.create_connection((host, int(port)), timeout=2):
+                remaining.discard(address)
+        except Exception as exc:
+            last_error = exc
+    if remaining:
+        time.sleep(2)
+if remaining:
+    raise SystemExit(
+        f"Timed out waiting for raft transaction ports: {','.join(sorted(remaining))}. Last error: {last_error}"
+    )
+PY
+}
+
 start_cluster() {
   if [[ -z "$distribution" ]]; then
     echo "--distribution is required for start" >&2
@@ -296,10 +329,11 @@ EOF_NODE
     echo "$!" > "$node_dir/pid"
   done
 
-  wait_for_cluster "$metadata_csv"
-
-  local leader_control leader_tx leader_term
-  leader_control="$(python3 - "$workspace/cluster-metadata.json" <<'PY'
+  local leader_control="" leader_tx="" leader_term="0"
+  case "$readiness_mode" in
+    metadata)
+      wait_for_cluster "$metadata_csv"
+      leader_control="$(python3 - "$workspace/cluster-metadata.json" <<'PY'
 import json
 import sys
 with open(sys.argv[1], 'r', encoding='utf-8') as handle:
@@ -307,8 +341,8 @@ with open(sys.argv[1], 'r', encoding='utf-8') as handle:
 leader = next(node for node in payload['nodes'] if str(node.get('role', '')).upper() == 'LEADER')
 print(f"{leader['control']['host']}:{leader['control']['port']}")
 PY
-)"
-  leader_tx="$(python3 - "$workspace/cluster-metadata.json" <<'PY'
+      )"
+      leader_tx="$(python3 - "$workspace/cluster-metadata.json" <<'PY'
 import json
 import sys
 with open(sys.argv[1], 'r', encoding='utf-8') as handle:
@@ -316,15 +350,24 @@ with open(sys.argv[1], 'r', encoding='utf-8') as handle:
 leader = next(node for node in payload['nodes'] if str(node.get('role', '')).upper() == 'LEADER')
 print(f"{leader['transaction']['host']}:{leader['transaction']['port']}")
 PY
-)"
-  leader_term="$(python3 - "$workspace/cluster-metadata.json" <<'PY'
+      )"
+      leader_term="$(python3 - "$workspace/cluster-metadata.json" <<'PY'
 import json
 import sys
 with open(sys.argv[1], 'r', encoding='utf-8') as handle:
     payload = json.load(handle)
 print(payload.get('term', 0))
 PY
-  )"
+      )"
+      ;;
+    tcp)
+      wait_for_tx_ports "$tx_csv"
+      ;;
+    *)
+      echo "Unsupported readiness mode: $readiness_mode" >&2
+      exit 1
+      ;;
+  esac
 
   if [[ -n "$env_file" ]]; then
     write_cluster_env "$env_file" "$control_csv" "$metadata_csv" "$tx_csv" "$leader_control" "$leader_tx" "$leader_term"

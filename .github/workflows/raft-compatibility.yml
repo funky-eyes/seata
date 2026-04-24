@@ -108,11 +108,12 @@ jobs:
           ./script/ci/raft-cluster.sh start \
             --distribution "$SEATA_PREVIOUS_RAFT_VERSION" \
             --workspace "$RAFT_WORKSPACE" \
+            --readiness-mode tcp \
             --env-file "$GITHUB_ENV"
       - name: "Run current client against previous raft server"
         run: |
           ./mvnw -pl test-suite/test-new-version -am \
-                 -DfailIfNoTests=false -Dtest=ExternalRaftClusterIT test \
+                 -DfailIfNoTests=false -Dtest=PreviousServerCurrentClientCompatibilityIT test \
                  -e -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       - name: "Stop previous raft cluster"
         if: always()
