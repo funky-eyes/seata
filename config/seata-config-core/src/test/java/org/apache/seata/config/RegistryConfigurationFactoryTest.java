@@ -31,7 +31,8 @@ class RegistryConfigurationFactoryTest {
         System.setProperty(ConfigProperty.ENV_PROPERTY_KEY, "test");
         System.setProperty(ConfigProperty.SYSTEM_PROPERTY_SEATA_CONFIG_NAME, ConfigProperty.REGISTRY_CONF_DEFAULT);
         ConfigurationFactory.reload();
-        Assertions.assertEquals("file-test.conf", ConfigurationFactory.CURRENT_FILE_INSTANCE.getConfig("config.file.name"));
+        Assertions.assertEquals(
+                "file-test.conf", ConfigurationFactory.CURRENT_FILE_INSTANCE.getConfig("config.file.name"));
         Configuration instance = ConfigurationFactory.getInstance();
         Assertions.assertEquals("127.0.0.1:8091", instance.getConfig("service.default.grouplist"));
     }
