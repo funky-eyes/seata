@@ -258,7 +258,7 @@ spring:
   application:
     name: seata-server
   main:
-    web-application-type: none
+    web-application-type: servlet
 logging:
   file:
     path: $node_dir/logs

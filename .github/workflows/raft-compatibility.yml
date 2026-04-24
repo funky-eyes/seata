@@ -40,7 +40,6 @@ on:
 
 env:
   SEATA_PREVIOUS_RAFT_VERSION: 2.6.0
-  SEATA_PREVIOUS_RAFT_SERVER_ARCHIVE_URL: https://archive.apache.org/dist/incubator/seata/2.6.0/apache-seata-2.6.0-incubating-bin.tar.gz
 permissions:
   contents: read
 
@@ -48,6 +47,8 @@ jobs:
   raft-current-server-current-client:
     name: "raft-current-server-current-client"
     runs-on: ubuntu-latest
+    env:
+      RAFT_WORKSPACE: ${{ runner.temp }}/raft-current-server-current-client
     steps:
       - name: "Checkout"
         uses: actions/checkout@v3
@@ -68,7 +69,7 @@ jobs:
         run: |
           ./script/ci/raft-cluster.sh start \
             --distribution "$SEATA_CURRENT_SERVER_ARCHIVE" \
-            --workspace "$RUNNER_TEMP/raft-current-server-current-client" \
+            --workspace "$RAFT_WORKSPACE" \
             --env-file "$GITHUB_ENV"
       - name: "Run current client raft compatibility test"
         run: |
@@ -77,18 +78,20 @@ jobs:
                  -e -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       - name: "Stop current raft cluster"
         if: always()
-        run: ./script/ci/raft-cluster.sh stop --workspace "$SEATA_RAFT_WORKSPACE"
+        run: ./script/ci/raft-cluster.sh stop --workspace "$RAFT_WORKSPACE"
       - name: "Upload current/current raft logs"
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: raft-current-server-current-client-logs
-          path: ${{ env.SEATA_RAFT_WORKSPACE }}
+          path: ${{ env.RAFT_WORKSPACE }}
           if-no-files-found: ignore
 
   raft-previous-server-current-client:
     name: "raft-previous-server-current-client"
     runs-on: ubuntu-latest
+    env:
+      RAFT_WORKSPACE: ${{ runner.temp }}/raft-previous-server-current-client
     steps:
       - name: "Checkout"
         uses: actions/checkout@v3
@@ -103,8 +106,8 @@ jobs:
       - name: "Start previous stable raft cluster"
         run: |
           ./script/ci/raft-cluster.sh start \
-            --distribution "$SEATA_PREVIOUS_RAFT_SERVER_ARCHIVE_URL" \
-            --workspace "$RUNNER_TEMP/raft-previous-server-current-client" \
+            --distribution "$SEATA_PREVIOUS_RAFT_VERSION" \
+            --workspace "$RAFT_WORKSPACE" \
             --env-file "$GITHUB_ENV"
       - name: "Run current client against previous raft server"
         run: |
@@ -113,18 +116,20 @@ jobs:
                  -e -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       - name: "Stop previous raft cluster"
         if: always()
-        run: ./script/ci/raft-cluster.sh stop --workspace "$SEATA_RAFT_WORKSPACE"
+        run: ./script/ci/raft-cluster.sh stop --workspace "$RAFT_WORKSPACE"
       - name: "Upload previous/current raft logs"
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: raft-previous-server-current-client-logs
-          path: ${{ env.SEATA_RAFT_WORKSPACE }}
+          path: ${{ env.RAFT_WORKSPACE }}
           if-no-files-found: ignore
 
   raft-current-server-previous-client:
     name: "raft-current-server-previous-client"
     runs-on: ubuntu-latest
+    env:
+      RAFT_WORKSPACE: ${{ runner.temp }}/raft-current-server-previous-client
     steps:
       - name: "Checkout"
         uses: actions/checkout@v3
@@ -145,7 +150,7 @@ jobs:
         run: |
           ./script/ci/raft-cluster.sh start \
             --distribution "$SEATA_CURRENT_SERVER_ARCHIVE" \
-            --workspace "$RUNNER_TEMP/raft-current-server-previous-client" \
+            --workspace "$RAFT_WORKSPACE" \
             --env-file "$GITHUB_ENV"
       - name: "Run previous stable client against current raft server"
         run: |
@@ -154,11 +159,11 @@ jobs:
                  -e -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       - name: "Stop current raft cluster"
         if: always()
-        run: ./script/ci/raft-cluster.sh stop --workspace "$SEATA_RAFT_WORKSPACE"
+        run: ./script/ci/raft-cluster.sh stop --workspace "$RAFT_WORKSPACE"
       - name: "Upload current/previous raft logs"
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: raft-current-server-previous-client-logs
-          path: ${{ env.SEATA_RAFT_WORKSPACE }}
+          path: ${{ env.RAFT_WORKSPACE }}
           if-no-files-found: ignore
