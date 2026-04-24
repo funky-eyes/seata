@@ -26,16 +26,6 @@ on:
       - 'test-suite/**'
       - 'script/**'
       - '.github/workflows/**'
-  pull_request:
-    branches: [ 2.x, develop, master ]
-    types: [opened, reopened, synchronize]
-    paths:
-      - 'server/**'
-      - 'discovery/**'
-      - 'distribution/**'
-      - 'test-suite/**'
-      - 'script/**'
-      - '.github/workflows/**'
   workflow_dispatch:
 
 env:
