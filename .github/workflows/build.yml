@@ -24,6 +24,9 @@ on:
     types: [opened, reopened, synchronize]
     paths-ignore:
       - '**.md'
+  workflow_dispatch:
+permissions:
+  contents: read
 
 jobs:
   # job 1: Test based on java 8, 17, 21 and 25.
