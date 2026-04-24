@@ -244,7 +244,7 @@ start_cluster() {
   internal_csv="${host_ip}:${internal_ports[0]},${host_ip}:${internal_ports[1]},${host_ip}:${internal_ports[2]}"
   control_csv="${host_ip}:${controls[0]},${host_ip}:${controls[1]},${host_ip}:${controls[2]}"
   tx_csv="${host_ip}:${tx_ports[0]},${host_ip}:${tx_ports[1]},${host_ip}:${tx_ports[2]}"
-  metadata_csv="$tx_csv"
+  metadata_csv="$control_csv"
 
   local i
   for i in 1 2 3; do

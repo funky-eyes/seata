@@ -35,6 +35,16 @@
 
         <fileSet>
             <includes>
+                <include>bin/seata-server.bat</include>
+                <include>bin/seata-server.sh</include>
+                <include>bin/seata-setup.sh</include>
+            </includes>
+            <outputDirectory>seata-server/</outputDirectory>
+            <fileMode>0755</fileMode>
+        </fileSet>
+
+        <fileSet>
+            <includes>
                 <include>licenses/*</include>
             </includes>
             <outputDirectory>seata-server/</outputDirectory>
