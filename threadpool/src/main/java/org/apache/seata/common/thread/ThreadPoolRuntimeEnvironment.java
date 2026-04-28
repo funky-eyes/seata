@@ -20,6 +20,8 @@ import org.apache.seata.common.ConfigurationKeys;
 import org.apache.seata.common.DefaultValues;
 import org.apache.seata.config.Configuration;
 import org.apache.seata.config.ConfigurationFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
@@ -28,6 +30,8 @@ import java.util.function.Supplier;
  * Runtime helper used to resolve the thread pool mode.
  */
 final class ThreadPoolRuntimeEnvironment {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ThreadPoolRuntimeEnvironment.class);
 
     private static final Supplier<String> DEFAULT_THREAD_POOL_TYPE_SUPPLIER =
             ThreadPoolRuntimeEnvironment::loadConfiguredThreadPoolType;
@@ -45,6 +49,12 @@ final class ThreadPoolRuntimeEnvironment {
         }
         int jdkFeature = jdkFeatureSupplier.getAsInt();
         if (configuredType == ThreadPoolType.VIRTUAL) {
+            if (jdkFeature < 21) {
+                LOGGER.warn(
+                        "transport.threadpool=virtual is configured but the current JDK feature version is {} (<21). "
+                                + "Virtual threads are not supported; falling back to platform threads.",
+                        jdkFeature);
+            }
             return jdkFeature >= 21 ? ThreadPoolType.VIRTUAL : ThreadPoolType.PLATFORM;
         }
         return jdkFeature >= 25 ? ThreadPoolType.VIRTUAL : ThreadPoolType.PLATFORM;
