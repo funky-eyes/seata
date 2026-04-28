@@ -292,7 +292,7 @@ public class NamingManager {
         String baseUrl = rawUrl.endsWith("?") ? rawUrl.substring(0, rawUrl.length() - 1) : rawUrl;
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(baseUrl);
         params.forEach(builder::queryParam);
-        return Objects.requireNonNull(builder.build(true).toUri());
+        return Objects.requireNonNull(builder.build().encode().toUri());
     }
 
     public boolean addGroup(String namespace, String clusterName, String unitName, String vGroup) {
