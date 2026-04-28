@@ -248,7 +248,7 @@ class ConsoleRemotingFilterTest {
         filter.doFilter(request, response, filterChain);
         server.verify();
 
-        assertEquals(502, response.getStatus(), "代理模式下应保留上游非 2xx 状态码");
+        assertEquals(502, response.getStatus(), "Proxy mode should preserve upstream non-2xx status codes");
         assertEquals("{\"error\":\"upstream failed\"}", response.getContentAsString());
     }
 
