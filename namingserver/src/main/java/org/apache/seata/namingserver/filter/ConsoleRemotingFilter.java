@@ -40,6 +40,7 @@ import org.springframework.util.StreamUtils;
 import org.springframework.web.client.RestClient;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
@@ -171,7 +172,10 @@ public class ConsoleRemotingFilter implements Filter {
                                         && !HttpHeaders.TRAILER.equalsIgnoreCase(headerName)
                                         && !HttpHeaders.UPGRADE.equalsIgnoreCase(headerName)) {
                                     String headerValue = request.getHeader(headerName);
-                                    if (headerValue != null) {
+                                    // headerName comes from the Servlet API Enumeration, which JDT treats as @Nullable.
+                                    // The Servlet specification guarantees header names are never null;
+                                    // this defensive null guard is added solely to suppress the type-safety warning.
+                                    if (headerName != null && headerValue != null) {
                                         headers.add(headerName, headerValue);
                                     }
                                 }
@@ -302,9 +306,20 @@ public class ConsoleRemotingFilter implements Filter {
                 && !HttpMethod.HEAD.equals(httpMethod)) {
             exchangeSpec = requestSpec.body(requestBody);
         }
-        return exchangeSpec.exchange((request, response) -> new ResponseEntity<>(
-                HttpMethod.HEAD.equals(httpMethod) ? null : StreamUtils.copyToByteArray(response.getBody()),
-                response.getHeaders(),
-                response.getStatusCode()));
+        return exchangeSpec.exchange((req, response) -> {
+            byte[] bodyBytes;
+            if (HttpMethod.HEAD.equals(httpMethod)) {
+                // HEAD responses must not contain a message body per RFC 7231 §4.3.2.
+                bodyBytes = null;
+            } else {
+                // For 204/304 and similar no-body responses, some HTTP client implementations
+                // (e.g. JDK HTTP Client) may return null from getBody().
+                // Treat a null stream as an empty byte array defensively,
+                // consistent with the null guards in ConsoleLocalServiceImpl and ConsoleRemoteServiceImpl.
+                InputStream bodyStream = response.getBody();
+                bodyBytes = (bodyStream != null) ? StreamUtils.copyToByteArray(bodyStream) : new byte[0];
+            }
+            return new ResponseEntity<>(bodyBytes, response.getHeaders(), response.getStatusCode());
+        });
     }
 }
