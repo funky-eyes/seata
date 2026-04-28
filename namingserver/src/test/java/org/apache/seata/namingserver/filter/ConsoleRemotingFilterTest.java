@@ -260,7 +260,7 @@ class ConsoleRemotingFilterTest {
         filter.doFilter(request, response, filterChain);
         server.verify();
 
-        assertEquals(502, response.getStatus(), "Proxy mode should preserve non-2xx upstream status codes");
+        assertEquals(502, response.getStatus(), "Proxy mode should preserve upstream non-2xx status codes");
         assertEquals("{\"error\":\"upstream failed\"}", response.getContentAsString());
     }
 
