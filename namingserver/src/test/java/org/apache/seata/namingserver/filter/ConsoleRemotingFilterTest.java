@@ -22,40 +22,43 @@ import org.apache.seata.common.metadata.namingserver.NamingServerNode;
 import org.apache.seata.namingserver.manager.NamingManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.mock.http.client.MockClientHttpRequest;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.web.client.RestClient;
 
-import java.net.URI;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.client.ExpectedCount.once;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.headerDoesNotExist;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 /**
  * Unit tests for {@link ConsoleRemotingFilter}.
  * <p>
- * Covers the GET/HEAD body-stripping regression (OkHttp IllegalArgumentException)
+ * Covers the GET/HEAD body-stripping regression on upstream proxy requests
  * and other proxy-forwarding behavior.
  */
 class ConsoleRemotingFilterTest {
 
     private NamingManager namingManager;
-    private RestTemplate restTemplate;
+    private RestClient.Builder restClientBuilder;
+    private MockRestServiceServer server;
     private ConsoleRemotingFilter filter;
     private FilterChain filterChain;
 
@@ -67,60 +70,40 @@ class ConsoleRemotingFilterTest {
     @BeforeEach
     void setUp() {
         namingManager = mock(NamingManager.class);
-        restTemplate = mock(RestTemplate.class);
+        restClientBuilder = RestClient.builder();
+        server = MockRestServiceServer.bindTo(restClientBuilder).build();
         filterChain = mock(FilterChain.class);
-        filter = new ConsoleRemotingFilter(namingManager, restTemplate);
+        filter = new ConsoleRemotingFilter(namingManager, restClientBuilder.build());
 
         // Set up a NamingServerNode with a control endpoint
         NamingServerNode node = new NamingServerNode();
         node.setControl(new Node.Endpoint(TARGET_HOST, TARGET_PORT, "http"));
 
-        when(namingManager.getInstances(NAMESPACE, CLUSTER))
-                .thenReturn(Collections.singletonList(node));
+        when(namingManager.getInstances(NAMESPACE, CLUSTER)).thenReturn(Collections.singletonList(node));
     }
 
     /**
      * Regression test: a GET request with a non-empty body should NOT forward
-     * the body to the upstream server (to avoid OkHttp's IllegalArgumentException).
+     * the body to the upstream server.
      * The body, Content-Length, and Transfer-Encoding headers must be stripped.
      */
     @Test
     void getRequestWithBodyShouldStripBody() throws Exception {
-        // Prepare a GET request with a body (some clients/frameworks may attach one)
         MockHttpServletRequest request = createConsoleRequest("GET");
         request.setContent("{\"key\":\"value\"}".getBytes(StandardCharsets.UTF_8));
         request.addHeader(HttpHeaders.CONTENT_LENGTH, "15");
 
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        // Stub RestTemplate to return a successful JSON response
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set(HttpHeaders.CONTENT_TYPE, "application/json;charset=UTF-8");
-        ResponseEntity<byte[]> upstreamResponse = new ResponseEntity<>(
-                "{\"result\":\"ok\"}".getBytes(StandardCharsets.UTF_8),
-                responseHeaders,
-                HttpStatus.OK);
-
-        when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), eq(byte[].class)))
-                .thenReturn(upstreamResponse);
+        server.expect(once(), requestTo("http://127.0.0.1:7091/api/v1/console/globalSession/query"))
+                .andExpect(method(HttpMethod.GET))
+                .andExpect(headerDoesNotExist(HttpHeaders.CONTENT_LENGTH))
+                .andExpect(headerDoesNotExist(HttpHeaders.TRANSFER_ENCODING))
+                .andExpect(this::expectEmptyBody)
+                .andRespond(withSuccess("{\"result\":\"ok\"}", org.springframework.http.MediaType.APPLICATION_JSON));
 
         filter.doFilter(request, response, filterChain);
-
-        // Capture the HttpEntity sent to RestTemplate
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<HttpEntity<byte[]>> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
-        verify(restTemplate).exchange(any(URI.class), eq(HttpMethod.GET), entityCaptor.capture(), eq(byte[].class));
-
-        HttpEntity<byte[]> capturedEntity = entityCaptor.getValue();
-        // Body must be null (stripped for GET)
-        assertNull(capturedEntity.getBody(), "GET request body should be stripped (null)");
-        // Content-Length and Transfer-Encoding headers must not be forwarded
-        assertNull(capturedEntity.getHeaders().get(HttpHeaders.CONTENT_LENGTH),
-                "Content-Length header should be removed for GET");
-        assertNull(capturedEntity.getHeaders().get(HttpHeaders.TRANSFER_ENCODING),
-                "Transfer-Encoding header should be removed for GET");
-
-        // Verify filterChain was NOT invoked (proxied)
+        server.verify();
         verify(filterChain, never()).doFilter(any(), any());
         assertEquals(200, response.getStatus());
     }
@@ -135,21 +118,13 @@ class ConsoleRemotingFilterTest {
 
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set(HttpHeaders.CONTENT_TYPE, "application/json");
-        ResponseEntity<byte[]> upstreamResponse = new ResponseEntity<>(
-                null, responseHeaders, HttpStatus.OK);
-
-        when(restTemplate.exchange(any(URI.class), eq(HttpMethod.HEAD), any(HttpEntity.class), eq(byte[].class)))
-                .thenReturn(upstreamResponse);
+        server.expect(once(), requestTo("http://127.0.0.1:7091/api/v1/console/globalSession/query"))
+                .andExpect(method(HttpMethod.HEAD))
+                .andExpect(this::expectEmptyBody)
+                .andRespond(withStatus(HttpStatus.OK).contentType(org.springframework.http.MediaType.APPLICATION_JSON));
 
         filter.doFilter(request, response, filterChain);
-
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<HttpEntity<byte[]>> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
-        verify(restTemplate).exchange(any(URI.class), eq(HttpMethod.HEAD), entityCaptor.capture(), eq(byte[].class));
-
-        assertNull(entityCaptor.getValue().getBody(), "HEAD request body should be stripped (null)");
+        server.verify();
         verify(filterChain, never()).doFilter(any(), any());
     }
 
@@ -164,27 +139,62 @@ class ConsoleRemotingFilterTest {
 
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set(HttpHeaders.CONTENT_TYPE, "application/json;charset=UTF-8");
-        ResponseEntity<byte[]> upstreamResponse = new ResponseEntity<>(
-                "{\"result\":\"created\"}".getBytes(StandardCharsets.UTF_8),
-                responseHeaders,
-                HttpStatus.OK);
-
-        when(restTemplate.exchange(any(URI.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(byte[].class)))
-                .thenReturn(upstreamResponse);
+        server.expect(once(), requestTo("http://127.0.0.1:7091/api/v1/console/globalSession/query"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(clientHttpRequest -> assertEquals(
+                        new String(bodyBytes, StandardCharsets.UTF_8),
+                        new String(
+                                ((MockClientHttpRequest) clientHttpRequest).getBodyAsBytes(), StandardCharsets.UTF_8),
+                        "POST request body should be forwarded as-is"))
+                .andRespond(
+                        withSuccess("{\"result\":\"created\"}", org.springframework.http.MediaType.APPLICATION_JSON));
 
         filter.doFilter(request, response, filterChain);
+        server.verify();
+    }
 
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<HttpEntity<byte[]>> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
-        verify(restTemplate).exchange(any(URI.class), eq(HttpMethod.POST), entityCaptor.capture(), eq(byte[].class));
+    @Test
+    void putRequestShouldForwardBody() throws Exception {
+        byte[] bodyBytes = "{\"data\":\"test-put\"}".getBytes(StandardCharsets.UTF_8);
+        MockHttpServletRequest request = createConsoleRequest("PUT");
+        request.setContent(bodyBytes);
 
-        byte[] capturedBody = entityCaptor.getValue().getBody();
-        assertNotNull(capturedBody, "POST body should not be null");
-        assertEquals(new String(bodyBytes, StandardCharsets.UTF_8),
-                new String(capturedBody, StandardCharsets.UTF_8),
-                "POST request body should be forwarded as-is");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        server.expect(once(), requestTo("http://127.0.0.1:7091/api/v1/console/globalSession/query"))
+                .andExpect(method(HttpMethod.PUT))
+                .andExpect(clientHttpRequest -> assertEquals(
+                        new String(bodyBytes, StandardCharsets.UTF_8),
+                        new String(
+                                ((MockClientHttpRequest) clientHttpRequest).getBodyAsBytes(), StandardCharsets.UTF_8),
+                        "PUT request body should be forwarded as-is"))
+                .andRespond(
+                        withSuccess("{\"result\":\"updated\"}", org.springframework.http.MediaType.APPLICATION_JSON));
+
+        filter.doFilter(request, response, filterChain);
+        server.verify();
+    }
+
+    @Test
+    void deleteRequestShouldForwardBody() throws Exception {
+        byte[] bodyBytes = "{\"data\":\"test-delete\"}".getBytes(StandardCharsets.UTF_8);
+        MockHttpServletRequest request = createConsoleRequest("DELETE");
+        request.setContent(bodyBytes);
+
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        server.expect(once(), requestTo("http://127.0.0.1:7091/api/v1/console/globalSession/query"))
+                .andExpect(method(HttpMethod.DELETE))
+                .andExpect(clientHttpRequest -> assertEquals(
+                        new String(bodyBytes, StandardCharsets.UTF_8),
+                        new String(
+                                ((MockClientHttpRequest) clientHttpRequest).getBodyAsBytes(), StandardCharsets.UTF_8),
+                        "DELETE request body should be forwarded as-is"))
+                .andRespond(
+                        withSuccess("{\"result\":\"deleted\"}", org.springframework.http.MediaType.APPLICATION_JSON));
+
+        filter.doFilter(request, response, filterChain);
+        server.verify();
     }
 
     /**
@@ -198,7 +208,6 @@ class ConsoleRemotingFilterTest {
         filter.doFilter(request, response, filterChain);
 
         verify(filterChain).doFilter(any(), any());
-        verify(restTemplate, never()).exchange(any(URI.class), any(), any(HttpEntity.class), eq(byte[].class));
     }
 
     /**
@@ -211,22 +220,36 @@ class ConsoleRemotingFilterTest {
 
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set(HttpHeaders.CONTENT_TYPE, "application/json");
-        // Upstream sends HTML disguised as JSON
-        byte[] htmlBody = "<html><script>alert('xss')</script></html>".getBytes(StandardCharsets.UTF_8);
-        ResponseEntity<byte[]> upstreamResponse = new ResponseEntity<>(
-                htmlBody, responseHeaders, HttpStatus.OK);
-
-        when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), eq(byte[].class)))
-                .thenReturn(upstreamResponse);
+        server.expect(once(), requestTo("http://127.0.0.1:7091/api/v1/console/globalSession/query"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(
+                        "<html><script>alert('xss')</script></html>",
+                        org.springframework.http.MediaType.APPLICATION_JSON));
 
         filter.doFilter(request, response, filterChain);
+        server.verify();
 
-        assertEquals(502, response.getStatus(),
-                "Should return 502 when upstream body is not valid JSON");
+        assertEquals(502, response.getStatus(), "Should return 502 when upstream body is not valid JSON");
         String body = response.getContentAsString();
         assertEquals("{\"error\":\"Upstream returned invalid response body\"}", body);
+    }
+
+    @Test
+    void non2xxResponseShouldStillBeProxied() throws Exception {
+        MockHttpServletRequest request = createConsoleRequest("GET");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        server.expect(once(), requestTo("http://127.0.0.1:7091/api/v1/console/globalSession/query"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.BAD_GATEWAY)
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .body("{\"error\":\"upstream failed\"}"));
+
+        filter.doFilter(request, response, filterChain);
+        server.verify();
+
+        assertEquals(502, response.getStatus(), "代理模式下应保留上游非 2xx 状态码");
+        assertEquals("{\"error\":\"upstream failed\"}", response.getContentAsString());
     }
 
     /**
@@ -239,5 +262,11 @@ class ConsoleRemotingFilterTest {
         request.addHeader("x-seata-cluster", CLUSTER);
         return request;
     }
-}
 
+    private void expectEmptyBody(org.springframework.http.client.ClientHttpRequest request) throws IOException {
+        assertEquals(
+                0,
+                ((MockClientHttpRequest) request).getBodyAsBytes().length,
+                "GET/HEAD request body should be stripped");
+    }
+}
