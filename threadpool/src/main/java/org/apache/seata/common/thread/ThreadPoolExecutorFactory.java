@@ -18,6 +18,8 @@ package org.apache.seata.common.thread;
 
 import org.apache.seata.common.loader.EnhancedServiceLoader;
 import org.apache.seata.common.loader.EnhancedServiceNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
@@ -31,6 +33,8 @@ import java.util.concurrent.TimeUnit;
  * Central factory used by Seata managed thread pools.
  */
 public final class ThreadPoolExecutorFactory {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ThreadPoolExecutorFactory.class);
 
     private ThreadPoolExecutorFactory() {}
 
@@ -156,6 +160,15 @@ public final class ThreadPoolExecutorFactory {
         if (threadPoolType == ThreadPoolType.VIRTUAL && ThreadPoolProviderHolder.VIRTUAL_THREAD_POOL_PROVIDER != null) {
             return ThreadPoolProviderHolder.VIRTUAL_THREAD_POOL_PROVIDER;
         }
+        if (threadPoolType == ThreadPoolType.VIRTUAL) {
+            // loadOptional() already warned that the provider is absent at initialisation time.
+            // This second warning is intentionally kept to surface the per-request fallback
+            // decision so that operators can correlate the missing-provider startup message
+            // with the actual thread-pool mode that is in effect.
+            LOGGER.warn(
+                    "Virtual thread pool was selected but the virtual-thread SPI provider (seata-threadpool-virtual) "
+                            + "is not present on the classpath. Falling back to platform threads.");
+        }
         return ThreadPoolProviderHolder.PLATFORM_THREAD_POOL_PROVIDER;
     }
 
@@ -172,6 +185,10 @@ public final class ThreadPoolExecutorFactory {
         try {
             return EnhancedServiceLoader.load(ThreadPoolProvider.class, activateName);
         } catch (EnhancedServiceNotFoundException ignored) {
+            LOGGER.warn(
+                    "Virtual thread pool SPI provider '{}' is not available on the classpath. "
+                            + "Virtual threads cannot be used.",
+                    activateName);
             return null;
         }
     }
