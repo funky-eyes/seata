@@ -48,6 +48,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+@SuppressWarnings("null")
 class ConsoleRemoteServiceImplTest {
 
     private JwtTokenUtils jwtTokenUtils;
@@ -67,8 +68,9 @@ class ConsoleRemoteServiceImplTest {
 
         RestClient.Builder restClientBuilder = RestClient.builder();
         server = MockRestServiceServer.bindTo(restClientBuilder).build();
-        consoleRemoteService = new ConsoleRemoteServiceImpl(
-                jwtTokenUtils, restClientBuilder, new ObjectMapper(), namingServerProperties);
+        RestClient restClient = restClientBuilder.build();
+        consoleRemoteService =
+                new ConsoleRemoteServiceImpl(jwtTokenUtils, restClient, new ObjectMapper(), namingServerProperties);
 
         SecurityContextHolder.getContext()
                 .setAuthentication(new UsernamePasswordAuthenticationToken("user", "jwt-token", List.of()));

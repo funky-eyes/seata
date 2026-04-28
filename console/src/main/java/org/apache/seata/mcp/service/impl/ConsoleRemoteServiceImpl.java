@@ -27,6 +27,7 @@ import org.apache.seata.mcp.exception.ServiceCallException;
 import org.apache.seata.mcp.service.ConsoleApiService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -49,6 +50,7 @@ import static org.apache.seata.mcp.core.utils.UrlUtils.objectToQueryParamMap;
 
 @ConditionalOnMissingBean(name = "consoleLocalServiceImpl")
 @Service
+@SuppressWarnings("null")
 public class ConsoleRemoteServiceImpl implements ConsoleApiService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsoleRemoteServiceImpl.class);
@@ -63,11 +65,11 @@ public class ConsoleRemoteServiceImpl implements ConsoleApiService {
 
     public ConsoleRemoteServiceImpl(
             JwtTokenUtils jwtTokenUtils,
-            RestClient.Builder restClientBuilder,
+            @Qualifier("consoleRestClient") RestClient restClient,
             ObjectMapper objectMapper,
             NamingServerProperties namingServerProperties) {
         this.jwtTokenUtils = jwtTokenUtils;
-        this.restClient = restClientBuilder.build();
+        this.restClient = restClient;
         this.objectMapper = objectMapper;
         this.namingServerProperties = namingServerProperties;
         LOGGER.info("ConsoleRemoteServiceImpl initialized.");
