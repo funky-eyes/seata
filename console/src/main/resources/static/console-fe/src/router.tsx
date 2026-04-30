@@ -1,29 +1,53 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-import { HashRouter, Route, Switch, Redirect } from 'react-router-dom';
-import Overview from '@/pages/Overview';
-import TransactionInfo from '@/pages/TransactionInfo';
-import GlobalLockInfo from './pages/GlobalLockInfo';
-import ClusterManager from './pages/ClusterManager';
+import { Space, Typography } from 'antd';
+import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 
-export default [
-  // { path: '/', exact: true, render: () => <Redirect to="/Overview" /> },
-  // { path: '/Overview', component: Overview },
-  { path: '/transaction/list', component: TransactionInfo },
-  { path: '/globallock/list', component: GlobalLockInfo },
-  { path: '/cluster/list', component: ClusterManager },
-];
+import type { ConsoleRequestContext } from '@/api/types';
+import { PageState } from '@/components/PageState';
+import { useConsoleI18n } from '@/i18n';
+import { ConsoleLayout } from '@/layout/ConsoleLayout';
+import { ClusterPage } from '@/pages/Cluster';
+import { GlobalLocksPage } from '@/pages/GlobalLocks';
+import { LoginPage } from '@/pages/Login';
+import { SagaDesignerPage } from '@/pages/SagaDesigner';
+import { TransactionGroupPage } from '@/pages/TransactionGroup';
+import { TransactionsPage } from '@/pages/Transactions';
+
+type RuntimePageProps = {
+  title: string;
+  status: 'empty' | 'partial';
+};
+
+function RuntimePage({ title, status }: RuntimePageProps) {
+  const { messages } = useConsoleI18n();
+
+  return (
+    <ConsoleLayout>
+      <Space direction="vertical" size={16} className="page-stack">
+        <div>
+          <Typography.Title level={2}>{title}</Typography.Title>
+        </div>
+        <PageState status={status} title={messages.pages.runtimeEmpty} description={messages.pages.runtimeHint} />
+      </Space>
+    </ConsoleLayout>
+  );
+}
+
+export function ConsoleRouter() {
+  const { messages } = useConsoleI18n();
+
+  return (
+    <HashRouter>
+      <Routes>
+        <Route path="/" element={<Navigate to="/transaction/list" replace />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/overview" element={<RuntimePage title={messages.pages.overview} status="partial" />} />
+        <Route path="/transaction-group" element={<TransactionGroupPage />} />
+        <Route path="/transaction/list" element={<TransactionsPage />} />
+        <Route path="/globallock/list" element={<GlobalLocksPage />} />
+        <Route path="/cluster/list" element={<ClusterPage />} />
+        <Route path="/sagastatemachinedesigner" element={<SagaDesignerPage />} />
+        <Route path="*" element={<Navigate to="/transaction/list" replace />} />
+      </Routes>
+    </HashRouter>
+  );
+}

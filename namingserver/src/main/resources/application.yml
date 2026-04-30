@@ -43,8 +43,8 @@ heartbeat:
 console:
   # console username and password configuration
   user:
-    username:
-    password:
+    username: seata
+    password: seata
   # When the console is deployed independently, configure the namingserver address
 #  namingserver:
 #    protocol: http
@@ -59,7 +59,7 @@ seata:
     tokenValidityInMilliseconds: 1800000
     csrf-ignore-urls: /naming/v1/**,/api/v1/naming/**
     ignore:
-      urls: /,/**/*.css,/**/*.js,/**/*.html,/**/*.map,/**/*.svg,/**/*.png,/**/*.jpeg,/**/*.ico,/api/v1/auth/login,/version.json,/naming/v1/health,/error
+      urls: /,/**/*.css,/**/*.js,/**/*.html,/**/*.map,/**/*.svg,/**/*.png,/**/*.jpeg,/**/*.ico,/**/*.eot,/**/*.woff2,/**/*.woff,/**/*.ttf,/api/v1/auth/login,/version.json,/naming/v1/health,/error
 management:
   endpoints:
     web:

@@ -1,0 +1,1 @@
+export { GlobalLocksPage } from './GlobalLocksPage';

@@ -78,6 +78,7 @@ Thumbs.db
 .github/prompts/**
 .github/skills/**
 .github/copilot-instructions.md
+spec/**
 
 #h2
 *.db

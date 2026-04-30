@@ -1,0 +1,15 @@
+:root {
+  --seata-color-brand: #0054d1;
+  --seata-color-brand-weak: #e6f7ff;
+  --seata-color-accent: #02bcfb;
+  --seata-color-accent-weak: #e6faff;
+  --seata-color-surface: #ffffff;
+  --seata-color-surface-soft: #f4f7fb;
+  --seata-color-canvas: #ebf0f7;
+  --seata-color-border: #d6e2f1;
+  --seata-color-border-strong: #bacce2;
+  --seata-color-text: #1a2b3c;
+  --seata-color-muted: #5e7488;
+  --seata-shadow-panel: 0 16px 36px rgba(0, 84, 209, 0.08);
+  --seata-shadow-soft: 0 8px 24px rgba(0, 84, 209, 0.05);
+}

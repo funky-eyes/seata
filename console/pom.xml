@@ -186,17 +186,18 @@
                         </goals>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <nodeVersion>v19.5.0</nodeVersion>
+                            <nodeVersion>v24.11.1</nodeVersion>
+                            <npmVersion>11.6.2</npmVersion>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>npm install</id>
+                        <id>npm ci</id>
                         <goals>
                             <goal>npm</goal>
                         </goals>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <arguments>install</arguments>
+                            <arguments>ci</arguments>
                         </configuration>
                     </execution>
                     <execution>
