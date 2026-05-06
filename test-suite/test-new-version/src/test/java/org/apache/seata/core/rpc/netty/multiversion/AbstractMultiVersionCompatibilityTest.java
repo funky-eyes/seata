@@ -83,10 +83,10 @@ import java.util.concurrent.atomic.AtomicReference;
  * - V2 Server + V1 Client (MockNettyRemotingServer + manual client)
  * - V2 Server + V2 Client (MockNettyRemotingServer + NettyClientBootstrap - production-like)
  */
-public abstract class MultiVersionCompatibilityTest {
+public abstract class AbstractMultiVersionCompatibilityTest {
 
     // LOG instance
-    private static final Logger LOGGER = LoggerFactory.getLogger(MultiVersionCompatibilityTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractMultiVersionCompatibilityTest.class);
 
     // JSON ObjectMapper for pretty printing
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
