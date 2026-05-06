@@ -108,7 +108,7 @@ public class RedisRegisterServiceImplTest {
         configurationFactoryMockedStatic.close();
 
         // test the normal remove situation
-        Assertions.assertEquals(0, CLUSTER_ADDRESS_MAP.get("cluster").size());
+        Assertions.assertEquals(0, clusterAddressMap.get("cluster").size());
     }
 
     @Test
