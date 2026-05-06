@@ -46,6 +46,10 @@
         <property name="checks" value="ConstantName"/>
         <property name="files" value="MySqlLexer\.java$"/>
     </module>
+    <module name="SuppressionSingleFilter">
+        <property name="checks" value="LocalVariableName|MemberName|NeedBraces|EmptyBlock|ConstantName"/>
+        <property name="files" value="Echo\.java$"/>
+    </module>
 
     <!-- MethodName: source files (no underscores) vs test files (underscores allowed) -->
     <module name="SuppressionSingleFilter">
