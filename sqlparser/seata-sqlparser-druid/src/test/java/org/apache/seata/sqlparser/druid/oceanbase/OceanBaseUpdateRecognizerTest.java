@@ -69,8 +69,7 @@ public class OceanBaseUpdateRecognizerTest {
             for (SQLUpdateSetItem updateSetItem : updateSetItems) {
                 updateSetItem.setColumn(new OracleCursorExpr());
             }
-            OceanBaseUpdateRecognizer oceanBaseUpdateRecognizer =
-                    new OceanBaseUpdateRecognizer(s, sqlUpdateStatement);
+            OceanBaseUpdateRecognizer oceanBaseUpdateRecognizer = new OceanBaseUpdateRecognizer(s, sqlUpdateStatement);
             oceanBaseUpdateRecognizer.getUpdateColumns();
         });
     }
@@ -100,8 +99,7 @@ public class OceanBaseUpdateRecognizerTest {
             for (SQLUpdateSetItem updateSetItem : updateSetItems) {
                 updateSetItem.setValue(new OracleCursorExpr());
             }
-            OceanBaseUpdateRecognizer oceanBaseUpdateRecognizer =
-                    new OceanBaseUpdateRecognizer(s, sqlUpdateStatement);
+            OceanBaseUpdateRecognizer oceanBaseUpdateRecognizer = new OceanBaseUpdateRecognizer(s, sqlUpdateStatement);
             oceanBaseUpdateRecognizer.getUpdateValues();
         });
     }

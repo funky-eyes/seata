@@ -87,8 +87,7 @@ public class OceanBaseInsertRecognizerTest {
             SQLInsertStatement sqlInsertStatement = (SQLInsertStatement) sqlStatements.get(0);
             sqlInsertStatement.getColumns().add(new OracleBinaryDoubleExpr());
 
-            OceanBaseInsertRecognizer oceanBaseInsertRecognizer =
-                    new OceanBaseInsertRecognizer(s, sqlInsertStatement);
+            OceanBaseInsertRecognizer oceanBaseInsertRecognizer = new OceanBaseInsertRecognizer(s, sqlInsertStatement);
             oceanBaseInsertRecognizer.getInsertColumns();
         });
     }
@@ -111,8 +110,7 @@ public class OceanBaseInsertRecognizerTest {
             SQLInsertStatement sqlInsertStatement = (SQLInsertStatement) sqlStatements.get(0);
             sqlInsertStatement.getValuesList().get(0).getValues().set(pkIndex, new OracleIntervalExpr());
 
-            OceanBaseInsertRecognizer oceanBaseInsertRecognizer =
-                    new OceanBaseInsertRecognizer(s, sqlInsertStatement);
+            OceanBaseInsertRecognizer oceanBaseInsertRecognizer = new OceanBaseInsertRecognizer(s, sqlInsertStatement);
             oceanBaseInsertRecognizer.getInsertRows(Collections.singletonList(pkIndex));
         });
     }
