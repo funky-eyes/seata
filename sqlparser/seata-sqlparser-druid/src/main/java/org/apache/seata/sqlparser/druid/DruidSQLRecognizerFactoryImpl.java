@@ -24,25 +24,40 @@ import com.alibaba.druid.sql.ast.statement.SQLReplaceStatement;
 import com.alibaba.druid.sql.ast.statement.SQLSelectStatement;
 import com.alibaba.druid.sql.ast.statement.SQLUpdateStatement;
 import com.alibaba.druid.sql.dialect.oracle.ast.stmt.OracleMultiInsertStatement;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.util.concurrent.ExecutionError;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 import org.apache.seata.common.exception.NotSupportYetException;
-import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.sqlparser.SQLRecognizer;
 import org.apache.seata.sqlparser.SQLRecognizerFactory;
 import org.apache.seata.sqlparser.druid.oracle.OracleOperateRecognizerHolder;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 
 /**
  * DruidSQLRecognizerFactoryImpl
  *
  */
 class DruidSQLRecognizerFactoryImpl implements SQLRecognizerFactory {
+    private static final int SQL_STATEMENT_CACHE_MAX_SIZE = 100;
+    private static final Cache<SqlStatementCacheKey, ParsedSqlStatements> SQL_PARSE_RESULT_CACHE =
+            CacheBuilder.newBuilder().maximumSize(SQL_STATEMENT_CACHE_MAX_SIZE).build();
+
     @Override
     public List<SQLRecognizer> create(String sql, String dbType) {
-        List<SQLStatement> sqlStatements;
+        return create(sql, dbType, false);
+    }
+
+    @Override
+    public List<SQLRecognizer> create(String sql, String dbType, boolean sqlParserCacheable) {
+        ParsedSqlStatements parsedSqlStatements;
         try {
-            sqlStatements = SQLUtils.parseStatements(sql, DruidDbTypeAdapter.getAdaptiveDbType(dbType));
+            parsedSqlStatements = parseStatements(sql, dbType, sqlParserCacheable);
         } catch (RuntimeException e) {
             if (isParserException(e)) {
                 throw new NotSupportYetException(
@@ -52,18 +67,11 @@ class DruidSQLRecognizerFactoryImpl implements SQLRecognizerFactory {
             }
             throw e;
         }
+        parsedSqlStatements.throwIfUnsupported();
 
-        if (CollectionUtils.isEmpty(sqlStatements)) {
-            throw new UnsupportedOperationException("Unsupported SQL: " + sql);
-        }
-        if (sqlStatements.size() > 1
-                && !(sqlStatements.stream().allMatch(statement -> statement instanceof SQLUpdateStatement)
-                        || sqlStatements.stream().allMatch(statement -> statement instanceof SQLDeleteStatement))) {
-            throw new UnsupportedOperationException("ONLY SUPPORT SAME TYPE (UPDATE OR DELETE) MULTI SQL -" + sql);
-        }
         List<SQLRecognizer> recognizers = null;
         SQLRecognizer recognizer = null;
-        for (SQLStatement sqlStatement : sqlStatements) {
+        for (SQLStatement sqlStatement : parsedSqlStatements.getSqlStatements()) {
             SQLOperateRecognizerHolder recognizerHolder =
                     SQLOperateRecognizerHolderFactory.getSQLRecognizerHolder(dbType.toLowerCase());
             if (sqlStatement instanceof SQLInsertStatement) {
@@ -103,6 +111,50 @@ class DruidSQLRecognizerFactoryImpl implements SQLRecognizerFactory {
         return recognizers;
     }
 
+    private ParsedSqlStatements parseStatements(String sql, String dbType, boolean sqlParserCacheable) {
+        String adaptiveDbType = DruidDbTypeAdapter.getAdaptiveDbType(dbType);
+        if (!sqlParserCacheable) {
+            return parseSqlStatements(sql, adaptiveDbType);
+        }
+
+        SqlStatementCacheKey cacheKey = new SqlStatementCacheKey(sql, dbType, adaptiveDbType);
+        try {
+            return SQL_PARSE_RESULT_CACHE.get(cacheKey, () -> parseSqlStatements(sql, adaptiveDbType));
+        } catch (ExecutionException e) {
+            throw new IllegalStateException(e.getCause());
+        } catch (UncheckedExecutionException e) {
+            throwUnchecked(e.getCause());
+            throw e;
+        } catch (ExecutionError e) {
+            throw e;
+        }
+    }
+
+    private ParsedSqlStatements parseSqlStatements(String sql, String adaptiveDbType) {
+        List<SQLStatement> sqlStatements = SQLUtils.parseStatements(sql, adaptiveDbType);
+        if (sqlStatements == null || sqlStatements.isEmpty()) {
+            return ParsedSqlStatements.unsupported(Collections.emptyList(), "Unsupported SQL: " + sql);
+        }
+        List<SQLStatement> unmodifiableSqlStatements = Collections.unmodifiableList(sqlStatements);
+        if (sqlStatements.size() > 1
+                && !(sqlStatements.stream().allMatch(statement -> statement instanceof SQLUpdateStatement)
+                        || sqlStatements.stream().allMatch(statement -> statement instanceof SQLDeleteStatement))) {
+            return ParsedSqlStatements.unsupported(
+                    unmodifiableSqlStatements, "ONLY SUPPORT SAME TYPE (UPDATE OR DELETE) MULTI SQL -" + sql);
+        }
+        return ParsedSqlStatements.supported(unmodifiableSqlStatements);
+    }
+
+    private void throwUnchecked(Throwable cause) {
+        if (cause instanceof RuntimeException) {
+            throw (RuntimeException) cause;
+        }
+        if (cause instanceof Error) {
+            throw (Error) cause;
+        }
+        throw new IllegalStateException(cause);
+    }
+
     /**
      * Check if the exception is a Druid ParserException
      * Use class name comparison to avoid directly referencing the ParserException class
@@ -113,5 +165,64 @@ class DruidSQLRecognizerFactoryImpl implements SQLRecognizerFactory {
         }
         String className = e.getClass().getName();
         return "com.alibaba.druid.sql.parser.ParserException".equals(className);
+    }
+
+    private static final class ParsedSqlStatements {
+        private final List<SQLStatement> sqlStatements;
+        private final String unsupportedMessage;
+
+        private ParsedSqlStatements(List<SQLStatement> sqlStatements, String unsupportedMessage) {
+            this.sqlStatements = sqlStatements;
+            this.unsupportedMessage = unsupportedMessage;
+        }
+
+        private static ParsedSqlStatements supported(List<SQLStatement> sqlStatements) {
+            return new ParsedSqlStatements(sqlStatements, null);
+        }
+
+        private static ParsedSqlStatements unsupported(List<SQLStatement> sqlStatements, String unsupportedMessage) {
+            return new ParsedSqlStatements(sqlStatements, unsupportedMessage);
+        }
+
+        private List<SQLStatement> getSqlStatements() {
+            return sqlStatements;
+        }
+
+        private void throwIfUnsupported() {
+            if (unsupportedMessage != null) {
+                throw new UnsupportedOperationException(unsupportedMessage);
+            }
+        }
+    }
+
+    private static final class SqlStatementCacheKey {
+        private final String sql;
+        private final String dbType;
+        private final String adaptiveDbType;
+
+        private SqlStatementCacheKey(String sql, String dbType, String adaptiveDbType) {
+            this.sql = sql;
+            this.dbType = dbType;
+            this.adaptiveDbType = adaptiveDbType;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof SqlStatementCacheKey)) {
+                return false;
+            }
+            SqlStatementCacheKey that = (SqlStatementCacheKey) o;
+            return Objects.equals(sql, that.sql)
+                    && Objects.equals(dbType, that.dbType)
+                    && Objects.equals(adaptiveDbType, that.adaptiveDbType);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(sql, dbType, adaptiveDbType);
+        }
     }
 }

@@ -20,4 +20,8 @@ import java.util.List;
 
 public interface SQLRecognizerFactory {
     List<SQLRecognizer> create(String sql, String dbType);
+
+    default List<SQLRecognizer> create(String sql, String dbType, boolean sqlParserCacheable) {
+        return create(sql, dbType);
+    }
 }

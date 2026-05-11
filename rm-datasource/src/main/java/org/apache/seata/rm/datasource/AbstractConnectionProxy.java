@@ -109,7 +109,7 @@ public abstract class AbstractConnectionProxy implements Connection {
         // support oracle 10.2+
         PreparedStatement targetPreparedStatement = null;
         if (BranchType.AT == RootContext.getBranchType()) {
-            List<SQLRecognizer> sqlRecognizers = SQLVisitorFactory.get(sql, dbType);
+            List<SQLRecognizer> sqlRecognizers = SQLVisitorFactory.get(sql, dbType, true);
             if (sqlRecognizers != null && sqlRecognizers.size() == 1) {
                 SQLRecognizer sqlRecognizer = sqlRecognizers.get(0);
                 if (sqlRecognizer != null && sqlRecognizer.getSQLType() == SQLType.INSERT) {

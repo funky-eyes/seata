@@ -21,6 +21,7 @@ import org.apache.seata.common.loader.EnhancedServiceLoader;
 import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.core.context.RootContext;
 import org.apache.seata.core.model.BranchType;
+import org.apache.seata.rm.datasource.PreparedStatementProxy;
 import org.apache.seata.rm.datasource.StatementProxy;
 import org.apache.seata.rm.datasource.exec.mariadb.MariadbInsertOnDuplicateUpdateExecutor;
 import org.apache.seata.rm.datasource.exec.mariadb.MariadbUpdateJoinExecutor;
@@ -88,7 +89,8 @@ public class ExecuteTemplate {
 
         String dbType = statementProxy.getConnectionProxy().getDbType();
         if (CollectionUtils.isEmpty(sqlRecognizers)) {
-            sqlRecognizers = SQLVisitorFactory.get(statementProxy.getTargetSQL(), dbType);
+            sqlRecognizers = SQLVisitorFactory.get(
+                    statementProxy.getTargetSQL(), dbType, statementProxy instanceof PreparedStatementProxy);
         }
         Executor<T> executor;
         if (CollectionUtils.isEmpty(sqlRecognizers)) {

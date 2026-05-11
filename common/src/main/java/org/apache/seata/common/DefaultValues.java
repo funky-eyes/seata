@@ -65,6 +65,10 @@ public interface DefaultValues {
      */
     boolean DEFAULT_CLIENT_TABLE_META_CHECK_ENABLE = true;
     /**
+     * The constant DEFAULT_CLIENT_SQL_PARSER_CACHE_ENABLE.
+     */
+    boolean DEFAULT_CLIENT_SQL_PARSER_CACHE_ENABLE = false;
+    /**
      * The constant DEFAULT_TABLE_META_CHECKER_INTERVAL.
      */
     long DEFAULT_TABLE_META_CHECKER_INTERVAL = 60000L;

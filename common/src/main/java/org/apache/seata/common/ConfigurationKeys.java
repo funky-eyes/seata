@@ -795,6 +795,11 @@ public interface ConfigurationKeys {
     String SQL_PARSER_TYPE = CLIENT_RM_PREFIX + "sqlParserType";
 
     /**
+     * The constant SQL_PARSER_CACHE_ENABLE.
+     */
+    String SQL_PARSER_CACHE_ENABLE = CLIENT_RM_PREFIX + "sqlParserCacheEnable";
+
+    /**
      * The constant STORE_REDIS_MODE.
      */
     String STORE_REDIS_MODE = STORE_REDIS_PREFIX + "mode";

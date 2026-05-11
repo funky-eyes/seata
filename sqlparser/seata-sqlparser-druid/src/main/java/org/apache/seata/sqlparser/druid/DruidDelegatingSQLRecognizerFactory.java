@@ -58,4 +58,9 @@ public class DruidDelegatingSQLRecognizerFactory implements SQLRecognizerFactory
     public List<SQLRecognizer> create(String sql, String dbType) {
         return recognizerFactoryImpl.create(sql, dbType);
     }
+
+    @Override
+    public List<SQLRecognizer> create(String sql, String dbType, boolean sqlParserCacheable) {
+        return recognizerFactoryImpl.create(sql, dbType, sqlParserCacheable);
+    }
 }

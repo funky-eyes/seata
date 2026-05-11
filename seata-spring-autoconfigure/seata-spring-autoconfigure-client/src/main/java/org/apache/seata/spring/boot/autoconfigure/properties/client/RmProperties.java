@@ -27,6 +27,7 @@ import static org.apache.seata.common.DefaultValues.DEFAULT_CLIENT_REPORT_SUCCES
 import static org.apache.seata.common.DefaultValues.DEFAULT_CLIENT_SAGA_BRANCH_REGISTER_ENABLE;
 import static org.apache.seata.common.DefaultValues.DEFAULT_CLIENT_SAGA_COMPENSATE_PERSIST_MODE_UPDATE;
 import static org.apache.seata.common.DefaultValues.DEFAULT_CLIENT_SAGA_RETRY_PERSIST_MODE_UPDATE;
+import static org.apache.seata.common.DefaultValues.DEFAULT_CLIENT_SQL_PARSER_CACHE_ENABLE;
 import static org.apache.seata.common.DefaultValues.DEFAULT_CLIENT_TABLE_META_CHECK_ENABLE;
 import static org.apache.seata.common.DefaultValues.DEFAULT_SAGA_JSON_PARSER;
 import static org.apache.seata.common.DefaultValues.DEFAULT_TABLE_META_CHECKER_INTERVAL;
@@ -51,6 +52,7 @@ public class RmProperties {
     private int branchExecutionTimeoutXA = DEFAULT_XA_BRANCH_EXECUTION_TIMEOUT;
     private int connectionTwoPhaseHoldTimeoutXA = DEFAULT_XA_CONNECTION_TWO_PHASE_HOLD_TIMEOUT;
     private String sqlParserType = SqlParserType.SQL_PARSER_TYPE_DRUID;
+    private boolean sqlParserCacheEnable = DEFAULT_CLIENT_SQL_PARSER_CACHE_ENABLE;
 
     private Boolean applicationDataLimitCheck = false;
     private Integer applicationDataLimit = DEFAULT_APPLICATION_DATA_SIZE_LIMIT;
@@ -146,6 +148,15 @@ public class RmProperties {
 
     public RmProperties setSqlParserType(String sqlParserType) {
         this.sqlParserType = sqlParserType;
+        return this;
+    }
+
+    public boolean isSqlParserCacheEnable() {
+        return sqlParserCacheEnable;
+    }
+
+    public RmProperties setSqlParserCacheEnable(boolean sqlParserCacheEnable) {
+        this.sqlParserCacheEnable = sqlParserCacheEnable;
         return this;
     }
 
