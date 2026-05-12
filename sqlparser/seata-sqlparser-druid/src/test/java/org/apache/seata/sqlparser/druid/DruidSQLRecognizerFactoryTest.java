@@ -432,23 +432,31 @@ public class DruidSQLRecognizerFactoryTest {
 
     private Cache<?, ?> sqlStatementCache() {
         try {
-            Field cacheHolderField = DruidSQLRecognizerFactoryImpl.class.getDeclaredField("sqlParseResultCacheHolder");
-            cacheHolderField.setAccessible(true);
-            Object cacheHolder = cacheHolderField.get(null);
-            Field cacheField = cacheHolder.getClass().getDeclaredField("cache");
+            Field cacheField = DruidSQLRecognizerFactoryImpl.class.getDeclaredField("sqlParseResultCache");
             cacheField.setAccessible(true);
-            return (Cache<?, ?>) cacheField.get(cacheHolder);
+            return (Cache<?, ?>) cacheField.get(null);
         } catch (ReflectiveOperationException e) {
             throw new AssertionError(e);
         }
     }
 
     private void clearSqlStatementCache() {
-        sqlStatementCache().invalidateAll();
+        Cache<?, ?> cache = sqlStatementCache();
+        if (cache != null) {
+            cache.invalidateAll();
+        }
+        try {
+            Field cacheField = DruidSQLRecognizerFactoryImpl.class.getDeclaredField("sqlParseResultCache");
+            cacheField.setAccessible(true);
+            cacheField.set(null, null);
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);
+        }
     }
 
     private long sqlStatementCacheSize() {
-        return sqlStatementCache().estimatedSize();
+        Cache<?, ?> cache = sqlStatementCache();
+        return cache == null ? 0 : cache.estimatedSize();
     }
 
     private Object getOnlyCachedParseResult() {

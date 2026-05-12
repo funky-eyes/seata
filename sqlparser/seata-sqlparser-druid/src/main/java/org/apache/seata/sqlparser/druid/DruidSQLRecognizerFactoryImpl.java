@@ -43,8 +43,7 @@ import static org.apache.seata.common.DefaultValues.DEFAULT_CLIENT_SQL_PARSER_CA
  *
  */
 class DruidSQLRecognizerFactoryImpl implements SQLRecognizerFactory {
-    private static volatile SqlParseResultCacheHolder sqlParseResultCacheHolder =
-            new SqlParseResultCacheHolder(DEFAULT_CLIENT_SQL_PARSER_CACHE_MAX_SIZE);
+    private static volatile Cache<SqlStatementCacheKey, ParsedSqlStatements> sqlParseResultCache;
 
     @Override
     public List<SQLRecognizer> create(String sql, String dbType) {
@@ -143,17 +142,17 @@ class DruidSQLRecognizerFactoryImpl implements SQLRecognizerFactory {
     }
 
     private static Cache<SqlStatementCacheKey, ParsedSqlStatements> getSqlParseResultCache(int sqlParserCacheMaxSize) {
-        int normalizedCacheMaxSize = normalizeCacheMaxSize(sqlParserCacheMaxSize);
-        SqlParseResultCacheHolder cacheHolder = sqlParseResultCacheHolder;
-        if (cacheHolder.maxSize == normalizedCacheMaxSize) {
-            return cacheHolder.cache;
+        Cache<SqlStatementCacheKey, ParsedSqlStatements> cache = sqlParseResultCache;
+        if (cache != null) {
+            return cache;
         }
         synchronized (DruidSQLRecognizerFactoryImpl.class) {
-            cacheHolder = sqlParseResultCacheHolder;
-            if (cacheHolder.maxSize != normalizedCacheMaxSize) {
-                sqlParseResultCacheHolder = new SqlParseResultCacheHolder(normalizedCacheMaxSize);
+            cache = sqlParseResultCache;
+            if (cache == null) {
+                cache = newSqlParseResultCache(normalizeCacheMaxSize(sqlParserCacheMaxSize));
+                sqlParseResultCache = cache;
             }
-            return sqlParseResultCacheHolder.cache;
+            return cache;
         }
     }
 
@@ -166,16 +165,6 @@ class DruidSQLRecognizerFactoryImpl implements SQLRecognizerFactory {
 
     private static Cache<SqlStatementCacheKey, ParsedSqlStatements> newSqlParseResultCache(int sqlParserCacheMaxSize) {
         return Caffeine.newBuilder().maximumSize(sqlParserCacheMaxSize).build();
-    }
-
-    private static final class SqlParseResultCacheHolder {
-        private final int maxSize;
-        private final Cache<SqlStatementCacheKey, ParsedSqlStatements> cache;
-
-        private SqlParseResultCacheHolder(int maxSize) {
-            this.maxSize = maxSize;
-            this.cache = newSqlParseResultCache(maxSize);
-        }
     }
 
     /**
