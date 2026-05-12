@@ -24,4 +24,9 @@ public interface SQLRecognizerFactory {
     default List<SQLRecognizer> create(String sql, String dbType, boolean sqlParserCacheable) {
         return create(sql, dbType);
     }
+
+    default List<SQLRecognizer> create(
+            String sql, String dbType, boolean sqlParserCacheable, int sqlParserCacheMaxSize) {
+        return create(sql, dbType, sqlParserCacheable);
+    }
 }

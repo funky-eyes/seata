@@ -19,7 +19,7 @@ package org.apache.seata.sqlparser.druid;
 import com.alibaba.druid.sql.SQLUtils;
 import com.alibaba.druid.sql.ast.SQLStatement;
 import com.alibaba.druid.sql.dialect.oracle.ast.stmt.OracleMultiInsertStatement;
-import com.google.common.cache.Cache;
+import com.github.benmanes.caffeine.cache.Cache;
 import org.apache.seata.common.exception.NotSupportYetException;
 import org.apache.seata.common.loader.EnhancedServiceLoader;
 import org.apache.seata.sqlparser.SQLRecognizer;
@@ -333,16 +333,46 @@ public class DruidSQLRecognizerFactoryTest {
         DruidSQLRecognizerFactoryImpl recognizerFactory = new DruidSQLRecognizerFactoryImpl();
         String sql = "insert into t(id) values (?);insert into t(id) values (?)";
 
-        Assertions.assertThrows(
+        UnsupportedOperationException firstException = Assertions.assertThrows(
                 UnsupportedOperationException.class, () -> recognizerFactory.create(sql, JdbcConstants.MYSQL, true));
         Object firstCachedResult = getOnlyCachedParseResult();
 
-        Assertions.assertThrows(
+        UnsupportedOperationException secondException = Assertions.assertThrows(
                 UnsupportedOperationException.class, () -> recognizerFactory.create(sql, JdbcConstants.MYSQL, true));
         Object secondCachedResult = getOnlyCachedParseResult();
 
+        Assertions.assertEquals(firstException.getMessage(), secondException.getMessage());
         assertSame(firstCachedResult, secondCachedResult);
         Assertions.assertEquals(1, sqlStatementCacheSize());
+    }
+
+    @Test
+    void testCacheableMultiUpdateSqlStatementsAreCached() {
+        clearSqlStatementCache();
+        DruidSQLRecognizerFactoryImpl recognizerFactory = new DruidSQLRecognizerFactoryImpl();
+        String sql = "update t set name = ? where id = ?;update t set name = ? where id = ?";
+
+        List<SQLRecognizer> firstRecognizers = recognizerFactory.create(sql, JdbcConstants.MYSQL, true);
+        Object firstCachedResult = getOnlyCachedParseResult();
+
+        List<SQLRecognizer> secondRecognizers = recognizerFactory.create(sql, JdbcConstants.MYSQL, true);
+        Object secondCachedResult = getOnlyCachedParseResult();
+
+        Assertions.assertEquals(2, firstRecognizers.size());
+        Assertions.assertEquals(2, secondRecognizers.size());
+        assertSame(firstCachedResult, secondCachedResult);
+        Assertions.assertNotSame(firstRecognizers.get(0), secondRecognizers.get(0));
+    }
+
+    @Test
+    void testParserExceptionIsNotCached() {
+        clearSqlStatementCache();
+        DruidSQLRecognizerFactoryImpl recognizerFactory = new DruidSQLRecognizerFactoryImpl();
+
+        Assertions.assertThrows(
+                NotSupportYetException.class, () -> recognizerFactory.create("update", JdbcConstants.MYSQL, true));
+
+        Assertions.assertEquals(0, sqlStatementCacheSize());
     }
 
     @Test
@@ -359,11 +389,55 @@ public class DruidSQLRecognizerFactoryTest {
         Assertions.assertTrue(sqlStatementCacheSize() <= 100);
     }
 
+    @Test
+    void testCacheableSqlStatementsUseDbTypeInCacheKey() {
+        clearSqlStatementCache();
+        DruidSQLRecognizerFactoryImpl recognizerFactory = new DruidSQLRecognizerFactoryImpl();
+        String sql = "update t set name = ? where id = ?";
+
+        recognizerFactory.create(sql, JdbcConstants.MYSQL, true);
+        recognizerFactory.create(sql, JdbcConstants.ORACLE, true);
+
+        Assertions.assertEquals(2, sqlStatementCacheSize());
+    }
+
+    @Test
+    void testSqlStatementCacheMaxSizeCanBeConfigured() {
+        clearSqlStatementCache();
+        DruidSQLRecognizerFactoryImpl recognizerFactory = new DruidSQLRecognizerFactoryImpl();
+
+        for (int i = 0; i < 4; i++) {
+            recognizerFactory.create(
+                    "update t set name = ? where id = ? and c" + i + " = ?", JdbcConstants.MYSQL, true, 2);
+        }
+        sqlStatementCache().cleanUp();
+
+        Assertions.assertTrue(sqlStatementCacheSize() <= 2);
+    }
+
+    @Test
+    void testInvalidSqlStatementCacheMaxSizeFallsBackToDefault() {
+        clearSqlStatementCache();
+        DruidSQLRecognizerFactoryImpl recognizerFactory = new DruidSQLRecognizerFactoryImpl();
+
+        for (int i = 0; i < 101; i++) {
+            recognizerFactory.create(
+                    "update t set name = ? where id = ? and c" + i + " = ?", JdbcConstants.MYSQL, true, 0);
+        }
+        sqlStatementCache().cleanUp();
+
+        Assertions.assertTrue(sqlStatementCacheSize() <= 100);
+        Assertions.assertTrue(sqlStatementCacheSize() > 2);
+    }
+
     private Cache<?, ?> sqlStatementCache() {
         try {
-            Field cacheField = DruidSQLRecognizerFactoryImpl.class.getDeclaredField("SQL_PARSE_RESULT_CACHE");
+            Field cacheHolderField = DruidSQLRecognizerFactoryImpl.class.getDeclaredField("sqlParseResultCacheHolder");
+            cacheHolderField.setAccessible(true);
+            Object cacheHolder = cacheHolderField.get(null);
+            Field cacheField = cacheHolder.getClass().getDeclaredField("cache");
             cacheField.setAccessible(true);
-            return (Cache<?, ?>) cacheField.get(null);
+            return (Cache<?, ?>) cacheField.get(cacheHolder);
         } catch (ReflectiveOperationException e) {
             throw new AssertionError(e);
         }
@@ -374,7 +448,7 @@ public class DruidSQLRecognizerFactoryTest {
     }
 
     private long sqlStatementCacheSize() {
-        return sqlStatementCache().size();
+        return sqlStatementCache().estimatedSize();
     }
 
     private Object getOnlyCachedParseResult() {

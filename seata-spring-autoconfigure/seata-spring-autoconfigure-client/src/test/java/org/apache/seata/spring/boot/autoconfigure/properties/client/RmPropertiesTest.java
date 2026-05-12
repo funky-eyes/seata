@@ -19,6 +19,8 @@ package org.apache.seata.spring.boot.autoconfigure.properties.client;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static org.apache.seata.common.DefaultValues.DEFAULT_CLIENT_SQL_PARSER_CACHE_MAX_SIZE;
+
 public class RmPropertiesTest {
 
     @Test
@@ -56,6 +58,13 @@ public class RmPropertiesTest {
 
         rmProperties.setSqlParserType("type");
         Assertions.assertEquals("type", rmProperties.getSqlParserType());
+
+        rmProperties.setSqlParserCacheEnable(true);
+        Assertions.assertTrue(rmProperties.isSqlParserCacheEnable());
+
+        Assertions.assertEquals(DEFAULT_CLIENT_SQL_PARSER_CACHE_MAX_SIZE, rmProperties.getSqlParserCacheMaxSize());
+        rmProperties.setSqlParserCacheMaxSize(2);
+        Assertions.assertEquals(2, rmProperties.getSqlParserCacheMaxSize());
 
         rmProperties.setBranchExecutionTimeoutXA(1);
         Assertions.assertEquals(1, rmProperties.getBranchExecutionTimeoutXA());

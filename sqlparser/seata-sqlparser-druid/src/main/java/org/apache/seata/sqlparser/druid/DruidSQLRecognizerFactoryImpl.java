@@ -24,10 +24,8 @@ import com.alibaba.druid.sql.ast.statement.SQLReplaceStatement;
 import com.alibaba.druid.sql.ast.statement.SQLSelectStatement;
 import com.alibaba.druid.sql.ast.statement.SQLUpdateStatement;
 import com.alibaba.druid.sql.dialect.oracle.ast.stmt.OracleMultiInsertStatement;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.util.concurrent.ExecutionError;
-import com.google.common.util.concurrent.UncheckedExecutionException;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import org.apache.seata.common.exception.NotSupportYetException;
 import org.apache.seata.sqlparser.SQLRecognizer;
 import org.apache.seata.sqlparser.SQLRecognizerFactory;
@@ -37,16 +35,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ExecutionException;
+
+import static org.apache.seata.common.DefaultValues.DEFAULT_CLIENT_SQL_PARSER_CACHE_MAX_SIZE;
 
 /**
  * DruidSQLRecognizerFactoryImpl
  *
  */
 class DruidSQLRecognizerFactoryImpl implements SQLRecognizerFactory {
-    private static final int SQL_STATEMENT_CACHE_MAX_SIZE = 100;
-    private static final Cache<SqlStatementCacheKey, ParsedSqlStatements> SQL_PARSE_RESULT_CACHE =
-            CacheBuilder.newBuilder().maximumSize(SQL_STATEMENT_CACHE_MAX_SIZE).build();
+    private static volatile SqlParseResultCacheHolder sqlParseResultCacheHolder =
+            new SqlParseResultCacheHolder(DEFAULT_CLIENT_SQL_PARSER_CACHE_MAX_SIZE);
 
     @Override
     public List<SQLRecognizer> create(String sql, String dbType) {
@@ -55,9 +53,15 @@ class DruidSQLRecognizerFactoryImpl implements SQLRecognizerFactory {
 
     @Override
     public List<SQLRecognizer> create(String sql, String dbType, boolean sqlParserCacheable) {
+        return create(sql, dbType, sqlParserCacheable, DEFAULT_CLIENT_SQL_PARSER_CACHE_MAX_SIZE);
+    }
+
+    @Override
+    public List<SQLRecognizer> create(
+            String sql, String dbType, boolean sqlParserCacheable, int sqlParserCacheMaxSize) {
         ParsedSqlStatements parsedSqlStatements;
         try {
-            parsedSqlStatements = parseStatements(sql, dbType, sqlParserCacheable);
+            parsedSqlStatements = parseStatements(sql, dbType, sqlParserCacheable, sqlParserCacheMaxSize);
         } catch (RuntimeException e) {
             if (isParserException(e)) {
                 throw new NotSupportYetException(
@@ -111,23 +115,16 @@ class DruidSQLRecognizerFactoryImpl implements SQLRecognizerFactory {
         return recognizers;
     }
 
-    private ParsedSqlStatements parseStatements(String sql, String dbType, boolean sqlParserCacheable) {
+    private ParsedSqlStatements parseStatements(
+            String sql, String dbType, boolean sqlParserCacheable, int sqlParserCacheMaxSize) {
         String adaptiveDbType = DruidDbTypeAdapter.getAdaptiveDbType(dbType);
         if (!sqlParserCacheable) {
             return parseSqlStatements(sql, adaptiveDbType);
         }
 
         SqlStatementCacheKey cacheKey = new SqlStatementCacheKey(sql, dbType, adaptiveDbType);
-        try {
-            return SQL_PARSE_RESULT_CACHE.get(cacheKey, () -> parseSqlStatements(sql, adaptiveDbType));
-        } catch (ExecutionException e) {
-            throw new IllegalStateException(e.getCause());
-        } catch (UncheckedExecutionException e) {
-            throwUnchecked(e.getCause());
-            throw e;
-        } catch (ExecutionError e) {
-            throw e;
-        }
+        return getSqlParseResultCache(sqlParserCacheMaxSize)
+                .get(cacheKey, key -> parseSqlStatements(sql, adaptiveDbType));
     }
 
     private ParsedSqlStatements parseSqlStatements(String sql, String adaptiveDbType) {
@@ -145,14 +142,40 @@ class DruidSQLRecognizerFactoryImpl implements SQLRecognizerFactory {
         return ParsedSqlStatements.supported(unmodifiableSqlStatements);
     }
 
-    private void throwUnchecked(Throwable cause) {
-        if (cause instanceof RuntimeException) {
-            throw (RuntimeException) cause;
+    private static Cache<SqlStatementCacheKey, ParsedSqlStatements> getSqlParseResultCache(int sqlParserCacheMaxSize) {
+        int normalizedCacheMaxSize = normalizeCacheMaxSize(sqlParserCacheMaxSize);
+        SqlParseResultCacheHolder cacheHolder = sqlParseResultCacheHolder;
+        if (cacheHolder.maxSize == normalizedCacheMaxSize) {
+            return cacheHolder.cache;
         }
-        if (cause instanceof Error) {
-            throw (Error) cause;
+        synchronized (DruidSQLRecognizerFactoryImpl.class) {
+            cacheHolder = sqlParseResultCacheHolder;
+            if (cacheHolder.maxSize != normalizedCacheMaxSize) {
+                sqlParseResultCacheHolder = new SqlParseResultCacheHolder(normalizedCacheMaxSize);
+            }
+            return sqlParseResultCacheHolder.cache;
         }
-        throw new IllegalStateException(cause);
+    }
+
+    private static int normalizeCacheMaxSize(int sqlParserCacheMaxSize) {
+        if (sqlParserCacheMaxSize <= 0) {
+            return DEFAULT_CLIENT_SQL_PARSER_CACHE_MAX_SIZE;
+        }
+        return sqlParserCacheMaxSize;
+    }
+
+    private static Cache<SqlStatementCacheKey, ParsedSqlStatements> newSqlParseResultCache(int sqlParserCacheMaxSize) {
+        return Caffeine.newBuilder().maximumSize(sqlParserCacheMaxSize).build();
+    }
+
+    private static final class SqlParseResultCacheHolder {
+        private final int maxSize;
+        private final Cache<SqlStatementCacheKey, ParsedSqlStatements> cache;
+
+        private SqlParseResultCacheHolder(int maxSize) {
+            this.maxSize = maxSize;
+            this.cache = newSqlParseResultCache(maxSize);
+        }
     }
 
     /**
@@ -160,11 +183,14 @@ class DruidSQLRecognizerFactoryImpl implements SQLRecognizerFactory {
      * Use class name comparison to avoid directly referencing the ParserException class
      */
     private boolean isParserException(Throwable e) {
-        if (e == null) {
-            return false;
+        Class<?> exceptionClass = e == null ? null : e.getClass();
+        while (exceptionClass != null) {
+            if ("com.alibaba.druid.sql.parser.ParserException".equals(exceptionClass.getName())) {
+                return true;
+            }
+            exceptionClass = exceptionClass.getSuperclass();
         }
-        String className = e.getClass().getName();
-        return "com.alibaba.druid.sql.parser.ParserException".equals(className);
+        return false;
     }
 
     private static final class ParsedSqlStatements {
