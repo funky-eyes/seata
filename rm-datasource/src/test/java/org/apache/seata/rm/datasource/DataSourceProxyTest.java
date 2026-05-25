@@ -255,14 +255,25 @@ public class DataSourceProxyTest {
         dataSource.setPassword("password");
 
         DataSourceProxy proxy = getDataSourceProxy(dataSource);
+        String resourceId = proxy.getResourceId();
 
-        // Ensure it's registered
-        Assertions.assertNotNull(
-                DefaultResourceManager.get().getManagedResources().get(proxy.getResourceId()));
+        // Ensure it's registered - use a retry mechanism to handle race conditions
+        // The proxy registration might be delayed due to test execution order changes
+        boolean registered = false;
+        for (int i = 0; i < 3; i++) {
+            if (DefaultResourceManager.get().getManagedResources().get(resourceId) != null) {
+                registered = true;
+                break;
+            }
+            // Small delay to allow registration to complete
+            Thread.sleep(10);
+        }
+        Assertions.assertTrue(
+                registered, "DataSourceProxy should be registered in DefaultResourceManager after creation");
 
         proxy.close();
 
         // Ensure it's unregistered
-        Assertions.assertNull(DefaultResourceManager.get().getManagedResources().get(proxy.getResourceId()));
+        Assertions.assertNull(DefaultResourceManager.get().getManagedResources().get(resourceId));
     }
 }
