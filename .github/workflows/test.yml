@@ -99,6 +99,9 @@ jobs:
           3.1.6  -D spring-framework-bom.version=6.0.14 -D mockito.version=5.3.1  -D junit-jupiter.version=5.9.3,
           3.0.13 -D spring-framework-bom.version=6.0.14,
         ]
+        exclude:
+          - java: 25
+            springboot: 3.0.13 -D spring-framework-bom.version=6.0.14
     steps:
       # step 1
       - name: "Checkout"
