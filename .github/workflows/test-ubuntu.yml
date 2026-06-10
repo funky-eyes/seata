@@ -99,7 +99,7 @@ jobs:
       max-parallel: 6
       fail-fast: false
       matrix:
-        java: [ 17, 21, 25 ]
+        java: [ 17, 21 ]
         os: [
           ubuntu-24.04,
         ]
@@ -136,7 +136,7 @@ jobs:
         run: | # Skip tests, because too many errors in unit-test.
           ./mvnw.cmd -version;
           ./mvnw.cmd clean install -P args-for-client-test -DskipTests -D spring-boot.version=${{ matrix.springboot }} -e -B -D org.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn;
-  # job 2
+  # job 3
   test-springboot3x-jdk25:
     name: "test-springboot3.x-jdk25"
     services:
@@ -158,7 +158,7 @@ jobs:
       max-parallel: 6
       fail-fast: false
       matrix:
-        java: [ 17, 21, 25 ]
+        java: [ 25 ]
         os: [
           ubuntu-24.04,
         ]
@@ -196,7 +196,7 @@ jobs:
           ./mvnw.cmd -version;
           ./mvnw.cmd clean install -P args-for-client-test -DskipTests -D spring-boot.version=${{ matrix.springboot }} -e -B -D org.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn;
 
-  # job 3
+  # job 4
   test-arm64:
     name: "test-arm64"
     runs-on: ubuntu-24.04-arm
