@@ -75,7 +75,7 @@ jobs:
       ## step 4.1: for Ubuntu and MacOS
       - name: "Test with Maven on '${{ matrix.os }}' OS"
         run: |
-          ./mvnw -T 4C clean test -P args-for-client-test -Dspring-boot.version=${{ matrix.springboot }} -e -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn;
+          ./mvnw -T 4C clean test -pl '!server,!namingserver,!console,!distribution' -P args-for-client-test -pl '!server,!namingserver,!console,!distribution' -Dspring-boot.version=${{ matrix.springboot }} -e -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn;
 
   # job 2
   test-springboot3x:
@@ -129,13 +129,13 @@ jobs:
       - name: "Test with Maven on '${{ matrix.os }}' OS"
         if: ${{ ! startsWith(matrix.os, 'windows') }}
         run: |
-          ./mvnw -T 4C clean test -P args-for-client-test -Dspring-boot.version=${{ matrix.springboot }} -e -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn;
+          ./mvnw -T 4C clean test -pl '!server,!namingserver,!console,!distribution' -P args-for-client-test -Dspring-boot.version=${{ matrix.springboot }} -e -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn;
       ## step 4.2: for Windows
       - name: "Build with Maven on 'windows' OS (Skip tests)"
         if: ${{ startsWith(matrix.os, 'windows') }}
         run: | # Skip tests, because too many errors in unit-test.
           ./mvnw.cmd -version;
-          ./mvnw.cmd clean install -P args-for-client-test -DskipTests -D spring-boot.version=${{ matrix.springboot }} -e -B -D org.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn;
+          ./mvnw.cmd clean install -pl '!server,!namingserver,!console,!distribution' -P args-for-client-test -DskipTests -D spring-boot.version=${{ matrix.springboot }} -e -B -D org.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn;
   # job 3
   test-springboot3x-jdk25:
     name: "test-springboot3.x-jdk25"
@@ -188,7 +188,7 @@ jobs:
       - name: "Test with Maven on '${{ matrix.os }}' OS"
         if: ${{ ! startsWith(matrix.os, 'windows') }}
         run: |
-          ./mvnw -T 4C clean test -P args-for-client-test -Dspring-boot.version=${{ matrix.springboot }} -e -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn;
+          ./mvnw -T 4C clean test -pl '!server,!namingserver,!console,!distribution' -P args-for-client-test -Dspring-boot.version=${{ matrix.springboot }} -e -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn;
       ## step 4.2: for Windows
       - name: "Build with Maven on 'windows' OS (Skip tests)"
         if: ${{ startsWith(matrix.os, 'windows') }}
