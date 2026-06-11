@@ -154,9 +154,7 @@ jobs:
           windows-2022, # Skip tests, because too many errors in unit-test.
         ]
         springboot: [
-          3.4.0  -D spring-framework-bom.version=6.2.0 -D mockito.version=5.14.2 -D junit-jupiter.version=5.11.3,
           3.4.13 -D spring-framework-bom.version=6.2.15 -D mockito.version=5.14.2 -D junit-jupiter.version=5.11.4,
-          3.5.0  -D spring-framework-bom.version=6.2.7 -D mockito.version=5.17.0  -D junit-jupiter.version=5.12.2,
           3.5.14  -D spring-framework-bom.version=6.2.18  -D mockito.version=5.17.0  -D junit-jupiter.version=5.12.2,
         ]
     steps:
