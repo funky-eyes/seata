@@ -19,11 +19,6 @@ name: "test"
 on:
   push:
     branches: [ test*, "*.*.*" ]
-  pull_request:
-    branches: [ "*.*.*" ]
-    types: [opened, reopened, synchronize]
-    paths-ignore:
-      - '**.md'    
 jobs:
   # job 1
   test:
