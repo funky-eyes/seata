@@ -216,10 +216,18 @@ public class StateMachineRepositoryImpl implements StateMachineRepository {
         this.defaultTenantId = defaultTenantId;
     }
 
+    /**
+     * @deprecated JSON serialization is configured globally through {@code json.serializerType}.
+     */
+    @Deprecated
     public String getJsonParserName() {
         return jsonParserName;
     }
 
+    /**
+     * @deprecated JSON serialization is configured globally through {@code json.serializerType}.
+     */
+    @Deprecated
     public void setJsonParserName(String jsonParserName) {
         this.jsonParserName = jsonParserName;
     }

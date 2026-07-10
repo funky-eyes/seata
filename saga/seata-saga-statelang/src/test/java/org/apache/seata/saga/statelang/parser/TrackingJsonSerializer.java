@@ -16,19 +16,22 @@
  */
 package org.apache.seata.saga.statelang.parser;
 
-import org.apache.seata.saga.statelang.parser.impl.StateMachineParserImpl;
+import org.apache.seata.common.json.impl.JacksonJsonSerializer;
+import org.apache.seata.common.loader.LoadLevel;
 
-/**
- * A simple factory of State machine language parser
- *
- */
-public class StateMachineParserFactory {
+import java.util.Map;
 
-    /**
-     * @deprecated JSON serialization is configured globally through {@code json.serializerType}.
-     */
-    @Deprecated
-    public static StateMachineParser getStateMachineParser(String jsonParserName) {
-        return new StateMachineParserImpl(jsonParserName);
+@LoadLevel(name = "tracking")
+public class TrackingJsonSerializer extends JacksonJsonSerializer {
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T parseObject(String json, Class<T> type, boolean ignoreAutoType) {
+        T result = super.parseObject(json, type, ignoreAutoType);
+        if (result instanceof Map) {
+            Map<String, Object> objectMap = (Map<String, Object>) result;
+            objectMap.put("Comment", "tracking:" + objectMap.get("Comment"));
+        }
+        return result;
     }
 }

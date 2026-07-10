@@ -22,6 +22,7 @@ import org.apache.seata.common.util.BeanUtils;
 import org.apache.seata.saga.statelang.domain.StateMachine;
 import org.apache.seata.saga.statelang.domain.StateMachineInstance;
 import org.apache.seata.saga.statelang.domain.impl.StateMachineInstanceImpl;
+import org.apache.seata.saga.statelang.parser.impl.StateMachineParserImpl;
 import org.apache.seata.saga.statelang.parser.utils.DesignerJsonTransformer;
 import org.apache.seata.saga.statelang.parser.utils.IOUtils;
 import org.apache.seata.saga.statelang.validator.ValidationException;
@@ -58,6 +59,26 @@ public class StateParserTests {
 
         Assertions.assertEquals("simpleTestStateMachine", stateMachine.getName());
         Assertions.assertFalse(stateMachine.getStates().isEmpty());
+    }
+
+    @Test
+    public void testParserUsesConfiguredFacadeWhenLegacyParserNameIsUnavailable() throws IOException {
+        InputStream inputStream = getInputStreamByPath("statelang/simple_statemachine.json");
+        String json = IOUtils.toString(inputStream, "UTF-8");
+
+        StateMachine stateMachine = new StateMachineParserImpl("unavailable-legacy-provider").parse(json);
+
+        Assertions.assertEquals("tracking:测试状态机定义", stateMachine.getComment());
+    }
+
+    @Test
+    public void testLegacyParserNameEntryPointsAreDeprecated() throws NoSuchMethodException {
+        Assertions.assertTrue(StateMachineParserFactory.class
+                .getDeclaredMethod("getStateMachineParser", String.class)
+                .isAnnotationPresent(Deprecated.class));
+        Assertions.assertTrue(StateMachineParserImpl.class
+                .getDeclaredConstructor(String.class)
+                .isAnnotationPresent(Deprecated.class));
     }
 
     @Test
