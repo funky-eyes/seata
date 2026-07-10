@@ -216,7 +216,10 @@ public interface ConfigurationKeys {
 
     /**
      * The constant CLIENT_SAGA_JSON_PARSER.
+     *
+     * @deprecated use {@link #JSON_SERIALIZER_TYPE} instead
      */
+    @Deprecated
     String CLIENT_SAGA_JSON_PARSER = CLIENT_RM_PREFIX + "sagaJsonParser";
 
     /**

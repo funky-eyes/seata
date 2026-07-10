@@ -16,11 +16,14 @@
  */
 package org.apache.seata.common.json;
 
+import com.alibaba.fastjson.TypeReference;
 import org.apache.seata.common.ConfigurationKeys;
 import org.apache.seata.common.DefaultValues;
 import org.apache.seata.config.Configuration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.lang.reflect.Type;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -104,42 +107,68 @@ public class JsonUtilTest {
     }
 
     @Test
-    public void testResolveJsonSerializerNamePrefersNewConfig() {
+    public void testResolveJsonSerializerNamePrefersTccConfig() {
         Configuration configuration = mock(Configuration.class);
+        when(configuration.getConfig(ConfigurationKeys.TCC_BUSINESS_ACTION_CONTEXT_JSON_PARSER_NAME))
+                .thenReturn("fastjson");
+        when(configuration.getConfig(ConfigurationKeys.CLIENT_SAGA_JSON_PARSER)).thenReturn("fastjson2");
+        when(configuration.getConfig(ConfigurationKeys.JSON_SERIALIZER_TYPE)).thenReturn("gson");
+
+        assertThat(JsonUtil.resolveJsonSerializerName(configuration)).isEqualTo("fastjson");
+    }
+
+    @Test
+    public void testResolveJsonSerializerNamePrefersSagaConfigWhenTccConfigIsBlank() {
+        Configuration configuration = mock(Configuration.class);
+        when(configuration.getConfig(ConfigurationKeys.TCC_BUSINESS_ACTION_CONTEXT_JSON_PARSER_NAME))
+                .thenReturn(" ");
+        when(configuration.getConfig(ConfigurationKeys.CLIENT_SAGA_JSON_PARSER)).thenReturn("fastjson2");
+        when(configuration.getConfig(ConfigurationKeys.JSON_SERIALIZER_TYPE)).thenReturn("gson");
+
+        assertThat(JsonUtil.resolveJsonSerializerName(configuration)).isEqualTo("fastjson2");
+    }
+
+    @Test
+    public void testResolveJsonSerializerNamePrefersCanonicalConfigWhenCompatibilityConfigsAreBlank() {
+        Configuration configuration = mock(Configuration.class);
+        when(configuration.getConfig(ConfigurationKeys.TCC_BUSINESS_ACTION_CONTEXT_JSON_PARSER_NAME))
+                .thenReturn(" ");
+        when(configuration.getConfig(ConfigurationKeys.CLIENT_SAGA_JSON_PARSER)).thenReturn(" ");
         when(configuration.getConfig(ConfigurationKeys.JSON_SERIALIZER_TYPE)).thenReturn("gson");
 
         assertThat(JsonUtil.resolveJsonSerializerName(configuration)).isEqualTo("gson");
     }
 
     @Test
-    public void testResolveJsonSerializerNameFallsBackToDeprecatedConfig() {
-        Configuration configuration = mock(Configuration.class);
-        when(configuration.getConfig(ConfigurationKeys.JSON_SERIALIZER_TYPE)).thenReturn(null);
-        when(configuration.getConfig(ConfigurationKeys.TCC_BUSINESS_ACTION_CONTEXT_JSON_PARSER_NAME))
-                .thenReturn("fastjson2");
-
-        assertThat(JsonUtil.resolveJsonSerializerName(configuration)).isEqualTo("fastjson2");
-    }
-
-    @Test
     public void testResolveJsonSerializerNameReturnsDefaultWhenConfigMissing() {
         Configuration configuration = mock(Configuration.class);
-        when(configuration.getConfig(ConfigurationKeys.JSON_SERIALIZER_TYPE)).thenReturn(null);
         when(configuration.getConfig(ConfigurationKeys.TCC_BUSINESS_ACTION_CONTEXT_JSON_PARSER_NAME))
                 .thenReturn(null);
+        when(configuration.getConfig(ConfigurationKeys.CLIENT_SAGA_JSON_PARSER)).thenReturn(null);
+        when(configuration.getConfig(ConfigurationKeys.JSON_SERIALIZER_TYPE)).thenReturn(null);
 
         assertThat(JsonUtil.resolveJsonSerializerName(configuration))
                 .isEqualTo(DefaultValues.BUSINESS_ACTION_CONTEXT_JSON_PARSER);
     }
 
     @Test
-    public void testResolveJsonSerializerNameIgnoresBlankNewConfigAndFallsBackToDeprecatedConfig() {
-        Configuration configuration = mock(Configuration.class);
-        when(configuration.getConfig(ConfigurationKeys.JSON_SERIALIZER_TYPE)).thenReturn(" ");
-        when(configuration.getConfig(ConfigurationKeys.TCC_BUSINESS_ACTION_CONTEXT_JSON_PARSER_NAME))
-                .thenReturn("fastjson2");
+    public void testFacadeDelegatesTextualSerializerOperations() {
+        TestObject original = new TestObject("facade", 321);
 
-        assertThat(JsonUtil.resolveJsonSerializerName(configuration)).isEqualTo("fastjson2");
+        String prettyJson = JsonUtil.toJSONString(original, true);
+        assertThat(prettyJson).contains("\n");
+
+        String jsonWithAutoType = JsonUtil.toJSONString(original, false, false);
+        assertThat(JsonUtil.useAutoType(jsonWithAutoType)).isTrue();
+
+        TestObject parsed = JsonUtil.parseObject(jsonWithAutoType, TestObject.class, false);
+        assertThat(parsed.getName()).isEqualTo(original.getName());
+        assertThat(parsed.getValue()).isEqualTo(original.getValue());
+
+        Type type = new TypeReference<TestObject>() {}.getType();
+        TestObject typed = JsonUtil.parseObjectWithType(jsonWithAutoType, type);
+        assertThat(typed.getName()).isEqualTo(original.getName());
+        assertThat(typed.getValue()).isEqualTo(original.getValue());
     }
 
     public static class TestObject {
