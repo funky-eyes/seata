@@ -72,6 +72,7 @@ public class ConsulConfiguration extends AbstractConfiguration {
     private static final int THREAD_POOL_NUM = 1;
     private static final int MAP_INITIAL_CAPACITY = 8;
     private ExecutorService consulNotifierExecutor;
+    private ConsulListener consulConfigListener;
     private static final ConcurrentMap<String, Set<ConfigurationChangeListener>> CONFIG_LISTENERS_MAP =
             new ConcurrentHashMap<>(MAP_INITIAL_CAPACITY);
     private static volatile Properties seataConfig = new Properties();
@@ -276,7 +277,13 @@ public class ConsulConfiguration extends AbstractConfiguration {
     private void initSeataConfig() {
         String key = getConsulConfigKey();
 
-        Response<GetValue> kvValue = getConsulClient().getKVValue(key, getAclToken());
+        Response<GetValue> kvValue;
+        try {
+            kvValue = getConsulClient().getKVValue(key, getAclToken());
+        } catch (RuntimeException e) {
+            LOGGER.warn("init config from Consul failed, key='{}'.", key, e);
+            return;
+        }
         String config = kvValue.getValue().getDecodedValue();
 
         if (StringUtils.isNotBlank(config)) {
@@ -287,8 +294,12 @@ public class ConsulConfiguration extends AbstractConfiguration {
             }
         }
         // Start config change listener for the ConsulConfigKey,default value is "seata.properties".
-        ConsulListener consulListener = new ConsulListener(getConsulConfigKey(), null);
-        consulListener.onProcessEvent(new ConfigurationChangeEvent());
+        try {
+            consulConfigListener = new ConsulListener(getConsulConfigKey(), null);
+            consulConfigListener.onProcessEvent(new ConfigurationChangeEvent());
+        } catch (RuntimeException e) {
+            LOGGER.warn("start Consul config listener failed, key='{}'.", key, e);
+        }
     }
 
     private static String getConsulDataType() {
@@ -297,6 +308,19 @@ public class ConsulConfiguration extends AbstractConfiguration {
 
     private static String getConsulConfigKey() {
         return FILE_CONFIG.getConfig(FILE_CONFIG_KEY_PREFIX + CONSUL_CONFIG_KEY, DEFAULT_CONSUL_CONFIG_KEY_VALUE);
+    }
+
+    void shutdown() {
+        consulNotifierExecutor.shutdownNow();
+        if (consulConfigListener != null) {
+            consulConfigListener.onShutDown();
+        }
+        for (Set<ConfigurationChangeListener> listeners : CONFIG_LISTENERS_MAP.values()) {
+            for (ConfigurationChangeListener listener : listeners) {
+                listener.onShutDown();
+            }
+        }
+        CONFIG_LISTENERS_MAP.clear();
     }
 
     private static String getSeataConfigStr() {
@@ -343,7 +367,7 @@ public class ConsulConfiguration extends AbstractConfiguration {
 
         @Override
         public void onChangeEvent(ConfigurationChangeEvent event) {
-            while (true) {
+            while (!Thread.currentThread().isInterrupted()) {
                 QueryParams queryParams = new QueryParams(DEFAULT_WATCH_TIMEOUT, consulIndex);
                 Response<GetValue> response = getConsulClient().getKVValue(this.dataId, getAclToken(), queryParams);
                 Long currentIndex = response.getConsulIndex();
