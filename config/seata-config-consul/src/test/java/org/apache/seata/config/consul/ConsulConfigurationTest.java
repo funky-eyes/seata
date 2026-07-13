@@ -121,12 +121,14 @@ class ConsulConfigurationTest {
         setField(null, "instance", null);
         setField(null, "seataConfig", new Properties());
 
-        // Mock the aggregated seata.properties payload loaded during ConsulConfiguration initialization.
+        // initSeataConfig loads the configured Consul dataId (seata.properties), not key1 directly.
+        // The decoded value must therefore be a properties payload that contains key1=val1.
         GetValue initValue = mock(GetValue.class);
         when(initValue.getDecodedValue()).thenReturn("key1=val1");
         Response<GetValue> initResponse = new Response<>(initValue, 1L, false, 1L);
         when(mockConsulClient.getKVValue(eq("seata.properties"), (String) isNull())).thenReturn(initResponse);
 
+        // getInstance initializes seataConfig synchronously, so no retry loop is needed here.
         ConsulConfiguration newInstance = ConsulConfiguration.getInstance();
 
         assertEquals("val1", newInstance.getLatestConfig("key1", null, 1000));
