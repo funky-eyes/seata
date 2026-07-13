@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
 import java.net.InetSocketAddress;
+import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -70,7 +71,9 @@ class ConsulConfigurationTest {
         Response<GetValue> mockResponse = new Response<>(mockValue, 1L, false, 1L);
         when(mockConsulClient.getKVValue("seata.properties", (String) null)).thenReturn(mockResponse);
 
+        setField(null, "instance", null);
         setField(null, "client", mockConsulClient);
+        setField(null, "seataConfig", new Properties());
 
         // Initialize singleton
         consulConfig = ConsulConfiguration.getInstance();
@@ -79,6 +82,9 @@ class ConsulConfigurationTest {
     @AfterEach
     void tearDown() {
         mockedNetUtil.close();
+        setField(null, "instance", null);
+        setField(null, "client", null);
+        setField(null, "seataConfig", new Properties());
         reset(mockConsulClient);
     }
 
@@ -112,27 +118,18 @@ class ConsulConfigurationTest {
 
     @Test
     void testInitSeataConfig() throws Exception {
-        // Mock initial config load
+        setField(null, "instance", null);
+        setField(null, "seataConfig", new Properties());
+
+        // Mock the aggregated seata.properties payload loaded during ConsulConfiguration initialization.
         GetValue initValue = mock(GetValue.class);
-        when(initValue.getDecodedValue()).thenReturn("val1");
+        when(initValue.getDecodedValue()).thenReturn("key1=val1");
         Response<GetValue> initResponse = new Response<>(initValue, 1L, false, 1L);
-        when(mockConsulClient.getKVValue(eq("key1"), (String) isNull())).thenReturn(initResponse);
+        when(mockConsulClient.getKVValue(eq("seata.properties"), (String) isNull())).thenReturn(initResponse);
 
         ConsulConfiguration newInstance = ConsulConfiguration.getInstance();
 
-        // Short retry loop to absorb potential propagation delay in CI environments
-        String value = null;
-        long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(3); // Max ~3 seconds
-        do {
-            value = newInstance.getLatestConfig("key1", null, 1000);
-            if ("val1".equals(value)) {
-                break;
-            }
-            Thread.sleep(100);
-        } while (System.nanoTime() < deadline);
-
-        // Verify that the value retrieved matches the expected one
-        assertEquals("val1", value, "KV should be visible after a short await");
+        assertEquals("val1", newInstance.getLatestConfig("key1", null, 1000));
     }
 
     @Test
