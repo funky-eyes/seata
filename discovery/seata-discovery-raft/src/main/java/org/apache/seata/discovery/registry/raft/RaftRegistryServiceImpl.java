@@ -16,18 +16,17 @@
  */
 package org.apache.seata.discovery.registry.raft;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.Response;
 import org.apache.http.HttpStatus;
 import org.apache.http.entity.ContentType;
 import org.apache.http.protocol.HTTP;
 import org.apache.seata.common.ConfigurationKeys;
 import org.apache.seata.common.exception.AuthenticationFailedException;
+import org.apache.seata.common.exception.JsonParseException;
 import org.apache.seata.common.exception.NotSupportYetException;
 import org.apache.seata.common.exception.ParseEndpointException;
 import org.apache.seata.common.exception.RetryableException;
+import org.apache.seata.common.json.JsonUtil;
 import org.apache.seata.common.metadata.ClusterWatchEvent;
 import org.apache.seata.common.metadata.Metadata;
 import org.apache.seata.common.metadata.MetadataResponse;
@@ -107,8 +106,6 @@ public class RaftRegistryServiceImpl implements RegistryService<ConfigChangeList
     private static final Map<String, List<InetSocketAddress>> INIT_ADDRESSES = new HashMap<>();
 
     private static final Metadata METADATA = new Metadata();
-
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private static volatile String CURRENT_TRANSACTION_SERVICE_GROUP;
 
@@ -795,7 +792,7 @@ public class RaftRegistryServiceImpl implements RegistryService<ConfigChangeList
                 }
                 if (StringUtils.isNotBlank(response)) {
                     try {
-                        MetadataResponse metadataResponse = OBJECT_MAPPER.readValue(response, MetadataResponse.class);
+                        MetadataResponse metadataResponse = JsonUtil.parseObject(response, MetadataResponse.class);
                         if (CollectionUtils.isEmpty(metadataResponse.getNodes())) {
                             LOGGER.warn(
                                     "empty metadata nodes from cluster endpoint, clusterName={}, group={}, response={}",
@@ -805,7 +802,7 @@ public class RaftRegistryServiceImpl implements RegistryService<ConfigChangeList
                             return;
                         }
                         METADATA.refreshMetadata(clusterName, metadataResponse);
-                    } catch (JsonProcessingException e) {
+                    } catch (JsonParseException e) {
                         LOGGER.error(e.getMessage(), e);
                     }
                 }
@@ -831,13 +828,13 @@ public class RaftRegistryServiceImpl implements RegistryService<ConfigChangeList
                 if (httpResponse.code() == HttpStatus.SC_OK) {
                     if (httpResponse.body() != null) {
                         response = httpResponse.body().string();
-                        JsonNode jsonNode = OBJECT_MAPPER.readTree(response);
-                        String codeStatus = jsonNode.get("code").asText();
+                        Map<String, Object> responseMap = JsonUtil.parseObject(response, Map.class);
+                        String codeStatus = String.valueOf(responseMap.get("code"));
                         if (!StringUtils.equals(codeStatus, "200")) {
                             throw new AuthenticationFailedException(
                                     "Authentication failed! you should configure the correct username and password.");
                         }
-                        jwtToken = jsonNode.get("data").asText();
+                        jwtToken = String.valueOf(responseMap.get("data"));
                         tokenTimeStamp = System.currentTimeMillis();
                     } else {
                         throw new AuthenticationFailedException("Authentication failed! Response body is null.");
@@ -847,7 +844,7 @@ public class RaftRegistryServiceImpl implements RegistryService<ConfigChangeList
                             "Authentication failed! you should configure the correct username and password.");
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | JsonParseException e) {
             throw new RetryableException(e.getMessage(), e);
         }
     }
