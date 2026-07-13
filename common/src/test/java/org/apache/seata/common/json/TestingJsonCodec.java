@@ -36,6 +36,7 @@ public class TestingJsonCodec implements JsonCodec {
     private static final Pattern GROUP_PATTERN = Pattern.compile("\"group\"\\s*:\\s*\"([^\"]*)\"");
     private static final Pattern TIMESTAMP_PATTERN = Pattern.compile("\"timestamp\"\\s*:\\s*(\\d+)");
     private static final Pattern TERM_PATTERN = Pattern.compile("\"term\"\\s*:\\s*(\\d+)");
+    private static final Pattern NULL_METADATA_PATTERN = Pattern.compile("\"metadata\"\\s*:\\s*null");
 
     @Override
     public String toJSONString(Object object) {
@@ -64,9 +65,11 @@ public class TestingJsonCodec implements JsonCodec {
         ClusterWatchEvent event = new ClusterWatchEvent();
         event.setGroup(findString(GROUP_PATTERN, text));
         event.setTimestamp(findLong(TIMESTAMP_PATTERN, text));
-        MetadataResponse metadata = new MetadataResponse();
-        metadata.setTerm(findLong(TERM_PATTERN, text));
-        event.setMetadata(metadata);
+        if (!NULL_METADATA_PATTERN.matcher(text).find()) {
+            MetadataResponse metadata = new MetadataResponse();
+            metadata.setTerm(findLong(TERM_PATTERN, text));
+            event.setMetadata(metadata);
+        }
         return clazz.cast(event);
     }
 

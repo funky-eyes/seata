@@ -26,6 +26,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.apache.seata.common.exception.JsonParseException;
 import org.apache.seata.common.json.JsonCodecFactory;
+import org.apache.seata.common.thread.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,41 +65,38 @@ public class HttpClientUtil {
     private static final int HTTP2_WATCH_READ_TIMEOUT_SECONDS_DEFAULT = 300;
 
     static {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            HTTP_CLIENT_MAP.values().parallelStream().forEach(client -> {
-                try {
-                    // Delay 3 seconds to ensure unregister HTTP requests are sent successfully
-                    Thread.sleep(3000);
-                    client.dispatcher().executorService().shutdown();
-                    // Wait for up to 3 seconds for in-flight requests to complete
-                    if (!client.dispatcher().executorService().awaitTermination(3, TimeUnit.SECONDS)) {
-                        LOGGER.warn("Timeout waiting for OkHttp executor service to terminate.");
-                    }
-                    client.connectionPool().evictAll();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    LOGGER.error("Interrupted while waiting for OkHttp executor service to terminate.", e);
-                } catch (Exception e) {
-                    LOGGER.error(e.getMessage(), e);
-                }
-            });
+        Runtime.getRuntime()
+                .addShutdownHook(new NamedThreadFactory("http-client-shutdown", 1, false)
+                        .newThread(HttpClientUtil::shutdownHttpClients));
+    }
 
-            HTTP2_CLIENT_MAP.values().parallelStream().forEach(client -> {
-                try {
-                    client.dispatcher().executorService().shutdown();
-                    // Wait for up to 3 seconds for in-flight requests to complete
-                    if (!client.dispatcher().executorService().awaitTermination(3, TimeUnit.SECONDS)) {
-                        LOGGER.warn("Timeout waiting for OkHttp executor service to terminate.");
-                    }
-                    client.connectionPool().evictAll();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    LOGGER.error("Interrupted while waiting for OkHttp executor service to terminate.", e);
-                } catch (Exception e) {
-                    LOGGER.error(e.getMessage(), e);
-                }
-            });
-        }));
+    private static void shutdownHttpClients() {
+        for (OkHttpClient client : HTTP_CLIENT_MAP.values()) {
+            shutdownHttpClient(client, true);
+        }
+        for (OkHttpClient client : HTTP2_CLIENT_MAP.values()) {
+            shutdownHttpClient(client, false);
+        }
+    }
+
+    private static void shutdownHttpClient(OkHttpClient client, boolean delayBeforeShutdown) {
+        try {
+            if (delayBeforeShutdown) {
+                // Delay 3 seconds to ensure unregister HTTP requests are sent successfully
+                Thread.sleep(3000);
+            }
+            client.dispatcher().executorService().shutdown();
+            // Wait for up to 3 seconds for in-flight requests to complete
+            if (!client.dispatcher().executorService().awaitTermination(3, TimeUnit.SECONDS)) {
+                LOGGER.warn("Timeout waiting for OkHttp executor service to terminate.");
+            }
+            client.connectionPool().evictAll();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOGGER.error("Interrupted while waiting for OkHttp executor service to terminate.", e);
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+        }
     }
 
     public static Response doPost(String url, Map<String, String> params, Map<String, String> header, int timeout)

@@ -43,6 +43,11 @@ public final class JsonUtil {
             JsonSerializerFactory.getSerializer(CONFIG_JSON_SERIALIZER_NAME);
 
     static String resolveJsonSerializerName(Configuration configuration) {
+        String serializerType = configuration.getConfig(ConfigurationKeys.JSON_SERIALIZER_TYPE);
+        if (StringUtils.isNotBlank(serializerType)) {
+            return serializerType;
+        }
+
         String deprecatedTccSerializerType =
                 configuration.getConfig(ConfigurationKeys.TCC_BUSINESS_ACTION_CONTEXT_JSON_PARSER_NAME);
         if (StringUtils.isNotBlank(deprecatedTccSerializerType)) {
@@ -60,11 +65,6 @@ public final class JsonUtil {
                     ConfigurationKeys.CLIENT_SAGA_JSON_PARSER,
                     ConfigurationKeys.JSON_SERIALIZER_TYPE);
             return deprecatedSagaSerializerType;
-        }
-
-        String serializerType = configuration.getConfig(ConfigurationKeys.JSON_SERIALIZER_TYPE);
-        if (StringUtils.isNotBlank(serializerType)) {
-            return serializerType;
         }
 
         return DefaultValues.BUSINESS_ACTION_CONTEXT_JSON_PARSER;

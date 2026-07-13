@@ -134,8 +134,12 @@ public class NamingserverRegistryServiceImpl implements RegistryService<NamingLi
         TOKEN_EXPIRE_TIME_IN_MILLISECONDS = FILE_CONFIG.getLong(getTokenExpireTimeInMillisecondsKey(), 29 * 60 * 1000L);
         USERNAME = FILE_CONFIG.getConfig(getUserNameKey());
         PASSWORD = FILE_CONFIG.getConfig(getPassWordKey());
-        Runtime.getRuntime().addShutdownHook(new Thread(NOTIFIER_EXECUTOR::shutdown));
-        Runtime.getRuntime().addShutdownHook(new Thread(SCHEDULED_THREAD_POOL_EXECUTOR::shutdown));
+        Runtime.getRuntime()
+                .addShutdownHook(new NamedThreadFactory("namingserver-notifier-shutdown", 1, false)
+                        .newThread(NOTIFIER_EXECUTOR::shutdown));
+        Runtime.getRuntime()
+                .addShutdownHook(new NamedThreadFactory("namingserver-scheduler-shutdown", 1, false)
+                        .newThread(SCHEDULED_THREAD_POOL_EXECUTOR::shutdown));
     }
 
     private NamingserverRegistryServiceImpl() {
