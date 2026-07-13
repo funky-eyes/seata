@@ -795,7 +795,7 @@ public class RaftRegistryServiceImpl implements RegistryService<ConfigChangeList
                 }
                 if (StringUtils.isNotBlank(response)) {
                     try {
-                        MetadataResponse metadataResponse = JsonUtil.parseObject(response, MetadataResponse.class);
+                        MetadataResponse metadataResponse = JsonUtil.parseObject(response, MetadataResponse.class, true);
                         if (CollectionUtils.isEmpty(metadataResponse.getNodes())) {
                             LOGGER.warn(
                                     "empty metadata nodes from cluster endpoint, clusterName={}, group={}, response={}",
@@ -831,7 +831,7 @@ public class RaftRegistryServiceImpl implements RegistryService<ConfigChangeList
                 if (httpResponse.code() == HttpStatus.SC_OK) {
                     if (httpResponse.body() != null) {
                         response = httpResponse.body().string();
-                        Map<String, Object> responseMap = JsonUtil.parseObject(response, Map.class);
+                        Map<String, Object> responseMap = JsonUtil.parseObject(response, Map.class, true);
                         String codeStatus = String.valueOf(responseMap.get("code"));
                         if (!StringUtils.equals(codeStatus, "200")) {
                             throw new AuthenticationFailedException(

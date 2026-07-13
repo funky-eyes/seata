@@ -88,7 +88,7 @@ public abstract class AbstractHttpExecutor implements HttpExecutor {
             if (paramObject instanceof String) {
                 String sParam = (String) paramObject;
                 try {
-                    content = JsonUtil.toJSONString(JsonUtil.parseObject(sParam, Object.class));
+                    content = JsonUtil.toJSONString(JsonUtil.parseObject(sParam, Object.class, true));
                 } catch (JsonParseException e) {
                     // Interface provider process parse exception
                     if (LOGGER.isWarnEnabled()) {
@@ -174,7 +174,7 @@ public abstract class AbstractHttpExecutor implements HttpExecutor {
     }
 
     public static <T> Map<String, String> convertParamOfJsonString(String jsonStr, Class<T> returnType) {
-        return convertParamOfBean(JsonUtil.parseObject(jsonStr, returnType));
+        return convertParamOfBean(JsonUtil.parseObject(jsonStr, returnType, true));
     }
 
     private static void normalizeNullStringParameters(Object sourceParam, Map<String, Object> parameters) {
