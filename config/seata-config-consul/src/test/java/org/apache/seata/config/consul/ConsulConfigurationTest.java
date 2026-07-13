@@ -126,7 +126,8 @@ class ConsulConfigurationTest {
         GetValue initValue = mock(GetValue.class);
         when(initValue.getDecodedValue()).thenReturn("key1=val1");
         Response<GetValue> initResponse = new Response<>(initValue, 1L, false, 1L);
-        when(mockConsulClient.getKVValue(eq("seata.properties"), (String) isNull())).thenReturn(initResponse);
+        when(mockConsulClient.getKVValue(eq("seata.properties"), (String) isNull()))
+                .thenReturn(initResponse);
 
         // getInstance initializes seataConfig synchronously, so no retry loop is needed here.
         ConsulConfiguration newInstance = ConsulConfiguration.getInstance();

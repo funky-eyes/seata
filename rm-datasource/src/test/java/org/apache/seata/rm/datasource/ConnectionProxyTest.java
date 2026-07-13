@@ -45,7 +45,6 @@ import java.lang.reflect.Modifier;
 import java.sql.SQLException;
 import java.sql.Savepoint;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.nullable;
