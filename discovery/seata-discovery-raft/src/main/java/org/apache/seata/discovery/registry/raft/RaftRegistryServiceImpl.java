@@ -31,6 +31,7 @@ import org.apache.seata.common.metadata.ClusterWatchEvent;
 import org.apache.seata.common.metadata.Metadata;
 import org.apache.seata.common.metadata.MetadataResponse;
 import org.apache.seata.common.metadata.Node;
+import org.apache.seata.common.thread.NamedThreadFactory;
 import org.apache.seata.common.thread.ThreadPoolExecutorFactory;
 import org.apache.seata.common.util.CollectionUtils;
 import org.apache.seata.common.util.HttpClientUtil;
@@ -232,13 +233,15 @@ public class RaftRegistryServiceImpl implements RegistryService<ConfigChangeList
                         }
                         closeHttp2Watch();
                     });
-                    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                        CLOSED.compareAndSet(false, true);
-                        closeHttp2Watch();
-                        if (REFRESH_METADATA_EXECUTOR != null) {
-                            REFRESH_METADATA_EXECUTOR.shutdown();
-                        }
-                    }));
+                    Runtime.getRuntime()
+                            .addShutdownHook(new NamedThreadFactory("raft-registry-shutdown", 1, false)
+                                    .newThread(() -> {
+                                        CLOSED.compareAndSet(false, true);
+                                        closeHttp2Watch();
+                                        if (REFRESH_METADATA_EXECUTOR != null) {
+                                            REFRESH_METADATA_EXECUTOR.shutdown();
+                                        }
+                                    }));
                 }
             }
         }
