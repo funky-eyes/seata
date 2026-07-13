@@ -19,6 +19,7 @@ package org.apache.seata.common.json;
 import com.alibaba.fastjson.TypeReference;
 import org.apache.seata.common.ConfigurationKeys;
 import org.apache.seata.common.DefaultValues;
+import org.apache.seata.common.loader.EnhancedServiceLoader;
 import org.apache.seata.config.Configuration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -169,6 +170,19 @@ public class JsonUtilTest {
         TestObject typed = JsonUtil.parseObjectWithType(jsonWithAutoType, type);
         assertThat(typed.getName()).isEqualTo(original.getName());
         assertThat(typed.getValue()).isEqualTo(original.getValue());
+    }
+
+    @Test
+    public void testJsonCodecProviderDelegatesToJsonUtil() {
+        JsonCodec codec = EnhancedServiceLoader.load(JsonCodec.class);
+        assertThat(codec).isInstanceOf(JsonUtilCodec.class);
+
+        TestObject original = new TestObject("codec", 654);
+        String json = codec.toJSONString(original);
+        TestObject parsed = codec.parseObject(json, TestObject.class);
+
+        assertThat(parsed.getName()).isEqualTo(original.getName());
+        assertThat(parsed.getValue()).isEqualTo(original.getValue());
     }
 
     public static class TestObject {
