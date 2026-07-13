@@ -27,6 +27,7 @@ import org.apache.seata.config.ConfigurationChangeEvent;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 
 import java.net.InetSocketAddress;
@@ -40,6 +41,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.isNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
@@ -50,6 +52,7 @@ class ConsulConfigurationTest {
     private ConsulClient mockConsulClient;
     private Configuration mockFileConfig;
     private MockedStatic<NetUtil> mockedNetUtil;
+    private MockedConstruction<ConsulClient> mockedConsulClientConstruction;
 
     @BeforeEach
     void setUp() {
@@ -58,6 +61,8 @@ class ConsulConfigurationTest {
         mockFileConfig = mock(Configuration.class);
         mockConsulClient = mock(ConsulClient.class);
         mockedNetUtil = mockStatic(NetUtil.class);
+        mockedConsulClientConstruction =
+                mockConstruction(ConsulClient.class, (mock, context) -> stubConsulClient(mock));
 
         // Setup static mocks
         when(mockFileConfig.getConfig(anyString(), anyString())).thenReturn("seata.properties");
@@ -66,10 +71,7 @@ class ConsulConfigurationTest {
                 .when(() -> NetUtil.toInetSocketAddress("127.0.0.1:8500"))
                 .thenReturn(new InetSocketAddress("localhost", 8500));
 
-        GetValue mockValue = mock(GetValue.class);
-        when(mockValue.getDecodedValue()).thenReturn("testValue");
-        Response<GetValue> mockResponse = new Response<>(mockValue, 1L, false, 1L);
-        when(mockConsulClient.getKVValue("seata.properties", (String) null)).thenReturn(mockResponse);
+        stubConsulClient(mockConsulClient);
 
         setField(null, "instance", null);
         setField(null, "client", mockConsulClient);
@@ -81,11 +83,19 @@ class ConsulConfigurationTest {
 
     @AfterEach
     void tearDown() {
+        mockedConsulClientConstruction.close();
         mockedNetUtil.close();
         setField(null, "instance", null);
         setField(null, "client", null);
         setField(null, "seataConfig", new Properties());
         reset(mockConsulClient);
+    }
+
+    private void stubConsulClient(ConsulClient consulClient) {
+        GetValue mockValue = mock(GetValue.class);
+        when(mockValue.getDecodedValue()).thenReturn("testValue");
+        Response<GetValue> mockResponse = new Response<>(mockValue, 1L, false, 1L);
+        when(consulClient.getKVValue("seata.properties", (String) null)).thenReturn(mockResponse);
     }
 
     @Test
