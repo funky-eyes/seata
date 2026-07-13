@@ -504,16 +504,7 @@ public class HttpClientUtilTest {
         hooksField.setAccessible(true);
         Map<Thread, Thread> hooks = (Map<Thread, Thread>) hooksField.get(null);
         Thread targetHook = hooks.keySet().stream()
-                .filter(h -> {
-                    try {
-                        Field targetField = Thread.class.getDeclaredField("target");
-                        targetField.setAccessible(true);
-                        Object target = targetField.get(h);
-                        return target != null && target.toString().contains("HttpClientUtil");
-                    } catch (Exception e) {
-                        return false;
-                    }
-                })
+                .filter(h -> h.getName().contains("http-client-shutdown"))
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("No HttpClientUtil shutdown hook found"));
 
