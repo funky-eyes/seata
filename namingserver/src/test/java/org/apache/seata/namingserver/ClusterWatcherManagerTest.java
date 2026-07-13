@@ -160,8 +160,7 @@ public class ClusterWatcherManagerTest {
         assertNotNull(watchers.get(testGroup));
         assertEquals(1, watchers.get(testGroup).size());
 
-        ClusterChangeEvent event =
-                new ClusterChangeEvent(this, testGroup, testNamespace, testCluster, testTerm + 1);
+        ClusterChangeEvent event = new ClusterChangeEvent(this, testGroup, testNamespace, testCluster, testTerm + 1);
         clusterWatcherManager.onChangeEvent(event);
 
         Mockito.verify(response).setStatus(HttpServletResponse.SC_OK);
@@ -178,8 +177,7 @@ public class ClusterWatcherManagerTest {
     void testGetWatcherIpList() {
         Watcher<AsyncContext> watcher1 = new Watcher<>(testGroup, asyncContext, testTimeout, testTerm, "127.0.0.1");
         Watcher<AsyncContext> watcher2 = new Watcher<>(testGroup, asyncContext, testTimeout, testTerm, "127.0.0.1");
-        Watcher<AsyncContext> watcher3 =
-                new Watcher<>(testGroup, asyncContext, testTimeout, testTerm, "192.168.1.1");
+        Watcher<AsyncContext> watcher3 = new Watcher<>(testGroup, asyncContext, testTimeout, testTerm, "192.168.1.1");
 
         clusterWatcherManager.registryWatcher(watcher1);
         clusterWatcherManager.registryWatcher(watcher2);
