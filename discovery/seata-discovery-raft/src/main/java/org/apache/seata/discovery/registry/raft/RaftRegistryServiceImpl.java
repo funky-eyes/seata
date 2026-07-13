@@ -234,8 +234,8 @@ public class RaftRegistryServiceImpl implements RegistryService<ConfigChangeList
                         closeHttp2Watch();
                     });
                     Runtime.getRuntime()
-                            .addShutdownHook(new NamedThreadFactory("raft-registry-shutdown", 1, false)
-                                    .newThread(() -> {
+                            .addShutdownHook(
+                                    new NamedThreadFactory("raft-registry-shutdown", 1, false).newThread(() -> {
                                         CLOSED.compareAndSet(false, true);
                                         closeHttp2Watch();
                                         if (REFRESH_METADATA_EXECUTOR != null) {
@@ -795,7 +795,8 @@ public class RaftRegistryServiceImpl implements RegistryService<ConfigChangeList
                 }
                 if (StringUtils.isNotBlank(response)) {
                     try {
-                        MetadataResponse metadataResponse = JsonUtil.parseObject(response, MetadataResponse.class, true);
+                        MetadataResponse metadataResponse =
+                                JsonUtil.parseObject(response, MetadataResponse.class, true);
                         if (CollectionUtils.isEmpty(metadataResponse.getNodes())) {
                             LOGGER.warn(
                                     "empty metadata nodes from cluster endpoint, clusterName={}, group={}, response={}",
