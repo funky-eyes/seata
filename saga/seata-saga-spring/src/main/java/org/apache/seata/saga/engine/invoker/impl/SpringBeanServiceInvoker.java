@@ -53,8 +53,8 @@ public class SpringBeanServiceInvoker implements ServiceInvoker, ApplicationCont
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpringBeanServiceInvoker.class);
 
-    private final ResourceLock METHOD_LOCK = new ResourceLock();
-    private final ResourceLock RETRY_LOCK = new ResourceLock();
+    private final ResourceLock methodLock = new ResourceLock();
+    private final ResourceLock retryLock = new ResourceLock();
 
     private ApplicationContext applicationContext;
     private ThreadPoolExecutor threadPoolExecutor;
@@ -108,7 +108,7 @@ public class SpringBeanServiceInvoker implements ServiceInvoker, ApplicationCont
 
         Method method = state.getMethod();
         if (method == null) {
-            try (ResourceLock ignored = METHOD_LOCK.obtain()) {
+            try (ResourceLock ignored = methodLock.obtain()) {
                 method = state.getMethod();
                 if (method == null) {
                     method = findMethod(bean.getClass(), state.getServiceMethod(), state.getParameterTypes());
@@ -199,7 +199,7 @@ public class SpringBeanServiceInvoker implements ServiceInvoker, ApplicationCont
                 } else {
                     List<Class<? extends Exception>> exceptionClasses = retryConfig.getExceptionClasses();
                     if (exceptionClasses == null) {
-                        try (ResourceLock ignored = RETRY_LOCK.obtain()) {
+                        try (ResourceLock ignored = retryLock.obtain()) {
                             exceptionClasses = retryConfig.getExceptionClasses();
                             if (exceptionClasses == null) {
 
