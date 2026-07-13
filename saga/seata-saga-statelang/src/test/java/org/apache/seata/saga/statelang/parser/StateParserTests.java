@@ -18,10 +18,13 @@ package org.apache.seata.saga.statelang.parser;
 
 import org.apache.seata.common.json.JsonSerializer;
 import org.apache.seata.common.json.JsonSerializerFactory;
+import org.apache.seata.common.json.JsonUtil;
 import org.apache.seata.common.util.BeanUtils;
 import org.apache.seata.saga.statelang.domain.StateMachine;
 import org.apache.seata.saga.statelang.domain.StateMachineInstance;
 import org.apache.seata.saga.statelang.domain.impl.StateMachineInstanceImpl;
+import org.apache.seata.saga.statelang.parser.impl.FastjsonParser;
+import org.apache.seata.saga.statelang.parser.impl.JacksonJsonParser;
 import org.apache.seata.saga.statelang.parser.impl.StateMachineParserImpl;
 import org.apache.seata.saga.statelang.parser.utils.DesignerJsonTransformer;
 import org.apache.seata.saga.statelang.parser.utils.IOUtils;
@@ -79,6 +82,27 @@ public class StateParserTests {
         Assertions.assertTrue(StateMachineParserImpl.class
                 .getDeclaredConstructor(String.class)
                 .isAnnotationPresent(Deprecated.class));
+    }
+
+    @Test
+    public void testDeprecatedParsersDelegateTextOperationsToJsonUtil() {
+        TestValue value = new TestValue("value");
+        String typedJson = JsonUtil.toJSONString(value, false, false);
+        String untypedJson = JsonUtil.toJSONString(value, true, false);
+
+        assertParserDelegatesToJsonUtil(new FastjsonParser(), value, typedJson, untypedJson);
+        assertParserDelegatesToJsonUtil(new JacksonJsonParser(), value, typedJson, untypedJson);
+    }
+
+    private void assertParserDelegatesToJsonUtil(
+            JsonParser parser, TestValue value, String typedJson, String untypedJson) {
+        Assertions.assertEquals(typedJson, parser.toJsonString(value, false, false));
+        Assertions.assertEquals(JsonUtil.toJSONString(value, false, true), parser.toJsonString(value, false, true));
+        Assertions.assertEquals(untypedJson, parser.toJsonString(value, true, false));
+        Assertions.assertEquals(JsonUtil.toJSONString(value, true, true), parser.toJsonString(value, true, true));
+        Assertions.assertEquals(JsonUtil.useAutoType(typedJson), parser.useAutoType(typedJson));
+        Assertions.assertEquals(value, parser.parse(typedJson, TestValue.class, false));
+        Assertions.assertEquals(value, parser.parse(untypedJson, TestValue.class, true));
     }
 
     @Test
@@ -171,5 +195,25 @@ public class StateParserTests {
         }
 
         return classLoader.getResourceAsStream(path);
+    }
+
+    public static class TestValue {
+
+        private String value;
+
+        public TestValue() {}
+
+        TestValue(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            return object instanceof TestValue && value.equals(((TestValue) object).value);
+        }
     }
 }
