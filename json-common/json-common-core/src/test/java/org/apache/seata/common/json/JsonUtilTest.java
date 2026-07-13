@@ -108,25 +108,25 @@ public class JsonUtilTest {
     }
 
     @Test
-    public void testResolveJsonSerializerNamePrefersCanonicalConfigOverTccConfig() {
+    public void testResolveJsonSerializerNamePrefersTccConfig() {
         Configuration configuration = mock(Configuration.class);
         when(configuration.getConfig(ConfigurationKeys.TCC_BUSINESS_ACTION_CONTEXT_JSON_PARSER_NAME))
                 .thenReturn("fastjson");
         when(configuration.getConfig(ConfigurationKeys.CLIENT_SAGA_JSON_PARSER)).thenReturn("fastjson2");
         when(configuration.getConfig(ConfigurationKeys.JSON_SERIALIZER_TYPE)).thenReturn("gson");
 
-        assertThat(JsonUtil.resolveJsonSerializerName(configuration)).isEqualTo("gson");
+        assertThat(JsonUtil.resolveJsonSerializerName(configuration)).isEqualTo("fastjson");
     }
 
     @Test
-    public void testResolveJsonSerializerNamePrefersCanonicalConfigOverSagaConfig() {
+    public void testResolveJsonSerializerNamePrefersSagaConfigWhenTccConfigIsBlank() {
         Configuration configuration = mock(Configuration.class);
         when(configuration.getConfig(ConfigurationKeys.TCC_BUSINESS_ACTION_CONTEXT_JSON_PARSER_NAME))
                 .thenReturn(" ");
         when(configuration.getConfig(ConfigurationKeys.CLIENT_SAGA_JSON_PARSER)).thenReturn("fastjson2");
         when(configuration.getConfig(ConfigurationKeys.JSON_SERIALIZER_TYPE)).thenReturn("gson");
 
-        assertThat(JsonUtil.resolveJsonSerializerName(configuration)).isEqualTo("gson");
+        assertThat(JsonUtil.resolveJsonSerializerName(configuration)).isEqualTo("fastjson2");
     }
 
     @Test
