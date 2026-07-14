@@ -165,7 +165,7 @@ public final class JsonUtil {
      * @param json the JSON string to check
      * @return true if auto type is used, otherwise false
      */
-public static boolean useAutoType(String json) {
+    public static boolean useAutoType(String json) {
         if (json == null) {
             return false;
         }
