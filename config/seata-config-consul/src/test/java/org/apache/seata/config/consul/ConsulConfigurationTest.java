@@ -119,7 +119,7 @@ class ConsulConfigurationTest {
         // Mock atomic put response
         Response<Boolean> casResponse = new Response<>(true, 1L, false, 1L);
         when(mockConsulClient.setKVValue(
-                        anyString(), nullable(String.class), nullable(String.class), any(PutParams.class)))
+                        nullable(String.class), nullable(String.class), nullable(String.class), any(PutParams.class)))
                 .thenReturn(casResponse);
 
         assertDoesNotThrow(() -> consulConfig.putConfigIfAbsent("atomicKey", "atomicValue", 3000));
@@ -128,6 +128,7 @@ class ConsulConfigurationTest {
     @Test
     void testInitSeataConfig() throws Exception {
         setField(null, "instance", null);
+        setField(null, "client", mockConsulClient);
         setField(null, "seataConfig", new Properties());
 
         // initSeataConfig loads the configured Consul dataId (seata.properties), not key1 directly.
@@ -135,7 +136,8 @@ class ConsulConfigurationTest {
         GetValue initValue = mock(GetValue.class);
         when(initValue.getDecodedValue()).thenReturn("key1=val1");
         Response<GetValue> initResponse = new Response<>(initValue, 1L, false, 1L);
-        when(mockConsulClient.getKVValue(anyString(), nullable(String.class))).thenReturn(initResponse);
+        when(mockConsulClient.getKVValue(nullable(String.class), nullable(String.class)))
+                .thenReturn(initResponse);
 
         // getInstance initializes seataConfig synchronously, so no retry loop is needed here.
         ConsulConfiguration newInstance = ConsulConfiguration.getInstance();
