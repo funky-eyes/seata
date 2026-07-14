@@ -27,12 +27,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static org.apache.seata.core.serializer.SerializerType.FASTJSON2;
@@ -54,16 +52,14 @@ public final class SerializerServiceLoader {
     private static final SerializerType[] DEFAULT_SERIALIZER_TYPE =
             new SerializerType[] {SEATA, PROTOBUF, KRYO, HESSIAN, FASTJSON2, FURY, FORY};
 
-    private static final Map<String, Serializer> SERIALIZER_MAP = new ConcurrentHashMap<>();
+    private static final Map<String, Serializer> SERIALIZER_MAP = new HashMap<>();
 
-    private static final Map<String, String> SERIALIZER_ALIAS_MAP;
+    private static final Map<String, String> SERIALIZER_ALIAS_MAP = new HashMap<>();
 
     private static final String SPLIT_CHAR = ",";
 
     static {
-        Map<String, String> serializerAliasMap = new HashMap<>();
-        serializerAliasMap.put(SerializerType.FURY.name(), SerializerType.FORY.name());
-        SERIALIZER_ALIAS_MAP = Collections.unmodifiableMap(serializerAliasMap);
+        SERIALIZER_ALIAS_MAP.put("fury", "fory");
     }
 
     private SerializerServiceLoader() {}
@@ -102,10 +98,7 @@ public final class SerializerServiceLoader {
             } else {
                 serializer = EnhancedServiceLoader.load(Serializer.class, resolvedSerializerName);
             }
-            Serializer previousSerializer = SERIALIZER_MAP.putIfAbsent(resolvedSerializerName, serializer);
-            if (previousSerializer != null) {
-                serializer = previousSerializer;
-            }
+            SERIALIZER_MAP.put(serializerName, serializer);
         }
         return serializer;
     }
@@ -135,10 +128,7 @@ public final class SerializerServiceLoader {
         if (serializer == null) {
             serializer = EnhancedServiceLoader.load(Serializer.class, resolvedSerializerName);
 
-            Serializer previousSerializer = SERIALIZER_MAP.putIfAbsent(resolvedSerializerName, serializer);
-            if (previousSerializer != null) {
-                serializer = previousSerializer;
-            }
+            SERIALIZER_MAP.put(serializerName, serializer);
         }
         return serializer;
     }
@@ -179,7 +169,6 @@ public final class SerializerServiceLoader {
      * @return the resolved serializer name
      */
     private static String resolveSerializerName(String serializerName) {
-        String normalizedSerializerName = serializerName.trim().toUpperCase();
-        return SERIALIZER_ALIAS_MAP.getOrDefault(normalizedSerializerName, normalizedSerializerName);
+        return SERIALIZER_ALIAS_MAP.getOrDefault(serializerName.toLowerCase(), serializerName);
     }
 }

@@ -27,11 +27,9 @@ import org.apache.seata.config.ConfigurationChangeEvent;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 
 import java.net.InetSocketAddress;
-import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -41,7 +39,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.isNull;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
@@ -52,7 +49,6 @@ class ConsulConfigurationTest {
     private ConsulClient mockConsulClient;
     private Configuration mockFileConfig;
     private MockedStatic<NetUtil> mockedNetUtil;
-    private MockedConstruction<ConsulClient> mockedConsulClientConstruction;
 
     @BeforeEach
     void setUp() {
@@ -61,8 +57,6 @@ class ConsulConfigurationTest {
         mockFileConfig = mock(Configuration.class);
         mockConsulClient = mock(ConsulClient.class);
         mockedNetUtil = mockStatic(NetUtil.class);
-        mockedConsulClientConstruction =
-                mockConstruction(ConsulClient.class, (mock, context) -> stubConsulClient(mock));
 
         // Setup static mocks
         when(mockFileConfig.getConfig(anyString(), anyString())).thenReturn("seata.properties");
@@ -71,11 +65,12 @@ class ConsulConfigurationTest {
                 .when(() -> NetUtil.toInetSocketAddress("127.0.0.1:8500"))
                 .thenReturn(new InetSocketAddress("localhost", 8500));
 
-        stubConsulClient(mockConsulClient);
+        GetValue mockValue = mock(GetValue.class);
+        when(mockValue.getDecodedValue()).thenReturn("testValue");
+        Response<GetValue> mockResponse = new Response<>(mockValue, 1L, false, 1L);
+        when(mockConsulClient.getKVValue("seata.properties", (String) null)).thenReturn(mockResponse);
 
-        setField(null, "instance", null);
         setField(null, "client", mockConsulClient);
-        setField(null, "seataConfig", new Properties());
 
         // Initialize singleton
         consulConfig = ConsulConfiguration.getInstance();
@@ -83,19 +78,8 @@ class ConsulConfigurationTest {
 
     @AfterEach
     void tearDown() {
-        mockedConsulClientConstruction.close();
         mockedNetUtil.close();
-        setField(null, "instance", null);
-        setField(null, "client", null);
-        setField(null, "seataConfig", new Properties());
         reset(mockConsulClient);
-    }
-
-    private void stubConsulClient(ConsulClient consulClient) {
-        GetValue mockValue = mock(GetValue.class);
-        when(mockValue.getDecodedValue()).thenReturn("testValue");
-        Response<GetValue> mockResponse = new Response<>(mockValue, 1L, false, 1L);
-        when(consulClient.getKVValue("seata.properties", (String) null)).thenReturn(mockResponse);
     }
 
     @Test
@@ -128,21 +112,27 @@ class ConsulConfigurationTest {
 
     @Test
     void testInitSeataConfig() throws Exception {
-        setField(null, "instance", null);
-        setField(null, "seataConfig", new Properties());
-
-        // initSeataConfig loads the configured Consul dataId (seata.properties), not key1 directly.
-        // The decoded value must therefore be a properties payload that contains key1=val1.
+        // Mock initial config load
         GetValue initValue = mock(GetValue.class);
-        when(initValue.getDecodedValue()).thenReturn("key1=val1");
+        when(initValue.getDecodedValue()).thenReturn("val1");
         Response<GetValue> initResponse = new Response<>(initValue, 1L, false, 1L);
-        when(mockConsulClient.getKVValue(eq("seata.properties"), (String) isNull()))
-                .thenReturn(initResponse);
+        when(mockConsulClient.getKVValue(eq("key1"), (String) isNull())).thenReturn(initResponse);
 
-        // getInstance initializes seataConfig synchronously, so no retry loop is needed here.
         ConsulConfiguration newInstance = ConsulConfiguration.getInstance();
 
-        assertEquals("val1", newInstance.getLatestConfig("key1", null, 1000));
+        // Short retry loop to absorb potential propagation delay in CI environments
+        String value = null;
+        long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(3); // Max ~3 seconds
+        do {
+            value = newInstance.getLatestConfig("key1", null, 1000);
+            if ("val1".equals(value)) {
+                break;
+            }
+            Thread.sleep(100);
+        } while (System.nanoTime() < deadline);
+
+        // Verify that the value retrieved matches the expected one
+        assertEquals("val1", value, "KV should be visible after a short await");
     }
 
     @Test
