@@ -71,20 +71,30 @@ public class HttpClientUtil {
     }
 
     private static void shutdownHttpClients() {
+        delayBeforeHttp1ClientShutdown();
         for (OkHttpClient client : HTTP_CLIENT_MAP.values()) {
-            shutdownHttpClient(client, true);
+            shutdownHttpClient(client);
         }
         for (OkHttpClient client : HTTP2_CLIENT_MAP.values()) {
-            shutdownHttpClient(client, false);
+            shutdownHttpClient(client);
         }
     }
 
-    private static void shutdownHttpClient(OkHttpClient client, boolean delayBeforeShutdown) {
+    private static void delayBeforeHttp1ClientShutdown() {
+        if (HTTP_CLIENT_MAP.isEmpty()) {
+            return;
+        }
         try {
-            if (delayBeforeShutdown) {
-                // Delay 3 seconds to ensure unregister HTTP requests are sent successfully
-                Thread.sleep(3000);
-            }
+            // Delay 3 seconds to ensure unregister HTTP requests are sent successfully.
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOGGER.error("Interrupted while waiting before OkHttp executor service shutdown.", e);
+        }
+    }
+
+    private static void shutdownHttpClient(OkHttpClient client) {
+        try {
             client.dispatcher().executorService().shutdown();
             // Wait for up to 3 seconds for in-flight requests to complete
             if (!client.dispatcher().executorService().awaitTermination(3, TimeUnit.SECONDS)) {
