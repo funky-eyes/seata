@@ -108,21 +108,8 @@ public class JsonUtilTest {
     }
 
     @Test
-    public void testResolveJsonSerializerNamePrefersTccConfig() {
+    public void testResolveJsonSerializerNamePrefersSagaConfig() {
         Configuration configuration = mock(Configuration.class);
-        when(configuration.getConfig(ConfigurationKeys.TCC_BUSINESS_ACTION_CONTEXT_JSON_PARSER_NAME))
-                .thenReturn("fastjson");
-        when(configuration.getConfig(ConfigurationKeys.CLIENT_SAGA_JSON_PARSER)).thenReturn("fastjson2");
-        when(configuration.getConfig(ConfigurationKeys.JSON_SERIALIZER_TYPE)).thenReturn("gson");
-
-        assertThat(JsonUtil.resolveJsonSerializerName(configuration)).isEqualTo("fastjson");
-    }
-
-    @Test
-    public void testResolveJsonSerializerNamePrefersSagaConfigWhenTccConfigIsBlank() {
-        Configuration configuration = mock(Configuration.class);
-        when(configuration.getConfig(ConfigurationKeys.TCC_BUSINESS_ACTION_CONTEXT_JSON_PARSER_NAME))
-                .thenReturn(" ");
         when(configuration.getConfig(ConfigurationKeys.CLIENT_SAGA_JSON_PARSER)).thenReturn("fastjson2");
         when(configuration.getConfig(ConfigurationKeys.JSON_SERIALIZER_TYPE)).thenReturn("gson");
 
@@ -130,10 +117,8 @@ public class JsonUtilTest {
     }
 
     @Test
-    public void testResolveJsonSerializerNamePrefersCanonicalConfigWhenCompatibilityConfigsAreBlank() {
+    public void testResolveJsonSerializerNameUsesCanonicalConfigWhenSagaConfigIsBlank() {
         Configuration configuration = mock(Configuration.class);
-        when(configuration.getConfig(ConfigurationKeys.TCC_BUSINESS_ACTION_CONTEXT_JSON_PARSER_NAME))
-                .thenReturn(" ");
         when(configuration.getConfig(ConfigurationKeys.CLIENT_SAGA_JSON_PARSER)).thenReturn(" ");
         when(configuration.getConfig(ConfigurationKeys.JSON_SERIALIZER_TYPE)).thenReturn("gson");
 
@@ -143,8 +128,6 @@ public class JsonUtilTest {
     @Test
     public void testResolveJsonSerializerNameReturnsDefaultWhenConfigMissing() {
         Configuration configuration = mock(Configuration.class);
-        when(configuration.getConfig(ConfigurationKeys.TCC_BUSINESS_ACTION_CONTEXT_JSON_PARSER_NAME))
-                .thenReturn(null);
         when(configuration.getConfig(ConfigurationKeys.CLIENT_SAGA_JSON_PARSER)).thenReturn(null);
         when(configuration.getConfig(ConfigurationKeys.JSON_SERIALIZER_TYPE)).thenReturn(null);
 
