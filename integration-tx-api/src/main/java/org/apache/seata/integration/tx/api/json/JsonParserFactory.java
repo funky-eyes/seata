@@ -34,7 +34,7 @@ public class JsonParserFactory {
 
     public static JsonParserWrap getInstance(String jsonParserName) {
         final String name = Optional.ofNullable(jsonParserName)
-                .orElse(DefaultValues.DEFAULT_TCC_BUSINESS_ACTION_CONTEXT_JSON_PARSER);
+                .orElse(DefaultValues.BUSINESS_ACTION_CONTEXT_JSON_PARSER);
         return CollectionUtils.computeIfAbsent(
                 JSON_PARSER_INSTANCES,
                 name,

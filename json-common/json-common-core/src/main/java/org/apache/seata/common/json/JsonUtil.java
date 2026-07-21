@@ -43,18 +43,6 @@ public final class JsonUtil {
             JsonSerializerFactory.getSerializer(CONFIG_JSON_SERIALIZER_NAME);
 
     static String resolveJsonSerializerName(Configuration configuration) {
-        String deprecatedTccSerializerType =
-                configuration.getConfig(ConfigurationKeys.TCC_BUSINESS_ACTION_CONTEXT_JSON_PARSER_NAME);
-        if (StringUtils.isNotBlank(deprecatedTccSerializerType)) {
-            LOGGER.warn(
-                    "The config '{}' is deprecated since 2.7.0 and will be removed in a future version. "
-                            + "It takes precedence over '{}'; remove the deprecated key to let '{}' take effect.",
-                    ConfigurationKeys.TCC_BUSINESS_ACTION_CONTEXT_JSON_PARSER_NAME,
-                    ConfigurationKeys.JSON_SERIALIZER_TYPE,
-                    ConfigurationKeys.JSON_SERIALIZER_TYPE);
-            return deprecatedTccSerializerType;
-        }
-
         String deprecatedSagaSerializerType = configuration.getConfig(ConfigurationKeys.CLIENT_SAGA_JSON_PARSER);
         if (StringUtils.isNotBlank(deprecatedSagaSerializerType)) {
             LOGGER.warn(
