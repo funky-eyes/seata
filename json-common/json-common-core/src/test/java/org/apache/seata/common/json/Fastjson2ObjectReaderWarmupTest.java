@@ -14,21 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.seata.spring.boot.autoconfigure.properties.registry;
+package org.apache.seata.common.json;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class RegistryPropertiesTest {
+import java.util.Arrays;
+
+import static org.assertj.core.api.Assertions.assertThatCode;
+
+public class Fastjson2ObjectReaderWarmupTest {
 
     @Test
-    public void testRegistryProperties() {
-        RegistryProperties registryProperties = new RegistryProperties();
-        registryProperties.setType("type");
-        registryProperties.setPreferredNetworks("network");
-        registryProperties.setIgnoredInterfaces("interface");
-        Assertions.assertEquals("type", registryProperties.getType());
-        Assertions.assertEquals("network", registryProperties.getPreferredNetworks());
-        Assertions.assertEquals("interface", registryProperties.getIgnoredInterfaces());
+    public void warmupAcceptsIterableTypes() {
+        assertThatCode(() -> Fastjson2ObjectReaderWarmup.warmup(Arrays.<Class<?>>asList(String.class, Integer.class)))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    public void warmupAcceptsVarargsTypes() {
+        assertThatCode(() -> Fastjson2ObjectReaderWarmup.warmup(String.class, Integer.class))
+                .doesNotThrowAnyException();
     }
 }
