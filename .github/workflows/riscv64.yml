@@ -65,18 +65,31 @@ jobs:
             riscv64/ubuntu:24.04 \
             bash -euxo pipefail -c '
               apt-get update
-              apt-get install -y --no-install-recommends openjdk-25-jdk-headless ca-certificates curl
+              apt-get install -y --no-install-recommends \
+                openjdk-25-jdk-headless \
+                ca-certificates \
+                curl \
+                protobuf-compiler \
+                protobuf-compiler-grpc-java-plugin
               rm -rf /var/lib/apt/lists/*
+
               test "$(uname -m)" = "riscv64"
+              test -x /usr/bin/protoc
+              test -x /usr/bin/grpc_java_plugin
               uname -a
               java -version
               java -XshowSettings:properties -version 2>&1 | grep "os.arch = riscv64"
+              protoc --version
               ./mvnw -version
+
               ./mvnw -T 2 clean install \
                 -Prelease-seata \
                 -DskipTests \
                 -Dskip.installnodenpm=true \
                 -Dskip.npm=true \
+                -Dos-maven-plugin.version=1.7.1 \
+                -DprotocExecutable=/usr/bin/protoc \
+                -DprotocPluginExecutable=/usr/bin/grpc_java_plugin \
                 -e -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
             '
 
