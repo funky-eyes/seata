@@ -133,7 +133,7 @@
         <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
         <!-- Other -->
         <maven-antrun-plugin.version>1.8</maven-antrun-plugin.version>
-        <os-maven-plugin.version>1.5.0.Final</os-maven-plugin.version>
+        <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
 
         <!-- Default values of the Maven plugins -->
         <checkstyle.skip>true</checkstyle.skip>
@@ -245,7 +245,7 @@
                         <verbose>true</verbose>
                         <dateFormat>yyyy-MM-dd'T'HH:mm:ssZ</dateFormat>
                         <generateGitPropertiesFile>true</generateGitPropertiesFile>
-                        <generateGitPropertiesFilename>${project.build.outputDirectory}/seata-git.properties</generateGitPropertiesFilename>
+                        <generateGeneratedPropertiesFilename>${project.build.outputDirectory}/seata-git.properties</generateGeneratedPropertiesFilename>
                         <includeOnlyProperties>
                             <includeOnlyProperty>git.commit.message.full</includeOnlyProperty>
                             <includeOnlyProperty>git.remote.origin.url</includeOnlyProperty>
