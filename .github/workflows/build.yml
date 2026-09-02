@@ -204,6 +204,8 @@ jobs:
               ./mvnw -T 2 clean install \
                 -Prelease-seata \
                 -DskipTests \
+                -Dskip.installnodenpm=true \
+                -Dskip.npm=true \
                 -e -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
             '
       # step 5
