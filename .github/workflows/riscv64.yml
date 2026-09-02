@@ -19,18 +19,13 @@ name: "RISC-V64 JDK 25 Build"
 on:
   push:
     branches: [ 2.x, develop, master ]
-  pull_request:
-    branches: [ 2.x, develop, master ]
-    types: [opened, reopened, synchronize]
-    paths-ignore:
-      - '**.md'
 
 permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build_riscv64-binary:
