@@ -157,3 +157,59 @@ jobs:
               -Prelease-seata \
               -DskipTests \
               -e -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+
+  # job 3: Build on RISC-V 64-bit with JDK 25 under QEMU (Skip tests).
+  build_riscv64-binary:
+    name: "build for RISC-V64 with JDK 25"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      # step 1
+      - name: "Checkout"
+        uses: actions/checkout@v4
+      # step 2
+      - name: "Set up QEMU for RISC-V64"
+        uses: docker/setup-qemu-action@v4
+        with:
+          platforms: riscv64
+      # step 3
+      - name: "Restore local maven repository cache for RISC-V64"
+        uses: actions/cache/restore@v4
+        id: cache-maven-repository-riscv64
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-riscv64-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-riscv64-maven-
+      # step 4
+      - name: "Build with Maven and JDK 25 on RISC-V64 (Skip tests)"
+        run: |
+          mkdir -p "$HOME/.m2/repository"
+          docker run --rm \
+            --platform linux/riscv64 \
+            --volume "$GITHUB_WORKSPACE:/workspace" \
+            --volume "$HOME/.m2/repository:/root/.m2/repository" \
+            --workdir /workspace \
+            riscv64/ubuntu:24.04 \
+            bash -euxo pipefail -c '
+              apt-get update
+              apt-get install -y --no-install-recommends openjdk-25-jdk-headless ca-certificates curl
+              rm -rf /var/lib/apt/lists/*
+              test "$(uname -m)" = "riscv64"
+              uname -a
+              java -version
+              java -XshowSettings:properties -version 2>&1 | grep "os.arch = riscv64"
+              ./mvnw -version
+              ./mvnw -T 2 clean install \
+                -Prelease-seata \
+                -DskipTests \
+                -e -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+            '
+      # step 5
+      - name: "Save local maven repository cache for RISC-V64"
+        uses: actions/cache/save@v4
+        if: steps.cache-maven-repository-riscv64.outputs.cache-hit != 'true'
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-riscv64-maven-${{ hashFiles('**/pom.xml') }}
