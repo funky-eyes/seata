@@ -40,6 +40,8 @@ header:
     - 'NOTICE'
     - 'DISCLAIMER'
     - '**/org/apache/seata/sqlparser/antlr/**/*.g4'
+    - 'console/src/main/resources/static/console-fe/public/css/bootstrap.css'
+    - 'console/src/main/resources/static/console-fe/public/css/font-awesome.css'
     - 'distribution/licenses/**'
     - 'distribution/LICENSE'
     - 'distribution/LICENSE-*'
