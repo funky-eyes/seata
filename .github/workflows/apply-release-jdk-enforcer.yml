@@ -1,0 +1,44 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0.
+
+name: Apply release JDK guard
+
+on:
+  push:
+    branches:
+      - fix/2.7.0-release-compliance
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/2.7.0-release-compliance
+      - name: Add release JDK enforcement
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('build/pom.xml')
+          text = path.read_text()
+          marker = '''                <plugins>\n                    <!-- Javadoc -->'''
+          replacement = '''                <plugins>\n                    <!-- Release staging must include JDK-gated modules. -->\n                    <plugin>\n                        <groupId>org.apache.maven.plugins</groupId>\n                        <artifactId>maven-enforcer-plugin</artifactId>\n                        <version>${maven-enforcer-plugin.version}</version>\n                        <executions>\n                            <execution>\n                                <id>enforce-release-java</id>\n                                <goals>\n                                    <goal>enforce</goal>\n                                </goals>\n                                <configuration>\n                                    <rules>\n                                        <requireJavaVersion>\n                                            <version>[21,25)</version>\n                                            <message>Release deployment requires JDK 21-24 so seata-threadpool-loom and json-common-jackson3 are included while JDK25-only application modules remain excluded.</message>\n                                        </requireJavaVersion>\n                                    </rules>\n                                </configuration>\n                            </execution>\n                        </executions>\n                    </plugin>\n                    <!-- Javadoc -->'''
+          if marker not in text:
+              raise SystemExit('release profile marker not found')
+          path.write_text(text.replace(marker, replacement, 1))
+          PY
+      - name: Remove temporary workflow
+        run: rm .github/workflows/apply-release-jdk-enforcer.yml
+      - name: Commit Maven release guard
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add build/pom.xml .github/workflows/apply-release-jdk-enforcer.yml
+          git commit -m "fix: require JDK 21 for release staging"
+          git push origin HEAD:fix/2.7.0-release-compliance
