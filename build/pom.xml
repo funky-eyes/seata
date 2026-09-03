@@ -382,8 +382,8 @@
                                 <configuration>
                                     <rules>
                                         <requireJavaVersion>
-                                            <version>[21,25)</version>
-                                            <message>Release deployment requires JDK 21-24 so seata-threadpool-loom and json-common-jackson3 are included while JDK25-only application modules remain excluded.</message>
+                                            <version>[21,)</version>
+                                            <message>Release deployment requires JDK 21 or later so seata-threadpool-loom and json-common-jackson3 are included in Maven staging.</message>
                                         </requireJavaVersion>
                                     </rules>
                                 </configuration>
