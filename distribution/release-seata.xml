@@ -118,11 +118,11 @@
         </file>
 
         <file>
-            <source>../LICENSE</source>
+            <source>LICENSE</source>
             <destName>LICENSE</destName>
         </file>
         <file>
-            <source>../NOTICE</source>
+            <source>NOTICE</source>
             <destName>NOTICE</destName>
         </file>
         <file>
