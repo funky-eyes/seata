@@ -118,6 +118,14 @@
         </file>
 
         <file>
+            <source>../LICENSE</source>
+            <destName>LICENSE</destName>
+        </file>
+        <file>
+            <source>../NOTICE</source>
+            <destName>NOTICE</destName>
+        </file>
+        <file>
             <source>LICENSE-server</source>
             <destName>LICENSE</destName>
             <outputDirectory>seata-server/</outputDirectory>
