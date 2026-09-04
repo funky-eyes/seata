@@ -318,13 +318,10 @@ Apache-2.0 licenses
     io.netty:netty-resolver-dns 4.1.101.Final Apache-2.0
     io.netty:netty-resolver-dns-classes-macos 4.1.101.Final Apache-2.0
     io.netty:netty-resolver-dns-native-macos 4.1.101.Final Apache-2.0
-    io.netty:netty-resolver-dns-native-macos 4.1.101.Final Apache-2.0
     io.netty:netty-transport 4.1.101.Final Apache-2.0
     io.netty:netty-transport-classes-epoll 4.1.101.Final Apache-2.0
     io.netty:netty-transport-classes-kqueue 4.1.101.Final Apache-2.0
     io.netty:netty-transport-native-epoll 4.1.101.Final Apache-2.0
-    io.netty:netty-transport-native-epoll 4.1.101.Final Apache-2.0
-    io.netty:netty-transport-native-kqueue 4.1.101.Final Apache-2.0
     io.netty:netty-transport-native-kqueue 4.1.101.Final Apache-2.0
     io.netty:netty-transport-native-unix-common 4.1.101.Final Apache-2.0
     io.netty:netty-transport-rxtx 4.1.101.Final Apache-2.0
@@ -403,12 +400,16 @@ BSD-3-Clause licenses
 CDDL-1.0 licenses
 ========================================================================
 
-    com.sun.jersey.contribs:jersey-apache-client4 1.19.1 CDDL-1.0 see:licenses/CDDL-1.0
-    com.sun.jersey:jersey-client 1.19.1 CDDL-1.0 see:licenses/CDDL-1.0
-    com.sun.jersey:jersey-core 1.19.1 CDDL-1.0 see:licenses/CDDL-1.0
     javax.ws.rs:jsr311-api 1.1.1 CDDL-1.0 see:licenses/CDDL-1.0
-    javax.servlet:javax.servlet-api 4.0.1 CDDL-1.0 see:licenses/CDDL-1.0
 
+========================================================================
+CDDL-1.1 licenses
+========================================================================
+
+    com.sun.jersey.contribs:jersey-apache-client4 1.19.1 CDDL-1.1 see:licenses/CDDL-1.1
+    com.sun.jersey:jersey-client 1.19.1 CDDL-1.1 see:licenses/CDDL-1.1
+    com.sun.jersey:jersey-core 1.19.1 CDDL-1.1 see:licenses/CDDL-1.1
+    javax.servlet:javax.servlet-api 4.0.1 CDDL-1.1 see:licenses/CDDL-1.1
 
 ========================================================================
 EPL-1.0 licenses
