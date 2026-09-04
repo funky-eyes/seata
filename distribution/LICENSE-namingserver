@@ -256,13 +256,10 @@ Apache-2.0 licenses
     io.netty:netty-resolver-dns 4.1.122.Final Apache-2.0
     io.netty:netty-resolver-dns-classes-macos 4.1.122.Final Apache-2.0
     io.netty:netty-resolver-dns-native-macos 4.1.122.Final Apache-2.0
-    io.netty:netty-resolver-dns-native-macos 4.1.122.Final Apache-2.0
     io.netty:netty-transport 4.1.122.Final Apache-2.0
     io.netty:netty-transport-classes-epoll 4.1.122.Final Apache-2.0
     io.netty:netty-transport-classes-kqueue 4.1.122.Final Apache-2.0
     io.netty:netty-transport-native-epoll 4.1.122.Final Apache-2.0
-    io.netty:netty-transport-native-epoll 4.1.122.Final Apache-2.0
-    io.netty:netty-transport-native-kqueue 4.1.122.Final Apache-2.0
     io.netty:netty-transport-native-kqueue 4.1.122.Final Apache-2.0
     io.netty:netty-transport-native-unix-common 4.1.122.Final Apache-2.0
     io.netty:netty-transport-rxtx 4.1.122.Final Apache-2.0
@@ -303,7 +300,6 @@ Apache-2.0 licenses
     org.springframework.ai:spring-ai-starter-mcp-server-webmvc 1.1.0 Apache-2.0
     org.apache.tomcat:tomcat-annotations-api 10.1.42 Apache-2.0
     org.apache.tomcat.embed:tomcat-embed-websocket 11.0.22 Apache-2.0
-    org.apache.tomcat.embed:tomcat-embed-core 11.0.22 Apache-2.0
     org.apache.tomcat.embed:tomcat-embed-core 11.0.22 Apache-2.0
     org.apache.tomcat.embed:tomcat-embed-el 11.0.22 Apache-2.0
     org.jetbrains.kotlin:kotlin-stdlib 1.9.25 Apache-2.0
@@ -403,10 +399,10 @@ BSD-3-Clause licenses
     node-forge 1.3.3 BSD-3-Clause see:licenses/node-forge-BSD-3-Clause
 
 ========================================================================
-CDDL-1.0 licenses
+CDDL-1.1 licenses
 ========================================================================
 
-    javax.servlet:javax.servlet-api 4.0.1 CDDL-1.0 see:licenses/CDDL-1.0
+    javax.servlet:javax.servlet-api 4.0.1 CDDL-1.1 see:licenses/CDDL-1.1
 
 ========================================================================
 EPL-1.0  licenses
