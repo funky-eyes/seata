@@ -423,7 +423,6 @@ Apache-2.0 licenses
     org.apache.commons:commons-math 2.2 Apache-2.0
     org.apache.tomcat.embed:tomcat-embed-websocket 9.0.106 Apache-2.0
     org.apache.tomcat.embed:tomcat-embed-core 9.0.106 Apache-2.0
-    org.apache.tomcat.embed:tomcat-embed-core 9.0.106 Apache-2.0
     org.apache.tomcat.embed:tomcat-embed-el 9.0.106 Apache-2.0
 
     The following font files are included in the Seata Console:
@@ -509,17 +508,16 @@ CDDL-1.0 licenses
 ========================================================================
 
     javax.ws.rs:jsr311-api 1.1.1 CDDL-1.0 see:licenses/CDDL-1.0
-    javax.servlet:javax.servlet-api 4.0.1 CDDL-1.0 see:licenses/CDDL-1.0
 
 ========================================================================
-CDDL+GPL-1.1 licenses
+CDDL-1.1 licenses
 ========================================================================
 
-    javax.servlet:javax.servlet-api 4.0.1 CDDL+GPL-1.1 see:licenses/CDDL+GPL-1.1
-    org.glassfish:javax.json 1.0.4 CDDL+GPL-1.1 see:licenses/CDDL+GPL-1.1
-    com.sun.jersey.contribs:jersey-apache-client4 1.19.1 CDDL+GPL-1.1 see:licenses/CDDL+GPL-1.1
-    com.sun.jersey:jersey-client 1.19.1 CDDL+GPL-1.1 see:licenses/CDDL+GPL-1.1
-    com.sun.jersey:jersey-core 1.19.1 CDDL+GPL-1.1 see:licenses/CDDL+GPL-1.1
+    javax.servlet:javax.servlet-api 4.0.1 CDDL-1.1 see:licenses/CDDL-1.1
+    org.glassfish:javax.json 1.0.4 CDDL-1.1 see:licenses/CDDL-1.1
+    com.sun.jersey.contribs:jersey-apache-client4 1.19.1 CDDL-1.1 see:licenses/CDDL-1.1
+    com.sun.jersey:jersey-client 1.19.1 CDDL-1.1 see:licenses/CDDL-1.1
+    com.sun.jersey:jersey-core 1.19.1 CDDL-1.1 see:licenses/CDDL-1.1
 
 ========================================================================
 EPL-1.0 licenses
