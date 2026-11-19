@@ -1,0 +1,51 @@
+name: protoc cause control
+
+on:
+  push:
+    branches: [ codex/investigate-protoc-control ]
+
+permissions:
+  contents: read
+
+jobs:
+  control:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare controlled execve failures
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y strace
+          plugin="$RUNNER_TEMP/protoc-gen-grpc-java"
+          protoc="$RUNNER_TEMP/protoc"
+          proto_dir="$GITHUB_WORKSPACE/extensions/rpc/seata-grpc/src/test/proto"
+          output="$RUNNER_TEMP/out"
+          mkdir -p "$output"
+          curl --retry 4 --retry-all-errors -fsSL https://repo.maven.apache.org/maven2/io/grpc/protoc-gen-grpc-java/1.83.1/protoc-gen-grpc-java-1.83.1-linux-x86_64.exe -o "$plugin"
+          curl --retry 4 --retry-all-errors -fsSL https://repo.maven.apache.org/maven2/com/google/protobuf/protoc/3.25.9/protoc-3.25.9-linux-x86_64.exe -o "$protoc"
+          echo '6d85303e20a69a8f1f51d61325d1a957ee6ae922  '"$plugin" | sha1sum -c -
+          chmod u+x "$plugin" "$protoc"
+          "$protoc" --proto_path="$proto_dir" --plugin=protoc-gen-grpc-java="$plugin" --grpc-java_out="$output" "$proto_dir/contextTest.proto"
+          echo 'Control 1: deliberately hold the generator open for writing.'
+          exec 9<>"$plugin"
+          set +e
+          strace -f -qq -e trace=execve -s 512 -o "$RUNNER_TEMP/busy.trace" "$protoc" --proto_path="$proto_dir" --plugin=protoc-gen-grpc-java="$plugin" --grpc-java_out="$output" "$proto_dir/contextTest.proto" 2>"$RUNNER_TEMP/busy.stderr"
+          busy_result=$?
+          exec 9>&-
+          set -e
+          cat "$RUNNER_TEMP/busy.stderr"
+          grep -F 'ETXTBSY' "$RUNNER_TEMP/busy.trace"
+          test "$busy_result" -ne 0
+          grep -F 'program not found or is not executable' "$RUNNER_TEMP/busy.stderr"
+          echo 'Control 2: deliberately remove executable permission.'
+          chmod u-x "$plugin"
+          set +e
+          strace -f -qq -e trace=execve -s 512 -o "$RUNNER_TEMP/denied.trace" "$protoc" --proto_path="$proto_dir" --plugin=protoc-gen-grpc-java="$plugin" --grpc-java_out="$output" "$proto_dir/contextTest.proto" 2>"$RUNNER_TEMP/denied.stderr"
+          denied_result=$?
+          set -e
+          cat "$RUNNER_TEMP/denied.stderr"
+          grep -F 'EACCES' "$RUNNER_TEMP/denied.trace"
+          test "$denied_result" -ne 0
+          grep -F 'program not found or is not executable' "$RUNNER_TEMP/denied.stderr"
