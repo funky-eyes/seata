@@ -90,7 +90,7 @@ jobs:
           result=$?
           set -e
           echo "Repeated generation exit status: $result"
-          echo "Generator execve calls: $(grep -c 'execve(.*protoc-gen-grpc-java-1.83.1-linux-x86_64.exe' "$RUNNER_TEMP/repeat.trace" || true)"
+          echo "Generator execve calls: $(grep -Ec 'execve\("[^"]*/protoc-gen-grpc-java-1[.]83[.]1-linux-x86_64[.]exe"' "$RUNNER_TEMP/repeat.trace" || true)"
           grep -E 'execve\("[^"]*protoc-gen-grpc-java[^\"]*".*= -1' "$RUNNER_TEMP/repeat.trace" || true
           if [ "$result" -ne 0 ]; then
             ls -l "$DIAG_DIR"
